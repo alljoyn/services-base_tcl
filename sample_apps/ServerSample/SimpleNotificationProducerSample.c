@@ -105,10 +105,13 @@ static void InitNotification()
 AJ_Status NotificationProducer_Init()
 {
     AJ_Status status = AJ_OK;
+
     Producer_SetupEnv(&inputMode);
     InitNotification();
     AJ_InitTimer(&isMessageTime);
     isMessageTime.seconds -= nextMessageTime; // Expire next message timer
+    status = AJNS_Producer_Start();
+
     return status;
 }
 

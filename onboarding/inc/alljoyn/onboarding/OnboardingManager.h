@@ -235,8 +235,9 @@ AJ_Status AJOBS_EstablishWiFi();
  * Switch to retry state toggling between:
  * a) waiting for an Onboarder application to connect to the SoftAP till timeout of AJOBS_WAIT_BETWEEN_RETRIES and
  * b) attempting to reconnect using the current validated configuration
+ * @return aj_status
  */
-void AJOBS_SwitchToRetry();
+AJ_Status AJOBS_SwitchToRetry();
 
 /**
  * Disconnect from the current Wi-Fi connection and go into Idle mode.

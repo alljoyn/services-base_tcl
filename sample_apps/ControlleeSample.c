@@ -28,7 +28,9 @@
 #include <aj_nvram.h>
 #include <aj_link_timeout.h>
 #include "PropertyStoreOEMProvisioning.h"
+#include <alljoyn/controlpanel/ControlPanelService.h>
 #include "ControlPanelGenerated.h"
+#include "ControlPanelProvided.h"
 #include <alljoyn/services_common/PropertyStore.h>
 #include <alljoyn/services_common/ServicesCommon.h>
 #include <alljoyn/services_common/ServicesHandlers.h>
@@ -262,16 +264,6 @@ static uint8_t AJRouter_Disconnect(AJ_BusAttachment* busAttachment, uint8_t disc
     return TRUE;
 }
 
-/**
- * Services Provisioning
- */
-
-AJ_Object AppObjects[] = {
-    IOE_SERVICES_APPOBJECTS
-    CONTROLPANELAPPOBJECTS
-    { NULL, NULL }
-};
-
 const char* deviceManufactureName = "COMPANY";
 const char* deviceProductName = "GENERIC BOARD";
 
@@ -377,11 +369,16 @@ static const char* aboutIconUrl = { "https://www.alljoyn.org/sites/all/themes/at
  * ControlPanel Model and Logic are in ControlPanelGenerated.c and ControlPanelProvided.c respectively.
  */
 
+static AJ_Object controlleeObjectList[] = {
+    AJCPS_CONTROLLEE_GENERATED_OBJECTS
+    NULL
+};
+
 static AJ_Status Controlee_Init()
 {
     AJ_Status status = AJ_OK;
 
-    status = AJCPS_Start(&GeneratedMessageProcessor, &IdentifyMsgOrPropId, &IdentifyMsgOrPropIdForSignal, &IdentifyRootMsgOrPropId);
+    status = AJCPS_Start(controlleeObjectList, &GeneratedMessageProcessor, &IdentifyMsgOrPropId, &IdentifyMsgOrPropIdForSignal, &IdentifyRootMsgOrPropId);
     WidgetsInit();
 
     return status;
@@ -412,7 +409,6 @@ int AJ_Main(void)
         goto Exit;
     }
 
-    AJ_RegisterObjects(AppObjects, NULL);
     SetBusAuthPwdCallback(MyBusAuthPwdCB);
 
     while (TRUE) {

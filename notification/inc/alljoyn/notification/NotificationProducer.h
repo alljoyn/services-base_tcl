@@ -25,6 +25,8 @@
  *  @{
  */
 
+#define NOTIFICATION_OBJECT_INDEX                NOTIFICATION_PRODUCER_OBJECTS_INDEX
+
 /*!
    \brief Constant for messageType
  */
@@ -40,34 +42,15 @@
  */
 #define AJNS_NOTIFICATION_MESSAGE_TYPE_INFO      2
 
-/*!
-   \brief Constant for about of notification producer objects
+/**
+ * Notification Service Producer API
  */
-#define NUM_NOTIFICATION_PRODUCER_OBJECTS 4
 
-/*!
-   \brief The object path on which "Emergency" type notifications are sent
+/**
+ * Start Notification service framework as Producer.
+ * @return aj_status
  */
-extern const char AJNS_NotificationObjectPathEmergency[];
-
-/*!
-   \brief The object path on which "warning" type notifications are sent
- */
-extern const char AJNS_NotificationObjectPathWarning[];
-
-/*!
-   \brief The object path on which "Info" type notifications are sent
- */
-extern const char AJNS_NotificationObjectPathInfo[];
-
-/*!
-   \brief AllJoyn objects exposed by the NotificationProducer
- */
-#define NOTIFICATION_PRODUCER_APPOBJECTS \
-    { AJNS_NotificationObjectPathEmergency,     AJNS_NotificationInterfaces, AJ_OBJ_FLAG_ANNOUNCED }, \
-    { AJNS_NotificationObjectPathWarning,       AJNS_NotificationInterfaces, AJ_OBJ_FLAG_ANNOUNCED }, \
-    { AJNS_NotificationObjectPathInfo,          AJNS_NotificationInterfaces, AJ_OBJ_FLAG_ANNOUNCED }, \
-    { AJNS_NotificationProducerObjectPath,      AJNS_NotificationProducerInterfaces, AJ_OBJ_FLAG_ANNOUNCED },
+AJ_Status AJNS_Producer_Start();
 
 /*!
    \brief Send a notification with the given content

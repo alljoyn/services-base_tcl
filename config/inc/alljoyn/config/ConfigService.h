@@ -26,24 +26,8 @@
 #include <alljoyn/services_common/ServicesCommon.h>
 
 /**
- * Published Config BusObjects and Interfaces.
- */
-extern const AJ_InterfaceDescription AJSVC_ConfigInterfaces[];
-
-/**
  * Following definitions are read by the application.
  */
-
-/**
- * number of config objects
- */
-#define NUM_CONFIG_OBJECTS 1
-
-/**
- * Config app objects
- */
-#define CONFIG_APPOBJECTS \
-    { "/Config",             AJSVC_ConfigInterfaces, AJ_OBJ_FLAG_ANNOUNCED },
 
 /**
  * Actions to perform when factory reset is requested.

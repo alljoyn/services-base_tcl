@@ -20,6 +20,7 @@
 #include "ControlPanelClientGenerated.h"
 #include "alljoyn/controlpanel/ControlPanelService.h"
 #include "alljoyn/controlpanel/Definitions.h"
+#include "alljoyn/services_common/ServicesCommon.h"
 #include "aj_debug.h"
 
 /**
@@ -27,19 +28,6 @@
  */
 char announceSender[16];
 
-/**
- * Objects implemented by the application. The first member in the AJ_Object structure is the path.
- * The second is the collection of all interfaces at that path.
- */
-
-#define CONTROLPANEL_APPOBJECTS \
-    CONTROLPANELAPPOBJECTS
-/*
-   typedef enum _AJSVC_ServiceStatus {
-    AJSVC_SERVICE_STATUS_HANDLED,       //!< SERVICE_STATUS_HANDLED
-    AJSVC_SERVICE_STATUS_NOT_HANDLED,   //!< SERVICE_STATUS_NOT_HANDLED
-   } AJSVC_ServiceStatus;
- */
 void CPS_Init();
 
 AJ_Status CPS_StartService(AJ_BusAttachment* bus, const char* daemonName, uint32_t timeout, uint8_t connected);

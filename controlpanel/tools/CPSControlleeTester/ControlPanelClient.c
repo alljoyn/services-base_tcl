@@ -43,12 +43,6 @@ uint8_t isBusConnected = FALSE;
 static char busAddress[] = "org.alljoyn.BusNode";
 uint32_t sessionId = 0;
 
-AJ_Object AppObjects[] =
-{
-    CONTROLPANEL_APPOBJECTS
-    { NULL }
-};
-
 #define CONTROL_ANNOUNCE_SIGNAL_RECEIVED  AJ_PRX_MESSAGE_ID(0, 1, 3)
 
 const char* deviceManufactureName = "COMPANY";
@@ -236,12 +230,19 @@ static CPSTest testsToRun[NUMBER_OF_TESTS];
 
 char* CPSAnnounceMatch = "sessionless='t',interface='org.alljoyn.ControlPanel.Announcement'";
 
+static AJ_Object controllerObjectList[] =
+{
+    AJCPS_CONTROLLEE_GENERATED_OBJECTS
+    { NULL }
+};
+
 /**
  * Objects implemented by the application. The first member in the AJ_Object structure is the path.
  * The second is the collection of all interfaces at that path.
  */
 void CPS_Init()
 {
+    AJ_RegisterObjectList(controllerObjectList, AJCPS_OBJECT_LIST_INDEX);
     TestsInit(testsToRun);
 }
 
@@ -377,9 +378,6 @@ int AJ_Main(void)
 
     /* Required: Need to initialize once before starting */
     AJ_Initialize();
-
-    /* Required: Register the AppObjects before starting */
-    AJ_RegisterObjects(NULL, AppObjects);
 
     CPS_Init();
 

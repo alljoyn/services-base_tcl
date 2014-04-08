@@ -48,7 +48,7 @@ typedef struct {
     const char* (*getUnitOfMeasure)(struct PropertyWidget* thisWidget, uint16_t); //!< Getter for the unit of measurement
 
     /**
-     * Optional function that provices an alternative way to lookup constraint information. If this function pointer is non-NULL this
+     * Optional function that provides an alternative way to lookup constraint information. If this function pointer is non-NULL this
      * function is called to obtain contraint information and the contstraintList is ignored
      *
      * @param thisWidget Identifies the property widget that has constraints.

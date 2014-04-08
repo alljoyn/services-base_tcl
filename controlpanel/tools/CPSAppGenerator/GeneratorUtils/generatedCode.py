@@ -41,7 +41,6 @@ class Generator:
         self.maxNumLang = 0
 
         self.appObjects = ""
-        self.announceObjects = ""
         self.defines = ""
         self.definesIndx = 0
         self.objectPathsDef = ""
@@ -99,12 +98,12 @@ class Generator:
         myObjectPath = self.ObjectPathPrefix + rootElement.name
         self.objectPathsDecl += "extern const char {0}[];\n".format(objectPathVar)
         self.objectPathsDef += "const char {0}[] = \"{1}\";\n".format(objectPathVar, myObjectPath)
-        self.appObjects += "    {0}  {1}, ControlPanelInterfaces, AJ_OBJ_FLAG_ANNOUNCED  {2}, \\\n".format("{", objectPathVar, "}")
+        self.appObjects += "    {0}  {1}, ControlPanelInterfaces, AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED/*AJCPS_OBJ_FLAG*/  {2}, \\\n".format("{", objectPathVar, "}")
 
-        self.defines += """#define {0}_GET_VALUE                  AJ_APP_MESSAGE_ID({1} + NUM_PRECEDING_OBJECTS, 0, AJ_PROP_GET)
-#define {0}_SET_VALUE                  AJ_APP_MESSAGE_ID({1} + NUM_PRECEDING_OBJECTS, 0, AJ_PROP_SET)
-#define {0}_GET_ALL_VALUES             AJ_APP_MESSAGE_ID({1} + NUM_PRECEDING_OBJECTS, 0, AJ_PROP_GET_ALL)
-#define {0}_VERSION_PROPERTY           AJ_APP_PROPERTY_ID({1} + NUM_PRECEDING_OBJECTS, 1, 0)\n""".format(capName, self.definesIndx)
+        self.defines += """#define {0}_GET_VALUE                  AJ_ENCODE_MESSAGE_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 0, AJ_PROP_GET)
+#define {0}_SET_VALUE                  AJ_ENCODE_MESSAGE_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 0, AJ_PROP_SET)
+#define {0}_GET_ALL_VALUES             AJ_ENCODE_MESSAGE_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 0, AJ_PROP_GET_ALL)
+#define {0}_VERSION_PROPERTY           AJ_ENCODE_PROPERTY_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 1, 0)\n""".format(capName, self.definesIndx)
         self.defines += "\n"
         self.definesIndx += 1	
 
@@ -129,11 +128,11 @@ class Generator:
             self.objectPathsDecl += "extern const char {0}[];\n".format(objectPathVar)
             self.objectPathsDef += "const char {0}[] = \"{1}\";\n".format(objectPathVar, myObjectPath)
 
-        self.defines += """#define {0}_GET_VALUE                  AJ_APP_MESSAGE_ID({1} + NUM_PRECEDING_OBJECTS, 0, AJ_PROP_GET)
-#define {0}_SET_VALUE                  AJ_APP_MESSAGE_ID({1} + NUM_PRECEDING_OBJECTS, 0, AJ_PROP_SET)
-#define {0}_GET_ALL_VALUES             AJ_APP_MESSAGE_ID({1} + NUM_PRECEDING_OBJECTS, 0, AJ_PROP_GET_ALL)
-#define {0}_VERSION_PROPERTY           AJ_APP_PROPERTY_ID({1} + NUM_PRECEDING_OBJECTS, 1, 0)
-#define {0}_SIGNAL_DISMISS             AJ_APP_MESSAGE_ID({1} + NUM_PRECEDING_OBJECTS, 1, 1)\n""".format(capName, self.definesIndx)
+        self.defines += """#define {0}_GET_VALUE                  AJ_ENCODE_MESSAGE_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 0, AJ_PROP_GET)
+#define {0}_SET_VALUE                  AJ_ENCODE_MESSAGE_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 0, AJ_PROP_SET)
+#define {0}_GET_ALL_VALUES             AJ_ENCODE_MESSAGE_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 0, AJ_PROP_GET_ALL)
+#define {0}_VERSION_PROPERTY           AJ_ENCODE_PROPERTY_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 1, 0)
+#define {0}_SIGNAL_DISMISS             AJ_ENCODE_MESSAGE_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 1, 1)\n""".format(capName, self.definesIndx)
         self.defines += "\n"
         self.definesIndx += 1	
 
@@ -180,7 +179,7 @@ class Generator:
 
         self.headerFile = self.headerFile.replace("//DEFINES_GO_HERE", self.defines)
         self.headerFile = self.headerFile.replace("//OBJECTPATH_DECL_GO_HERE", self.objectPathsDecl)
-        self.headerFile = self.headerFile.replace("//APPOBJECTS_GO_HERE", self.appObjects)
+        self.headerFile = self.headerFile.replace("//CPS_OBJECTS_COUNT_GO_HERE", str(self.definesIndx))
         self.headerFile = self.headerFile.replace("//GETVALUES_GO_HERE", self.getValuesCases)
         self.headerFile = self.headerFile.replace("//SETVALUES_GO_HERE", self.setValuesCases)
         self.headerFile = self.headerFile.replace("//GETALLVALUES_GO_HERE", self.getAllCases)
@@ -189,9 +188,17 @@ class Generator:
         self.headerFile = self.headerFile.replace("//GETVALUES_ROOT_GO_HERE", self.getRootValuesCases)
         self.headerFile = self.headerFile.replace("//GETALLVALUES_ROOT_GO_HERE", self.getAllRootCases)
         self.headerFile = self.headerFile.replace("//MAXNUMLANGUAGES_GO_HERE", str(self.maxNumLang))
-        self.headerFile = self.headerFile.replace("//NUM_CPSOBJ_GO_HERE", str(self.definesIndx))
         self.testerGeneratedHeader = self.headerFile ## Catch it after all replaces
+        self.testerProxyObjects = self.appObjects;
+
         self.headerFile = self.headerFile.replace("//WIDGETS_DECL_GO_HERE", self.widgetsDecl)
+        self.appObjects = self.appObjects.replace("/*AJCPS_OBJ_FLAG*/", " | AJ_OBJ_FLAG_ANNOUNCED")
+        self.headerFile = self.headerFile.replace("//CPS_OBJECTS_GO_HERE", self.appObjects)
+
+        self.testerGeneratedHeader = self.testerGeneratedHeader.replace("//NUM_TESTS_GO_HERE", str(self.numTests))
+        self.testerGeneratedHeader = self.testerGeneratedHeader.replace("//ALL_REPLIES_GO_HERE", self.allReplies)
+        self.testerProxyObjects = self.testerProxyObjects.replace("/*AJCPS_OBJ_FLAG*/", " | AJ_OBJ_FLAG_IS_PROXY")
+        self.testerGeneratedHeader = self.testerGeneratedHeader.replace("//CPS_OBJECTS_GO_HERE", self.testerProxyObjects)
 
         self.generatedFile = self.generatedFile.replace("//OBJECTPATH_DEF_GO_HERE", self.objectPathsDef)
         self.testerGeneratedFile = self.generatedFile ## Catch it before all unnecessary replaces
@@ -216,11 +223,6 @@ class Generator:
         self.testerGeneratedFile = self.testerGeneratedFile.replace("//SET_WIDGET_PROPERTY_GO_HERE", "")
         self.testerGeneratedFile = self.testerGeneratedFile.replace("//EXECUTE_ACTION_GO_HERE", "")
         self.testerGeneratedFile = self.testerGeneratedFile.replace("//WIDGETS_DEF_GO_HERE", "")
-
-        self.testerGeneratedHeader = self.testerGeneratedHeader.replace("//NUM_TESTS_GO_HERE", str(self.numTests))
-        self.testerGeneratedHeader = self.testerGeneratedHeader.replace("//ALL_REPLIES_GO_HERE", self.allReplies)
-        self.testerGeneratedHeader = self.testerGeneratedHeader.replace("AJ_APP_MESSAGE_ID", "AJ_PRX_MESSAGE_ID")
-        self.testerGeneratedHeader = self.testerGeneratedHeader.replace("AJ_APP_PROPERTY_ID", "AJ_PRX_PROPERTY_ID")
 
 
 

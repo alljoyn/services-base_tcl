@@ -34,7 +34,6 @@
 #include <alljoyn/services_common/PropertyStore.h>
 #include <alljoyn/services_common/ServicesCommon.h>
 #include <alljoyn/services_common/ServicesHandlers.h>
-#include <aj_nvram.h>
 
 /*
  * Logger definition
@@ -116,15 +115,29 @@ typedef enum {
 
 static uint8_t AJRouter_Connect(AJ_BusAttachment* busAttachment, const char* routerName)
 {
-    AJ_Status status;
+    AJ_Status status = AJ_OK;
     const char* busUniqueName;
 
     while (TRUE) {
+//      if (!AJOBS_IsWiFiConnected()) { // Check if there is already Wi-Fi connectivity and if not establish it
+        status = AJOBS_EstablishWiFi();
+//      }
+        if (status != AJ_OK) {
+            AJ_AlwaysPrintf(("Failed to establish WiFi connectivity with status=%s\n", AJ_StatusText(status)));
+            AJ_Sleep(AJAPP_CONNECT_PAUSE);
+            return FALSE;
+        }
         AJ_InfoPrintf(("Attempting to connect to bus '%s'\n", routerName));
         status = AJ_FindBusAndConnect(busAttachment, routerName, AJAPP_CONNECT_TIMEOUT);
         if (status != AJ_OK) {
             AJ_InfoPrintf(("Failed to connect to bus sleeping for %d seconds\n", AJAPP_CONNECT_PAUSE / 1000));
             AJ_Sleep(AJAPP_CONNECT_PAUSE);
+            if (status == AJ_ERR_DHCP) {
+                status = AJOBS_SwitchToRetry();
+                if (status != AJ_OK) {
+                    AJ_AlwaysPrintf(("Failed to switch to Retry mode status=%s\n", AJ_StatusText(status)));
+                }
+            }
             continue;
         }
         busUniqueName = AJ_GetUniqueName(busAttachment);
@@ -268,15 +281,6 @@ static uint8_t AJRouter_Disconnect(AJ_BusAttachment* busAttachment, uint8_t disc
 
     return TRUE;
 }
-
-/**
- * Services Provisioning
- */
-
-AJ_Object AppObjects[] = {
-    IOE_SERVICES_APPOBJECTS
-    { NULL, NULL }
-};
 
 const char* deviceManufactureName = "COMPANY";
 const char* deviceProductName = "GENERIC BOARD";
@@ -598,7 +602,6 @@ int AJ_Main(void)
         goto Exit;
     }
 
-    AJ_RegisterObjects(AppObjects, NULL);
     SetBusAuthPwdCallback(MyBusAuthPwdCB);
 
     while (TRUE) {
@@ -613,10 +616,6 @@ int AJ_Main(void)
         }
 
         status = AJApp_ConnectedHandler(&busAttachment);
-
-        if (!AJOBS_IsWiFiConnected()) {
-            status = AJ_ERR_RESTART;
-        }
 
         if (status == AJ_OK) {
             status = AJ_UnmarshalMsg(&busAttachment, &msg, AJAPP_UNMARSHAL_TIMEOUT);

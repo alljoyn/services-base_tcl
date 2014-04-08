@@ -32,8 +32,8 @@ class Property (common.Widget):
 
     def generateDefines(self, capName) :
         common.Widget.generateDefines(self, capName) 
-        self.generated.defines += "#define {0}_VALUE_PROPERTY             AJ_APP_PROPERTY_ID({1} + NUM_PRECEDING_OBJECTS, 1, 4)\n".format(capName, self.generated.definesIndx)
-        self.generated.defines += "#define {0}_SIGNAL_VALUE_CHANGED       AJ_APP_MESSAGE_ID({1} + NUM_PRECEDING_OBJECTS, 1, 5)\n".format(capName, self.generated.definesIndx)
+        self.generated.defines += "#define {0}_VALUE_PROPERTY             AJ_ENCODE_PROPERTY_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 1, 4)\n".format(capName, self.generated.definesIndx)
+        self.generated.defines += "#define {0}_SIGNAL_VALUE_CHANGED       AJ_ENCODE_MESSAGE_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 1, 5)\n".format(capName, self.generated.definesIndx)
         self.propertyCases += "    case {0}_VALUE_PROPERTY:\n".format(capName) 
         self.signalsString += "            ((SetValueContext*)context)->signals[{0}] = {1}_SIGNAL_VALUE_CHANGED;\n".format(self.signalsIndx, capName)
         self.signalsIndx += 1

@@ -101,7 +101,7 @@ static uint32_t PasswordCallback(uint8_t* buffer, uint32_t bufLen)
     return len;
 }
 
-AJ_Status AJServices_Init(uint16_t aboutServicePort, AJ_Object* appObjects, AJ_Object* proxyObjects, const char* deviceManufactureName, const char* deviceProductName)
+AJ_Status AJServices_Init(uint16_t aboutServicePort, const char* deviceManufactureName, const char* deviceProductName)
 {
     AJ_Status status = AJ_OK;
 
@@ -118,14 +118,14 @@ AJ_Status AJServices_Init(uint16_t aboutServicePort, AJ_Object* appObjects, AJ_O
         goto Exit;
     }
 #endif
-#ifdef NOTIFICATION_SERVICE_PRODUCER
-    status = NotificationProducer_Init();
+#ifdef NOTIFICATION_SERVICE_CONSUMER
+    status = NotificationConsumer_Init();
     if (status != AJ_OK) {
         goto Exit;
     }
 #endif
-#ifdef NOTIFICATION_SERVICE_CONSUMER
-    status = NotificationConsumer_Init(proxyObjects);
+#ifdef NOTIFICATION_SERVICE_PRODUCER
+    status = NotificationProducer_Init();
     if (status != AJ_OK) {
         goto Exit;
     }
@@ -144,12 +144,14 @@ Exit:
 
 uint8_t AJRouter_Connect(AJ_BusAttachment* busAttachment, const char* routerName)
 {
-    AJ_Status status;
+    AJ_Status status = AJ_OK;
     const char* busUniqueName;
 
     while (TRUE) {
 #ifdef ONBOARDING_SERVICE
+//      if (!AJOBS_IsWiFiConnected()) { // Check if there is already Wi-Fi connectivity and if not establish it
         status = AJOBS_EstablishWiFi();
+//      }
         if (status != AJ_OK) {
             AJ_AlwaysPrintf(("Failed to establish WiFi connectivity with status=%s\n", AJ_StatusText(status)));
             AJ_Sleep(AJAPP_CONNECT_PAUSE);
@@ -163,7 +165,10 @@ uint8_t AJRouter_Connect(AJ_BusAttachment* busAttachment, const char* routerName
             AJ_Sleep(AJAPP_CONNECT_PAUSE);
 #ifdef ONBOARDING_SERVICE
             if (status == AJ_ERR_DHCP) {
-                AJOBS_SwitchToRetry();
+                status = AJOBS_SwitchToRetry();
+                if (status != AJ_OK) {
+                    AJ_AlwaysPrintf(("Failed to switch to Retry mode status=%s\n", AJ_StatusText(status)));
+                }
             }
 #endif
             continue;
@@ -248,12 +253,13 @@ ErrorExit:
     if (status == AJ_ERR_RESOURCES) {
         init_retries++;
         if (init_retries > MAX_INIT_RETRIES) {
-            status = AJ_ERR_READ; // Force disconnect
+            status = AJ_ERR_READ; // Force disconnect from router
         } else {
             AJ_ErrPrintf(("Application ConnectedHandler attempt %u of %u\n", init_retries, MAX_INIT_RETRIES));
             AJ_Sleep(AJAPP_SLEEP_TIME);
         }
     }
+
     return status;
 }
 

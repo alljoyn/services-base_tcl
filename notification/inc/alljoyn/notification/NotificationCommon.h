@@ -80,10 +80,6 @@ typedef struct _AJNS_Notification {
 } AJNS_Notification;
 
 /**
- * Notification interface name
- */
-extern const char AJNS_NotificationInterfaceName[];
-/**
  * Notification interface signal
  */
 extern const char AJNS_NotificationSignalName[];
@@ -119,6 +115,14 @@ extern const uint16_t AJNS_NOTIFICATION_TTL_MIN;
 extern const uint16_t AJNS_NOTIFICATION_TTL_MAX;
 
 /**
+ * Notification Common objects range
+ */
+#define NOTIFICATION_COMMON_OBJECTS_INDEX           0
+#define NOTIFICATION_COMMON_OBJECTS_COUNT           1
+
+void AJNS_Common_Register();
+
+/**
  * Notification Dismisser object for the Dismiss signal emitter
  */
 /**
@@ -126,7 +130,6 @@ extern const uint16_t AJNS_NOTIFICATION_TTL_MAX;
  *
  * See also ".\inc\aj_introspect.h"
  */
-extern const char* const AJNS_NotificationDismisserInterface[];
 /**
  * Notification Dismisser interface version property value
  */
@@ -135,68 +138,53 @@ extern const uint16_t AJNS_NotificationDismisserVersion;
  * Notification Dismisser interface signal emitter
  */
 AJ_Status AJNS_SendDismissSignal(AJ_BusAttachment* busAttachment, int32_t msgId, const char* appId);
-/**
- * A NULL terminated collection of all NotificationDismisser interfaces.
- */
-extern const AJ_InterfaceDescription AJNS_NotificationDismisserInterfaces[];
-/**
- * Notification Dismisser signal emitter object path
- */
-extern char AJNS_NotificationDismisserObjectPath[];
-
-/**
- * Number of notification common objects
- */
-#define NUM_NOTIFICATION_COMMON_OBJECTS 1
-
-/**
- * Notification common app objects
- */
-#define NOTIFICATION_COMMON_APPOBJECTS \
-    { AJNS_NotificationDismisserObjectPath,   AJNS_NotificationDismisserInterfaces, AJ_OBJ_FLAG_ANNOUNCED },
 
 /**
  * Notification dismisser object index
  */
-#define NOTIFICATION_DISMISSER_OBJECT_INDEX 0 + NUM_PRE_NOTIFICATION_COMMON_OBJECTS
+#define NOTIFICATION_DISMISSER_OBJECT_INDEX         NOTIFICATION_COMMON_OBJECTS_INDEX
 /**
  * Notification dismisser get property
  */
-#define NOTIFICATION_DISMISSER_GET_PROPERTY             AJ_APP_PROPERTY_ID(NOTIFICATION_DISMISSER_OBJECT_INDEX, 0, AJ_PROP_GET)
+#define NOTIFICATION_DISMISSER_GET_PROPERTY         AJ_ENCODE_PROPERTY_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_DISMISSER_OBJECT_INDEX, 0, AJ_PROP_GET)
 /**
  * Notification dismisser set property
  */
-#define NOTIFICATION_DISMISSER_SET_PROPERTY             AJ_APP_PROPERTY_ID(NOTIFICATION_DISMISSER_OBJECT_INDEX, 0, AJ_PROP_SET)
+#define NOTIFICATION_DISMISSER_SET_PROPERTY         AJ_ENCODE_PROPERTY_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_DISMISSER_OBJECT_INDEX, 0, AJ_PROP_SET)
 /**
  * Notification dismisser emitter
  */
-#define NOTIFICATION_DISMISSER_DISMISS_EMITTER          AJ_APP_MESSAGE_ID(NOTIFICATION_DISMISSER_OBJECT_INDEX, 1, 0)
+#define NOTIFICATION_DISMISSER_DISMISS_EMITTER      AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_DISMISSER_OBJECT_INDEX, 1, 0)
 /**
  * Notification dismisser version property
  */
-#define GET_NOTIFICATION_DISMISSER_VERSION_PROPERTY     AJ_APP_PROPERTY_ID(NOTIFICATION_DISMISSER_OBJECT_INDEX, 1, 1)
+#define GET_NOTIFICATION_DISMISSER_VERSION_PROPERTY AJ_ENCODE_PROPERTY_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_DISMISSER_OBJECT_INDEX, 1, 1)
 
 /**
  * Notification Producer interface name followed by the method signatures.
  *
  * See also ".\inc\aj_introspect.h"
  */
-extern const char* const AJNS_NotificationProducerInterface[];
-/**
- * Notification Producer interface version property value
- */
-extern const uint16_t AJNS_NotificationProducerVersion;
-/**
- * A NULL terminated collection of all NotificationProducer interfaces.
- */
-extern const AJ_InterfaceDescription AJNS_NotificationProducerInterfaces[];
-/**
- * The Notification service Producer object path
- */
-extern const char AJNS_NotificationProducerObjectPath[];
 /**
  * The Notification service Producer port
  */
 extern const uint16_t AJNS_NotificationProducerPort;
+
+/**
+ * Notification Consumer objects range
+ */
+#define NOTIFICATION_CONSUMER_OBJECTS_INDEX         NOTIFICATION_COMMON_OBJECTS_INDEX + NOTIFICATION_COMMON_OBJECTS_COUNT
+#define NOTIFICATION_CONSUMER_OBJECTS_COUNT         AJNS_NUM_MESSAGE_TYPES
+
+/**
+ * Notification Producer objects range
+ */
+#define NOTIFICATION_PRODUCER_OBJECTS_INDEX         NOTIFICATION_CONSUMER_OBJECTS_INDEX + NOTIFICATION_CONSUMER_OBJECTS_COUNT
+#define NOTIFICATION_PRODUCER_OBJECTS_COUNT         AJNS_NUM_MESSAGE_TYPES + 1
+
+/**
+ * Notification Service object list
+ */
+extern AJ_Object AJNS_ObjectList[];
 /** @} */ // End of group 'NotificationCommon'
 #endif /* _NOTIFICATIONCOMMON_H_ */

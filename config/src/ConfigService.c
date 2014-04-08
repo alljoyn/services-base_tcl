@@ -25,41 +25,12 @@
 
 #include <alljoyn.h>
 #include <alljoyn/config/ConfigService.h>
+#include <alljoyn/services_common/ServicesCommon.h>
 #include <alljoyn/services_common/PropertyStore.h>
 
-/*
- * Message identifiers for the method calls this service implements
+/**
+ * Published Config BusObjects and Interfaces.
  */
-
-#define CONFIG_OBJECT_INDEX                                     NUM_PRE_CONFIG_OBJECTS
-
-#define CONFIG_GET_PROP                                         AJ_APP_MESSAGE_ID(CONFIG_OBJECT_INDEX, 0, AJ_PROP_GET)
-#define CONFIG_SET_PROP                                         AJ_APP_MESSAGE_ID(CONFIG_OBJECT_INDEX, 0, AJ_PROP_SET)
-
-#define CONFIG_VERSION_PROP                                     AJ_APP_PROPERTY_ID(CONFIG_OBJECT_INDEX, 1, 0)
-#define CONFIG_FACTORY_RESET                                    AJ_APP_MESSAGE_ID(CONFIG_OBJECT_INDEX, 1, 1)
-#define CONFIG_RESTART                                          AJ_APP_MESSAGE_ID(CONFIG_OBJECT_INDEX, 1, 2)
-#define CONFIG_GET_CONFIG_CONFIGURATIONS                        AJ_APP_MESSAGE_ID(CONFIG_OBJECT_INDEX, 1, 3)
-#define CONFIG_UPDATE_CONFIGURATIONS                            AJ_APP_MESSAGE_ID(CONFIG_OBJECT_INDEX, 1, 4)
-#define CONFIG_RESET_CONFIGURATIONS                             AJ_APP_MESSAGE_ID(CONFIG_OBJECT_INDEX, 1, 5)
-#define CONFIG_SET_PASSCODE                                     AJ_APP_MESSAGE_ID(CONFIG_OBJECT_INDEX, 1, 6)
-
-static AJCFG_FactoryReset appFactoryReset = NULL;
-static AJCFG_Restart appRestart = NULL;
-static AJCFG_SetPasscode appSetPasscode = NULL;
-static AJCFG_IsValueValid appIsValueValid = NULL;
-
-AJ_Status AJCFG_Start(AJCFG_FactoryReset factoryReset, AJCFG_Restart restart, AJCFG_SetPasscode setPasscode, AJCFG_IsValueValid isValueValid)
-{
-    AJ_Status status = AJ_OK;
-
-    appFactoryReset = factoryReset;
-    appRestart = restart;
-    appSetPasscode = setPasscode;
-    appIsValueValid = isValueValid;
-
-    return status;
-}
 
 static const char* const AJSVC_ConfigInterface[] = {
     "$org.alljoyn.Config",
@@ -75,11 +46,64 @@ static const char* const AJSVC_ConfigInterface[] = {
 
 static const uint16_t AJSVC_ConfigVersion = 1;
 
-const AJ_InterfaceDescription AJSVC_ConfigInterfaces[] = {
+static const AJ_InterfaceDescription AJSVC_ConfigInterfaces[] = {
     AJ_PropertiesIface,
     AJSVC_ConfigInterface,
     NULL
 };
+
+static AJ_Object AJCFG_ObjectList[] = {
+    { "/Config", AJSVC_ConfigInterfaces, AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED },
+    NULL
+};
+
+/*
+ * Message identifiers for the method calls this service implements
+ */
+
+#define CONFIG_OBJECT_INDEX                                     0
+
+#define CONFIG_GET_PROP                                         AJ_ENCODE_MESSAGE_ID(AJCFG_OBJECT_LIST_INDEX, CONFIG_OBJECT_INDEX, 0, AJ_PROP_GET)
+#define CONFIG_SET_PROP                                         AJ_ENCODE_MESSAGE_ID(AJCFG_OBJECT_LIST_INDEX, CONFIG_OBJECT_INDEX, 0, AJ_PROP_SET)
+
+#define CONFIG_VERSION_PROP                                     AJ_ENCODE_PROPERTY_ID(AJCFG_OBJECT_LIST_INDEX, CONFIG_OBJECT_INDEX, 1, 0)
+#define CONFIG_FACTORY_RESET                                    AJ_ENCODE_MESSAGE_ID(AJCFG_OBJECT_LIST_INDEX, CONFIG_OBJECT_INDEX, 1, 1)
+#define CONFIG_RESTART                                          AJ_ENCODE_MESSAGE_ID(AJCFG_OBJECT_LIST_INDEX, CONFIG_OBJECT_INDEX, 1, 2)
+#define CONFIG_GET_CONFIG_CONFIGURATIONS                        AJ_ENCODE_MESSAGE_ID(AJCFG_OBJECT_LIST_INDEX, CONFIG_OBJECT_INDEX, 1, 3)
+#define CONFIG_UPDATE_CONFIGURATIONS                            AJ_ENCODE_MESSAGE_ID(AJCFG_OBJECT_LIST_INDEX, CONFIG_OBJECT_INDEX, 1, 4)
+#define CONFIG_RESET_CONFIGURATIONS                             AJ_ENCODE_MESSAGE_ID(AJCFG_OBJECT_LIST_INDEX, CONFIG_OBJECT_INDEX, 1, 5)
+#define CONFIG_SET_PASSCODE                                     AJ_ENCODE_MESSAGE_ID(AJCFG_OBJECT_LIST_INDEX, CONFIG_OBJECT_INDEX, 1, 6)
+
+static void AJCFG_Register()
+{
+    AJCFG_ObjectList[CONFIG_OBJECT_INDEX].flags &= ~(AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED);
+    AJCFG_ObjectList[CONFIG_OBJECT_INDEX].flags |= AJ_OBJ_FLAG_ANNOUNCED;
+}
+
+/*
+ * Application registered Callbacks
+ */
+
+static AJCFG_FactoryReset appFactoryReset = NULL;
+static AJCFG_Restart appRestart = NULL;
+static AJCFG_SetPasscode appSetPasscode = NULL;
+static AJCFG_IsValueValid appIsValueValid = NULL;
+
+AJ_Status AJCFG_Start(AJCFG_FactoryReset factoryReset, AJCFG_Restart restart, AJCFG_SetPasscode setPasscode, AJCFG_IsValueValid isValueValid)
+{
+    AJ_Status status = AJ_OK;
+
+    appFactoryReset = factoryReset;
+    appRestart = restart;
+    appSetPasscode = setPasscode;
+    appIsValueValid = isValueValid;
+
+    AJCFG_Register();
+
+    status = AJ_RegisterObjectList(AJCFG_ObjectList, AJCFG_OBJECT_LIST_INDEX);
+
+    return status;
+}
 
 AJ_Status AJCFG_PropGetHandler(AJ_Message* replyMsg, uint32_t propId, void* context)
 {

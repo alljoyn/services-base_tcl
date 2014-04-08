@@ -29,6 +29,10 @@
 #include <aj_link_timeout.h>
 #include <aj_wifi_ctrl.h>
 
+/**
+ * Published Onboarding BusObjects and Interfaces.
+ */
+
 static const char* const OnboardingInterface[] = {
     "$org.alljoyn.Onboarding",
     "@Version>q",
@@ -44,11 +48,43 @@ static const char* const OnboardingInterface[] = {
 
 static const uint16_t AJSVC_OnboardingVersion = 1;
 
-const AJ_InterfaceDescription AJSVC_OnboardingInterfaces[] = {
+static const AJ_InterfaceDescription AJSVC_OnboardingInterfaces[] = {
     AJ_PropertiesIface,
     OnboardingInterface,
     NULL
 };
+
+AJ_Object AJOBS_ObjectList[] = {
+    { "/Onboarding",           AJSVC_OnboardingInterfaces, AJ_OBJ_FLAG_ANNOUNCED },
+    NULL
+};
+
+/*
+ * Message identifiers for the method calls this service implements
+ */
+
+#define AJ_SVC_MESSAGE_ID(p, i, m)                              AJ_ENCODE_MESSAGE_ID(AJOBS_OBJECT_LIST_INDEX, p, i, m)
+#define AJ_SVC_PROPERTY_ID(p, i, m)                             AJ_ENCODE_PROPERTY_ID(AJOBS_OBJECT_LIST_INDEX, p, i, m)
+
+#define OBS_OBJECT_INDEX       0                                                    /**< number of pre onboarding objects */
+
+#define OBS_GET_PROP           AJ_SVC_MESSAGE_ID(OBS_OBJECT_INDEX, 0, AJ_PROP_GET)  /**< property get */
+#define OBS_SET_PROP           AJ_SVC_MESSAGE_ID(OBS_OBJECT_INDEX, 0, AJ_PROP_SET)  /**< property set */
+
+#define OBS_VERSION_PROP       AJ_SVC_PROPERTY_ID(OBS_OBJECT_INDEX, 1, 0)           /**< version property index */
+#define OBS_STATE_PROP         AJ_SVC_PROPERTY_ID(OBS_OBJECT_INDEX, 1, 1)           /**< state property */
+#define OBS_LASTERROR_PROP     AJ_SVC_PROPERTY_ID(OBS_OBJECT_INDEX, 1, 2)           /**< last error property */
+#define OBS_CONFIGURE_WIFI     AJ_SVC_MESSAGE_ID(OBS_OBJECT_INDEX, 1, 3)            /**< configure wifi */
+#define OBS_CONNECT            AJ_SVC_MESSAGE_ID(OBS_OBJECT_INDEX, 1, 4)            /**< connect */
+#define OBS_OFFBOARD           AJ_SVC_MESSAGE_ID(OBS_OBJECT_INDEX, 1, 5)            /**< offboard */
+#define OBS_GET_SCAN_INFO      AJ_SVC_MESSAGE_ID(OBS_OBJECT_INDEX, 1, 6)            /**< get scan info */
+#define OBS_CONNECTION_RESULT  AJ_SVC_MESSAGE_ID(OBS_OBJECT_INDEX, 1, 7)            /**< connection result */
+
+void AJOBS_Register()
+{
+    AJOBS_ObjectList[OBS_OBJECT_INDEX].flags &= ~(AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED);
+    AJOBS_ObjectList[OBS_OBJECT_INDEX].flags |= AJ_OBJ_FLAG_ANNOUNCED;
+}
 
 /*
  * Modify these variables to change the service's behavior
@@ -172,7 +208,7 @@ AJ_Status AJOBS_ConnectWiFiHandler(AJ_Message* msg)
         return status;
     }
     AJ_InfoPrintf(("ReadInfo status: %s\n", AJ_StatusText(status)));
-    status = AJ_ERR_RESTART;     // Force disconnect of AJ and services and reconnection of WiFi on restart of message lopp
+    status = AJ_ERR_RESTART;     // Force disconnect of AJ and services and reconnection of Wi-Fi on restart of message loop
 
     return status;
 }
@@ -186,7 +222,7 @@ AJ_Status AJOBS_OffboardWiFiHandler(AJ_Message* msg)
     if (status != AJ_OK) {
         return status;
     }
-    status = AJ_ERR_RESTART;     // Force disconnect of AJ and services and reconnection of WiFi on restart on restart of message lopp
+    status = AJ_ERR_RESTART;     // Force disconnect of AJ and services and reconnection of Wi-Fi on restart on restart of message loop
 
     return status;
 }

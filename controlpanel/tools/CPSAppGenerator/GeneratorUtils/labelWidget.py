@@ -1,4 +1,4 @@
-# Copyright (c) 2013, AllSeen Alliance. All rights reserved.
+# Copyright (c) 2013 - 2014, AllSeen Alliance. All rights reserved.
 #
 #    Permission to use, copy, modify, and/or distribute this software for any
 #    purpose with or without fee is hereby granted, provided that the above
@@ -26,7 +26,7 @@ class Label (common.Widget):
 
     def generateDefines(self, capName) :
         common.Widget.generateDefines(self, capName) 
-        self.generated.defines += "#define {0}_LABEL_PROPERTY             AJ_APP_PROPERTY_ID({1} + NUM_PRECEDING_OBJECTS, 1, 4)\n".format(capName, self.generated.definesIndx)
+        self.generated.defines += "#define {0}_LABEL_PROPERTY             AJ_ENCODE_PROPERTY_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 1, 4)\n".format(capName, self.generated.definesIndx)
 
     def generateIdentify(self, capName, language) :
         common.Widget.generateIdentify(self, capName, language)

@@ -34,11 +34,11 @@ class Dialog (common.Widget):
 
     def generateDefines(self, capName) :
         common.Widget.generateDefines(self, capName) 
-        self.generated.defines += "#define {0}_MESSAGE_PROPERTY           AJ_APP_PROPERTY_ID({1} + NUM_PRECEDING_OBJECTS, 1, 4)\n".format(capName, self.generated.definesIndx)
-        self.generated.defines += "#define {0}_NUM_ACTIONS_PROPERTY       AJ_APP_PROPERTY_ID({1} + NUM_PRECEDING_OBJECTS, 1, 5)\n".format(capName, self.generated.definesIndx)
-        self.generated.defines += "#define {0}_EXEC_ACTION1               AJ_APP_MESSAGE_ID({1} + NUM_PRECEDING_OBJECTS, 1, 6)\n".format(capName, self.generated.definesIndx)
-        self.generated.defines += "#define {0}_EXEC_ACTION2               AJ_APP_MESSAGE_ID({1} + NUM_PRECEDING_OBJECTS, 1, 7)\n".format(capName, self.generated.definesIndx)
-        self.generated.defines += "#define {0}_EXEC_ACTION3               AJ_APP_MESSAGE_ID({1} + NUM_PRECEDING_OBJECTS, 1, 8)\n".format(capName, self.generated.definesIndx)
+        self.generated.defines += "#define {0}_MESSAGE_PROPERTY           AJ_ENCODE_PROPERTY_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 1, 4)\n".format(capName, self.generated.definesIndx)
+        self.generated.defines += "#define {0}_NUM_ACTIONS_PROPERTY       AJ_ENCODE_PROPERTY_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 1, 5)\n".format(capName, self.generated.definesIndx)
+        self.generated.defines += "#define {0}_EXEC_ACTION1               AJ_ENCODE_MESSAGE_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 1, 6)\n".format(capName, self.generated.definesIndx)
+        self.generated.defines += "#define {0}_EXEC_ACTION2               AJ_ENCODE_MESSAGE_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 1, 7)\n".format(capName, self.generated.definesIndx)
+        self.generated.defines += "#define {0}_EXEC_ACTION3               AJ_ENCODE_MESSAGE_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 1, 8)\n".format(capName, self.generated.definesIndx)
 
         self.generated.actionCases += "case {0}_EXEC_ACTION1: \\\n".format(capName)
         self.generated.actionCases += "case {0}_EXEC_ACTION2: \\\n".format(capName)

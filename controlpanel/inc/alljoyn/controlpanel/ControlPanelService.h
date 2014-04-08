@@ -23,7 +23,6 @@
 #ifdef CONTROLPANEL_SERVICE
 #include <alljoyn/services_common/ServicesCommon.h>
 #else
-#define NUM_PRE_CONTROLPANEL_OBJECTS 0
 #include "ControlPanelClientGenerated.h"
 #endif
 
@@ -73,13 +72,14 @@ typedef uint8_t (*AJCPS_IdentifyRootMsgOrPropId)(uint32_t identifier);
 
 /**
  * Start ControlPanel service framework passing callbacks from generated code
+ * @param generatedObjectsList
  * @param generatedMessageProcessor
  * @param identifyMsgOrPropId
  * @param identifyMsgOrPropIdForSignal
  * @param identifyRootMsgOrPropId
  * @return aj_status
  */
-AJ_Status AJCPS_Start(AJSVC_MessageProcessor generatedMessageProcessor, AJCPS_IdentifyMsgOrPropId identifyMsgOrPropId, AJCPS_IdentifyMsgOrPropIdForSignal identifyMsgOrPropIdForSignal, AJCPS_IdentifyRootMsgOrPropId identifyRootMsgOrPropId);
+AJ_Status AJCPS_Start(AJ_Object* generatedObjectsList, AJSVC_MessageProcessor generatedMessageProcessor, AJCPS_IdentifyMsgOrPropId identifyMsgOrPropId, AJCPS_IdentifyMsgOrPropIdForSignal identifyMsgOrPropIdForSignal, AJCPS_IdentifyRootMsgOrPropId identifyRootMsgOrPropId);
 
 /**
  * Return the current session's id.

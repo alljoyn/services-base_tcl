@@ -28,8 +28,21 @@
 #include <alljoyn/services_common/ServicesCommon.h>
 #include <alljoyn/services_common/PropertyStore.h>
 #include <alljoyn/services_common/ServicesHandlers.h>
+#ifdef CONFIG_SERVICE
+#include <alljoyn/config/ConfigService.h>
+#endif
 #ifdef ONBOARDING_SERVICE
+#include <alljoyn/onboarding/OnboardingService.h>
 #include <alljoyn/onboarding/OnboardingManager.h>
+#endif
+#ifdef NOTIFICATION_SERVICE_CONSUMER
+#include <alljoyn/notification/NotificationConsumer.h>
+#endif
+#ifdef NOTIFICATION_SERVICE_PRODUCER
+#include <alljoyn/notification/NotificationProducer.h>
+#endif
+#ifdef CONTROLPANEL_SERVICE
+#include <alljoyn/controlpanel/ControlPanelService.h>
 #endif
 
 #include <aj_config.h>
@@ -40,35 +53,30 @@ AJ_Status AJSVC_ConnectedHandler(AJ_BusAttachment* busAttachment)
     AJ_Status status = AJ_OK;
 
 #ifdef CONFIG_SERVICE
-
     status = AJCFG_ConnectedHandler(busAttachment);
     if (status != AJ_OK) {
         goto ErrorExit;
     }
 #endif
 #ifdef ONBOARDING_SERVICE
-
     status = AJOBS_ConnectedHandler(busAttachment);
     if (status != AJ_OK) {
         goto ErrorExit;
     }
 #endif
 #ifdef NOTIFICATION_SERVICE_PRODUCER
-
     status = AJNS_Producer_ConnectedHandler(busAttachment);
     if (status != AJ_OK) {
         goto ErrorExit;
     }
 #endif
 #ifdef CONTROLPANEL_SERVICE
-
     status = AJCPS_ConnectedHandler(busAttachment);
     if (status != AJ_OK) {
         goto ErrorExit;
     }
 #endif
 #ifdef NOTIFICATION_SERVICE_CONSUMER
-
     status = AJNS_Consumer_ConnectedHandler(busAttachment);
     if (status != AJ_OK) {
         goto ErrorExit;

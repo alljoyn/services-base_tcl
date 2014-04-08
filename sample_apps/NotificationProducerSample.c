@@ -30,6 +30,8 @@
 #include <alljoyn/services_common/PropertyStore.h>
 #include <alljoyn/services_common/ServicesCommon.h>
 #include <alljoyn/services_common/ServicesHandlers.h>
+#include <alljoyn/notification/NotificationCommon.h>
+#include <alljoyn/notification/NotificationProducer.h>
 
 /*
  * Logger definition
@@ -262,11 +264,6 @@ static uint8_t AJRouter_Disconnect(AJ_BusAttachment* busAttachment, uint8_t disc
  * Services Provisioning
  */
 
-AJ_Object AppObjects[] = {
-    IOE_SERVICES_APPOBJECTS
-    { NULL, NULL }
-};
-
 const char* deviceManufactureName = "COMPANY";
 const char* deviceProductName = "GENERIC BOARD";
 
@@ -397,7 +394,7 @@ AJNS_DictionaryEntry textToSend[NUM_TEXTS], customAttributesToSend[NUM_CUSTOMS],
  * Initial the Notifications that will be used during this sample app
  */
 static AJNS_NotificationContent notificationContent;
-static void InitNotification()
+static void InitNotificationContent()
 {
     notificationContent.numCustomAttributes = NUM_CUSTOMS;
     customAttributesToSend[0].key   = onKey;
@@ -423,6 +420,19 @@ static void InitNotification()
     notificationContent.richIconUrl = Icon1URL;
     notificationContent.richIconObjectPath = richIconObjectPath;
     notificationContent.richAudioObjectPath = richAudioObjectPath;
+}
+
+/**
+ * Initialize service
+ */
+AJ_Status NotificationProducer_Init()
+{
+    AJ_Status status;
+
+    InitNotificationContent();
+    status = AJNS_Producer_Start();
+
+    return status;
 }
 
 static void SendNotification(AJ_BusAttachment* busAttachment)
@@ -455,9 +465,11 @@ int AJ_Main(void)
         goto Exit;
     }
 
-    InitNotification();
+    status = NotificationProducer_Init();
+    if (status != AJ_OK) {
+        goto Exit;
+    }
 
-    AJ_RegisterObjects(AppObjects, NULL);
     SetBusAuthPwdCallback(MyBusAuthPwdCB);
 
     while (TRUE) {

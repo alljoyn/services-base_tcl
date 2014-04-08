@@ -26,6 +26,7 @@
 #include <alljoyn.h>
 #include <alljoyn/services_common/PropertyStore.h>
 #include <alljoyn/services_common/ServicesCommon.h>
+#include <alljoyn/onboarding/OnboardingService.h>
 #include <alljoyn/onboarding/OnboardingControllerAPI.h>
 #include <aj_wifi_ctrl.h>
 #include <alljoyn/onboarding/OnboardingManager.h>
@@ -61,12 +62,23 @@ AJ_Status AJOBS_Start(const AJOBS_Settings* settings, AJOBS_ReadInfo readInfo, A
     obReadInfo = readInfo;
     obWriteInfo = writeInfo;
 
-    if (obSettings == NULL || obSettings->AJOBS_SoftAPSSID == NULL || (obSettings->AJOBS_SoftAPSSID)[0] == '\0') {
+    if (obReadInfo == NULL) {
+        AJ_ErrPrintf(("AJOBS_Start(): Callbacks for reading Info was not provided!\n"));
+        status = AJ_ERR_INVALID;
+    } else if (obWriteInfo == NULL) {
+        AJ_ErrPrintf(("AJOBS_Start(): Callbacks for writing Info was not provided!\n"));
+        status = AJ_ERR_INVALID;
+    } else if (obSettings == NULL || obSettings->AJOBS_SoftAPSSID == NULL || (obSettings->AJOBS_SoftAPSSID)[0] == '\0') {
         AJ_ErrPrintf(("AJOBS_Start(): No SoftAP SSID was provided!\n"));
         status = AJ_ERR_INVALID;
     } else if (obSettings->AJOBS_SoftAPPassphrase != NULL && strlen(obSettings->AJOBS_SoftAPPassphrase) < 8) {
         AJ_ErrPrintf(("AJOBS_Start(): SoftAP Passphrase is too short! Needs to 8 to 63 characters long\n"));
         status = AJ_ERR_INVALID;
+    }
+
+    if (status == AJ_OK) {
+        AJOBS_Register();
+        status = AJ_RegisterObjectList(AJOBS_ObjectList, AJOBS_OBJECT_LIST_INDEX);
     }
 
     return status;
@@ -124,14 +136,14 @@ uint8_t AJOBS_GetScanInfoCount()
 
 AJ_Status AJOBS_GetInfo(AJOBS_Info* obInfo)
 {
-    AJ_Status status = (*obReadInfo)(obInfo);
+    AJ_Status status = (*obReadInfo == NULL) ? AJ_ERR_NULL : (*obReadInfo)(obInfo);
     AJ_InfoPrintf(("ReadInfo status: %s\n", AJ_StatusText(status)));
     return status;
 }
 
 AJ_Status AJOBS_SetInfo(AJOBS_Info* obInfo)
 {
-    AJ_Status status = (*obWriteInfo)(obInfo);
+    AJ_Status status = (*obWriteInfo == NULL) ? AJ_ERR_NULL : (*obWriteInfo)(obInfo);
     AJ_InfoPrintf(("WriteInfo status: %s\n", AJ_StatusText(status)));
     return status;
 }
@@ -504,7 +516,7 @@ static AJ_Status DoConnectWifi(AJOBS_Info* connectInfo)
     }
 
     connectInfo->state = obState;
-    status = (*obWriteInfo)(connectInfo);
+    status = AJOBS_SetInfo(connectInfo);
     return status;
 }
 
@@ -544,7 +556,7 @@ AJ_Status AJOBS_ControllerAPI_StartSoftAPIfNeededOrConnect(AJOBS_Info* obInfo)
                     if (obInfo->state == AJOBS_STATE_CONFIGURED_RETRY) {
                         AJ_InfoPrintf(("Retry timer elapsed at %ums\n", obSettings->AJOBS_WAIT_BETWEEN_RETRIES));
                         obInfo->state = AJOBS_STATE_CONFIGURED_VALIDATED;
-                        status = (*obWriteInfo)(obInfo);
+                        status = AJOBS_SetInfo(obInfo);
                         if (status == AJ_OK) {
                             continue; // Loop back and connect in client mode
                         }
@@ -579,7 +591,7 @@ AJ_Status AJOBS_ClearInfo()
     obLastError.code = AJOBS_STATE_LAST_ERROR_VALIDATED;
     obLastError.message[0] = '\0';
 
-    return (*obWriteInfo)(&emptyInfo);
+    return AJOBS_SetInfo(&emptyInfo);
 }
 
 AJ_Status AJOBS_ControllerAPI_DoOffboardWiFi()
@@ -590,32 +602,47 @@ AJ_Status AJOBS_ControllerAPI_DoOffboardWiFi()
 AJ_Status AJOBS_EstablishWiFi()
 {
     AJ_Status status;
-
     AJOBS_Info obInfo;
-    status = (*obReadInfo)(&obInfo);
-    AJ_InfoPrintf(("ReadInfo status: %s\n", AJ_StatusText(status)));
+
+    status = AJOBS_GetInfo(&obInfo);
+    if (status != AJ_OK) {
+        goto ErrorExit;
+    }
 
     status = AJOBS_ControllerAPI_StartSoftAPIfNeededOrConnect(&obInfo);
+    if (status != AJ_OK) {
+        goto ErrorExit;
+    }
 
+    return status;
+
+ErrorExit:
+
+    AJ_ErrPrintf(("SwitchToRetry status: %s\n", AJ_StatusText(status)));
     return status;
 }
 
-void AJOBS_SwitchToRetry()
+AJ_Status AJOBS_SwitchToRetry()
 {
     AJ_Status status = AJ_OK;
-
     AJOBS_Info obInfo;
-    status = (*obReadInfo)(&obInfo);
+
+    status = AJOBS_GetInfo(&obInfo);
     if (status != AJ_OK) {
-        return;
+        goto ErrorExit;
     }
     obInfo.state = AJOBS_STATE_CONFIGURED_RETRY;
-    status = (*obWriteInfo)(&obInfo);
+    status = AJOBS_SetInfo(&obInfo);
     if (status != AJ_OK) {
-        return;
+        goto ErrorExit;
     }
-
     AJ_InfoPrintf(("SwitchToRetry status: %s\n", AJ_StatusText(status)));
+    return status;
+
+ErrorExit:
+
+    AJ_ErrPrintf(("SwitchToRetry status: %s\n", AJ_StatusText(status)));
+    return status;
 }
 
 AJ_Status AJOBS_DisconnectWiFi()

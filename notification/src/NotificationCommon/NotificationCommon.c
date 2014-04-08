@@ -26,9 +26,17 @@
 #include <alljoyn/notification/NotificationCommon.h>
 #include <alljoyn/services_common/ServicesCommon.h>
 
-const char AJNS_NotificationInterfaceName[]   = "org.alljoyn.Notification";
+/**
+ * Static constants.
+ */
+
+static const char AJNS_NotificationInterfaceName[]   = "org.alljoyn.Notification";
 const char AJNS_NotificationSignalName[]      = "!notify >q >i >q >s >s >ay >s >a{iv} >a{ss} >a(ss)";
 const char AJNS_NotificationPropertyVersion[] = "@Version>q";
+
+static const char AJNS_NotificationObjectPathEmergency[]   = "/emergency";
+static const char AJNS_NotificationObjectPathWarning[]     = "/warning";
+static const char AJNS_NotificationObjectPathInfo[]        = "/info";
 
 const uint16_t AJNS_NotificationVersion = 2;
 
@@ -57,9 +65,9 @@ const uint16_t AJNS_NotificationDismisserVersion = 1;
 #define NOTIFICATION_DISMISSER_OBJECT_PATH_PREFIX "/notificationDismisser"
 #define NOTIFICATION_DISMISSER_OBJECT_PATH_PREFIX_LENGTH 22
 #define NOTIFICATION_DISMISSER_OBJECT_PATH_LENGTH (NOTIFICATION_DISMISSER_OBJECT_PATH_PREFIX_LENGTH + 1 + 2 * UUID_LENGTH + 1 + 10 + 1) // Prefix of NOTIFICATION_DISMISSER_OBJECT_PATH_PREFIX_LENGTH + '/' + AppId in 32 Hex chars + '/' + MsgId in 10 Ascii chars
-char AJNS_NotificationDismisserObjectPath[NOTIFICATION_DISMISSER_OBJECT_PATH_LENGTH] = NOTIFICATION_DISMISSER_OBJECT_PATH_PREFIX; // /012345678901234567890123456789012/012345678";
+static char AJNS_NotificationDismisserObjectPath[NOTIFICATION_DISMISSER_OBJECT_PATH_LENGTH] = NOTIFICATION_DISMISSER_OBJECT_PATH_PREFIX; // /012345678901234567890123456789012/012345678";
 
-const char* const AJNS_NotificationDismisserInterface[] = {
+static const char* const AJNS_NotificationDismisserInterface[] = {
     "org.alljoyn.Notification.Dismisser",
     "!Dismiss >i >ay",
     "@Version>q",
@@ -69,7 +77,7 @@ const char* const AJNS_NotificationDismisserInterface[] = {
 /**
  * A NULL terminated collection of all interfaces.
  */
-const AJ_InterfaceDescription AJNS_NotificationDismisserInterfaces[] = {
+static const AJ_InterfaceDescription AJNS_NotificationDismisserInterfaces[] = {
     AJ_PropertiesIface,
     AJNS_NotificationDismisserInterface,
     NULL
@@ -124,21 +132,37 @@ ErrorExit:
 }
 
 const uint16_t AJNS_NotificationProducerPort = 1010;
-const char AJNS_NotificationProducerObjectPath[] = "/notificationProducer";
 
-const char* const AJNS_NotificationProducerInterface[] = {
+static const char AJNS_NotificationProducerObjectPath[] = "/notificationProducer";
+
+static const char* const AJNS_NotificationProducerInterface[] = {
     "org.alljoyn.Notification.Producer",
     "?Dismiss <i",
     "@Version>q",
     NULL
 };
 
-const uint16_t AJNS_NotificationProducerVersion = 1;
-
-const AJ_InterfaceDescription AJNS_NotificationProducerInterfaces[] = {
+static const AJ_InterfaceDescription AJNS_NotificationProducerInterfaces[] = {
     AJ_PropertiesIface,
     AJNS_NotificationProducerInterface,
     AJNS_NotificationDismisserInterface,
     NULL
 };
 
+AJ_Object AJNS_ObjectList[] = {
+    { AJNS_NotificationDismisserObjectPath, AJNS_NotificationDismisserInterfaces, AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED },
+    { "*",                                  AJNS_NotificationInterfaces,          AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED },
+    { AJNS_NotificationProducerObjectPath,  AJNS_NotificationProducerInterfaces,  AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED },
+    { "*",                                  AJNS_NotificationDismisserInterfaces, AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED },
+    { AJNS_NotificationObjectPathEmergency, AJNS_NotificationInterfaces,          AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED },
+    { AJNS_NotificationObjectPathWarning,   AJNS_NotificationInterfaces,          AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED },
+    { AJNS_NotificationObjectPathInfo,      AJNS_NotificationInterfaces,          AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED },
+    { AJNS_NotificationProducerObjectPath,  AJNS_NotificationProducerInterfaces,  AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED },
+    NULL
+};
+
+void AJNS_Common_Register()
+{
+    AJNS_ObjectList[NOTIFICATION_DISMISSER_OBJECT_INDEX].flags &= ~(AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED);
+    AJNS_ObjectList[NOTIFICATION_DISMISSER_OBJECT_INDEX].flags |= AJ_OBJ_FLAG_ANNOUNCED;
+}

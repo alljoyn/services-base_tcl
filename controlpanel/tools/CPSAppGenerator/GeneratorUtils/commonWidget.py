@@ -1,4 +1,4 @@
-# Copyright (c) 2013, AllSeen Alliance. All rights reserved.
+# Copyright (c) 2013 - 2014, AllSeen Alliance. All rights reserved.
 #
 #    Permission to use, copy, modify, and/or distribute this software for any
 #    purpose with or without fee is hereby granted, provided that the above
@@ -74,13 +74,13 @@ class Widget:
 
 
     def generateDefines(self, capName) :
-        self.generated.defines += """#define {0}_GET_VALUE                  AJ_APP_MESSAGE_ID({1} + NUM_PRECEDING_OBJECTS, 0, AJ_PROP_GET)
-#define {0}_SET_VALUE                  AJ_APP_MESSAGE_ID({1} + NUM_PRECEDING_OBJECTS, 0, AJ_PROP_SET)
-#define {0}_GET_ALL_VALUES             AJ_APP_MESSAGE_ID({1} + NUM_PRECEDING_OBJECTS, 0, AJ_PROP_GET_ALL)
-#define {0}_VERSION_PROPERTY           AJ_APP_PROPERTY_ID({1} + NUM_PRECEDING_OBJECTS, 1, 0)
-#define {0}_STATES_PROPERTY            AJ_APP_PROPERTY_ID({1} + NUM_PRECEDING_OBJECTS, 1, 1)
-#define {0}_OPTPARAMS_PROPERTY         AJ_APP_PROPERTY_ID({1} + NUM_PRECEDING_OBJECTS, 1, 2)
-#define {0}_SIGNAL_PROPERTIES_CHANGED  AJ_APP_MESSAGE_ID({1} + NUM_PRECEDING_OBJECTS, 1, 3)\n""".format(capName, self.generated.definesIndx)
+        self.generated.defines += """#define {0}_GET_VALUE                  AJ_ENCODE_MESSAGE_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 0, AJ_PROP_GET)
+#define {0}_SET_VALUE                  AJ_ENCODE_MESSAGE_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 0, AJ_PROP_SET)
+#define {0}_GET_ALL_VALUES             AJ_ENCODE_MESSAGE_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 0, AJ_PROP_GET_ALL)
+#define {0}_VERSION_PROPERTY           AJ_ENCODE_PROPERTY_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 1, 0)
+#define {0}_STATES_PROPERTY            AJ_ENCODE_PROPERTY_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 1, 1)
+#define {0}_OPTPARAMS_PROPERTY         AJ_ENCODE_PROPERTY_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 1, 2)
+#define {0}_SIGNAL_PROPERTIES_CHANGED  AJ_ENCODE_MESSAGE_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 1, 3)\n""".format(capName, self.generated.definesIndx)
 
         self.generated.getValuesCases += "case {0}_GET_VALUE: \\\n".format(capName)
         self.generated.setValuesCases += "case {0}_SET_VALUE: \\\n".format(capName)

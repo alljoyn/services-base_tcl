@@ -1,4 +1,4 @@
-# Copyright (c) 2013, AllSeen Alliance. All rights reserved.
+# Copyright (c) 2013 - 2014, AllSeen Alliance. All rights reserved.
 #
 #    Permission to use, copy, modify, and/or distribute this software for any
 #    purpose with or without fee is hereby granted, provided that the above
@@ -22,11 +22,11 @@ class HttpControl:
         self.name = self.generated.unitId + "HttpControl"
         self.capName = self.generated.unitId.upper() + "_HTTPCONTROL"        
                 
-        self.httpCasesString = """#define {0}_GET_VALUE             AJ_APP_MESSAGE_ID({1} + NUM_PRECEDING_OBJECTS, 0, AJ_PROP_GET)
-#define {0}_SET_VALUE             AJ_APP_MESSAGE_ID({1} + NUM_PRECEDING_OBJECTS, 0, AJ_PROP_SET)
-#define {0}_GET_ALL_VALUES        AJ_APP_MESSAGE_ID({1} + NUM_PRECEDING_OBJECTS, 0, AJ_PROP_GET_ALL)
-#define {0}_VERSION_PROPERTY      AJ_APP_PROPERTY_ID({1} + NUM_PRECEDING_OBJECTS, 1, 0)
-#define {0}_GET_ROOT_URL          AJ_APP_MESSAGE_ID({1} + NUM_PRECEDING_OBJECTS, 1, 1)\n\n"""
+        self.httpCasesString = """#define {0}_GET_VALUE             AJ_ENCODE_MESSAGE_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 0, AJ_PROP_GET)
+#define {0}_SET_VALUE             AJ_ENCODE_MESSAGE_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 0, AJ_PROP_SET)
+#define {0}_GET_ALL_VALUES        AJ_ENCODE_MESSAGE_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 0, AJ_PROP_GET_ALL)
+#define {0}_VERSION_PROPERTY      AJ_ENCODE_PROPERTY_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 1, 0)
+#define {0}_GET_ROOT_URL          AJ_ENCODE_MESSAGE_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 1, 1)\n\n"""
          
         self.httpIdentifyString = """    case {0}_GET_ROOT_URL:
         *widgetType = WIDGET_TYPE_HTTP;
@@ -40,9 +40,8 @@ class HttpControl:
     def generate(self) :
         objectPathVar = "{0}ObjectPath".format(self.name)
 
-        self.generated.appObjects += "    {0}  {1}, HttpControlInterfaces  {2}, \\\n".format("{", objectPathVar, "}")
-        self.generated.announceObjects += "    {0}  {1}, HttpControlInterfaces  {2}, \\\n".format("{", objectPathVar, "}")
-        
+        self.generated.appObjects += "    {0}  {1}, HttpControlInterfaces, AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED/*AJCPS_OBJ_FLAG*/  {2}, \\\n".format("{", objectPathVar, "}")
+
         self.generated.defines += self.httpCasesString.format(self.capName, self.generated.definesIndx)  
 
         self.generated.definesIndx += 1	

@@ -270,11 +270,6 @@ static uint8_t AJRouter_Disconnect(AJ_BusAttachment* busAttachment, uint8_t disc
  * Services Provisioning
  */
 
-AJ_Object AppObjects[] = {
-    IOE_SERVICES_APPOBJECTS
-    { NULL, NULL }
-};
-
 const char* deviceManufactureName = "COMPANY";
 const char* deviceProductName = "GENERIC BOARD";
 
@@ -477,7 +472,6 @@ int AJ_Main(void)
         goto Exit;
     }
 
-    AJ_RegisterObjects(AppObjects, NULL);
     SetBusAuthPwdCallback(MyBusAuthPwdCB);
 
     while (TRUE) {

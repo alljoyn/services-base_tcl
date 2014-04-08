@@ -33,11 +33,16 @@
 extern AJ_EXPORT uint8_t dbgAJSVCAPP;
 #endif
 
+static AJ_Object controlleeObjectList[] = {
+    AJCPS_CONTROLLEE_GENERATED_OBJECTS
+    NULL
+};
+
 AJ_Status Controlee_Init()
 {
     AJ_Status status = AJ_OK;
 
-    status = AJCPS_Start(&GeneratedMessageProcessor, &IdentifyMsgOrPropId, &IdentifyMsgOrPropIdForSignal, &IdentifyRootMsgOrPropId);
+    status = AJCPS_Start(controlleeObjectList, &GeneratedMessageProcessor, &IdentifyMsgOrPropId, &IdentifyMsgOrPropIdForSignal, &IdentifyRootMsgOrPropId);
     WidgetsInit();
 
     return status;

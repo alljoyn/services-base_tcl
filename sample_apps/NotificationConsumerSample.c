@@ -28,6 +28,8 @@
 #include <aj_nvram.h>
 #include <aj_link_timeout.h>
 #include <alljoyn/services_common/ServicesCommon.h>
+#include <alljoyn/notification/NotificationCommon.h>
+#include <alljoyn/notification/NotificationConsumer.h>
 #include <alljoyn/services_common/ServicesHandlers.h>
 #include "PropertyStoreOEMProvisioning.h"
 
@@ -197,11 +199,6 @@ static uint8_t AJRouter_Disconnect(AJ_BusAttachment* busAttachment, uint8_t disc
  * Services Provisioning
  */
 
-AJ_Object ProxyObjects[] = {
-    IOE_SERVICES_PROXYOBJECTS
-    { NULL, NULL }
-};
-
 /**
  * PropertyStore stub implementation for About feature
  */
@@ -277,7 +274,7 @@ static AJ_Status ApplicationHandleNotify(AJNS_Notification* notification)
 
 static AJ_Status Consumer_Init()
 {
-    AJ_Status status = AJNS_Consumer_Start(1, ProxyObjects, &ApplicationHandleNotify, NULL);
+    AJ_Status status = AJNS_Consumer_Start(1, &ApplicationHandleNotify, NULL);
     return status;
 }
 
@@ -299,7 +296,6 @@ int AJ_Main(void)
         goto Exit;
     }
 
-    AJ_RegisterObjects(NULL, ProxyObjects);
     SetBusAuthPwdCallback(MyBusAuthPwdCB);
 
     while (TRUE) {

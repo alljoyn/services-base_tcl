@@ -24,42 +24,46 @@
 #include <aj_debug.h>
 
 #include <alljoyn.h>
+#include <alljoyn/notification/NotificationCommon.h>
 #include <alljoyn/notification/NotificationConsumer.h>
+#include <alljoyn/notification/NotificationProducer.h>
+#include <alljoyn/services_common/ServicesCommon.h>
 #include <aj_config.h>
 
 /* Notification ProxyObject bus registration */
-#define NOTIFICATION_PROXYOBJECT_INDEX 0 + NUM_PRE_NOTIFICATION_CONSUMER_PROXYOBJECTS
-#define INTERFACE_GET_PROPERTY_PROXY                          AJ_PRX_MESSAGE_ID(NOTIFICATION_PROXYOBJECT_INDEX, 0, AJ_PROP_GET)
-#define INTERFACE_SET_PROPERTY_PROXY                          AJ_PRX_MESSAGE_ID(NOTIFICATION_PROXYOBJECT_INDEX, 0, AJ_PROP_SET)
+#define NOTIFICATION_PROXYOBJECT_INDEX                        NOTIFICATION_CONSUMER_OBJECTS_INDEX
 
-#define NOTIFICATION_SIGNAL                                   AJ_PRX_MESSAGE_ID(NOTIFICATION_PROXYOBJECT_INDEX, 1, 0)
-#define GET_NOTIFICATION_VERSION_PROPERTY_PROXY               AJ_PRX_PROPERTY_ID(NOTIFICATION_PROXYOBJECT_INDEX, 1, 1)
+#define INTERFACE_GET_PROPERTY_PROXY                          AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_PROXYOBJECT_INDEX, 0, AJ_PROP_GET)
+#define INTERFACE_SET_PROPERTY_PROXY                          AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_PROXYOBJECT_INDEX, 0, AJ_PROP_SET)
 
-#define SUPERAGENT_SIGNAL                                     AJ_PRX_MESSAGE_ID(NOTIFICATION_PROXYOBJECT_INDEX, 2, 0)
-#define GET_SUPERAGENT_VERSION_PROPERTY_PROXY                 AJ_PRX_PROPERTY_ID(NOTIFICATION_PROXYOBJECT_INDEX, 2, 1)
+#define NOTIFICATION_SIGNAL                                   AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_PROXYOBJECT_INDEX, 1, 0)
+#define GET_NOTIFICATION_VERSION_PROPERTY_PROXY               AJ_ENCODE_PROPERTY_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_PROXYOBJECT_INDEX, 1, 1)
+
+#define SUPERAGENT_SIGNAL                                     AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_PROXYOBJECT_INDEX, 2, 0)
+#define GET_SUPERAGENT_VERSION_PROPERTY_PROXY                 AJ_ENCODE_PROPERTY_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_PROXYOBJECT_INDEX, 2, 1)
 
 /* Producer ProxyObject bus registration */
-#define NOTIFICATION_PRODUCER_PROXYOBJECT_INDEX 1 + NUM_PRE_NOTIFICATION_CONSUMER_PROXYOBJECTS
-#define NOTIFICATION_PRODUCER_GET_PROPERTY_PROXY              AJ_PRX_MESSAGE_ID(NOTIFICATION_PRODUCER_PROXYOBJECT_INDEX, 0, AJ_PROP_GET)
-#define NOTIFICATION_PRODUCER_SET_PROPERTY_PROXY              AJ_PRX_MESSAGE_ID(NOTIFICATION_PRODUCER_PROXYOBJECT_INDEX, 0, AJ_PROP_SET)
+#define NOTIFICATION_PRODUCER_PROXYOBJECT_INDEX               NOTIFICATION_PROXYOBJECT_INDEX + AJNS_NUM_MESSAGE_TYPES
+#define NOTIFICATION_PRODUCER_GET_PROPERTY_PROXY              AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_PRODUCER_PROXYOBJECT_INDEX, 0, AJ_PROP_GET)
+#define NOTIFICATION_PRODUCER_SET_PROPERTY_PROXY              AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_PRODUCER_PROXYOBJECT_INDEX, 0, AJ_PROP_SET)
 
-#define NOTIFICATION_PRODUCER_DISMISS_PROXY                   AJ_PRX_MESSAGE_ID(NOTIFICATION_PRODUCER_PROXYOBJECT_INDEX, 1, 0)
-#define GET_NOTIFICATION_PRODUCER_VERSION_PROPERTY_PROXY      AJ_PRX_PROPERTY_ID(NOTIFICATION_PRODUCER_PROXYOBJECT_INDEX, 1, 1)
+#define NOTIFICATION_PRODUCER_DISMISS_PROXY                   AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_PRODUCER_PROXYOBJECT_INDEX, 1, 0)
+#define GET_NOTIFICATION_PRODUCER_VERSION_PROPERTY_PROXY      AJ_ENCODE_PROPERTY_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_PRODUCER_PROXYOBJECT_INDEX, 1, 1)
 
 /* Dismisser ProxyObject bus registration */
-#define NOTIFICATION_DISMISSER_PROXYOBJECT_INDEX 2 + NUM_PRE_NOTIFICATION_CONSUMER_PROXYOBJECTS
-#define NOTIFICATION_DISMISSER_GET_PROPERTY_PROXY             AJ_PRX_MESSAGE_ID(NOTIFICATION_DISMISSER_PROXYOBJECT_INDEX, 0, AJ_PROP_GET)
-#define NOTIFICATION_DISMISSER_SET_PROPERTY_PROXY             AJ_PRX_MESSAGE_ID(NOTIFICATION_DISMISSER_PROXYOBJECT_INDEX, 0, AJ_PROP_SET)
+#define NOTIFICATION_DISMISSER_PROXYOBJECT_INDEX              NOTIFICATION_PRODUCER_PROXYOBJECT_INDEX + 1
+#define NOTIFICATION_DISMISSER_GET_PROPERTY_PROXY             AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_DISMISSER_PROXYOBJECT_INDEX, 0, AJ_PROP_GET)
+#define NOTIFICATION_DISMISSER_SET_PROPERTY_PROXY             AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_DISMISSER_PROXYOBJECT_INDEX, 0, AJ_PROP_SET)
 
 #define NOTIFICATION_DISMISSER_DISMISS_RECEIVED               AJ_PRX_MESSAGE_ID(NOTIFICATION_DISMISSER_PROXYOBJECT_INDEX, 1, 0)
-#define GET_NOTIFICATION_DISMISSER_VERSION_PROPERTY_PROXY     AJ_PRX_PROPERTY_ID(NOTIFICATION_PRODUCER_PROXYOBJECT_INDEX, 1, 1)
+#define GET_NOTIFICATION_DISMISSER_VERSION_PROPERTY_PROXY     AJ_ENCODE_PROPERTY_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_PRODUCER_PROXYOBJECT_INDEX, 1, 1)
 
 #ifndef NOTIFICATION_SERVICE_PRODUCER
-   #define NOTIFICATION_SIGNAL_RECEIVED NOTIFICATION_SIGNAL
+   #define NOTIFICATION_SIGNAL_RECEIVED                       NOTIFICATION_SIGNAL
 #else
-   #define NOTIFICATION_SIGNAL_PROD1    AJ_APP_MESSAGE_ID(0 + NUM_PRE_NOTIFICATION_PRODUCER_OBJECTS, 1, 0)
-   #define NOTIFICATION_SIGNAL_PROD2    AJ_APP_MESSAGE_ID(1 + NUM_PRE_NOTIFICATION_PRODUCER_OBJECTS, 1, 0)
-   #define NOTIFICATION_SIGNAL_PROD3    AJ_APP_MESSAGE_ID(2 + NUM_PRE_NOTIFICATION_PRODUCER_OBJECTS, 1, 0)
+   #define NOTIFICATION_SIGNAL_PROD1                          AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_OBJECT_INDEX + AJNS_NOTIFICATION_MESSAGE_TYPE_EMERGENCY, 1, 0)
+   #define NOTIFICATION_SIGNAL_PROD2                          AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_OBJECT_INDEX + AJNS_NOTIFICATION_MESSAGE_TYPE_WARNING, 1, 0)
+   #define NOTIFICATION_SIGNAL_PROD3                          AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_OBJECT_INDEX + AJNS_NOTIFICATION_MESSAGE_TYPE_INFO, 1, 0)
 
    #define NOTIFICATION_SIGNAL_RECEIVED NOTIFICATION_SIGNAL : \
 case NOTIFICATION_SIGNAL_PROD1 : \
@@ -99,12 +103,11 @@ static const AJ_InterfaceDescription AllInterfaces[] = {
     NULL
 };
 
-static const AJ_Object AllProxyObject          = { "*",   AllInterfaces };
-static const AJ_Object SuperAgentProxyObject   = { "*",   SuperagentInterfaces };
-static const AJ_Object NotificationProxyObject = { "*",   AJNS_NotificationInterfaces };
+static AJ_Object AllProxyObject          = { "*",   AllInterfaces };
+static AJ_Object SuperAgentProxyObject   = { "*",   SuperagentInterfaces };
+static AJ_Object NotificationProxyObject = { "*",   AJNS_NotificationInterfaces };
 
 static uint8_t appSuperAgentMode = TRUE;
-static AJ_Object* appProxyObjects;
 
 static char currentSuperAgentBusName[16] = { '\0' };
 static uint32_t producerSessionId = 0;
@@ -118,20 +121,39 @@ static AJNS_Consumer_OnDismiss appOnDismiss;
 
 static AJNS_DictionaryEntry textsRecd[NUMALLOWEDTEXTS], customAttributesRecd[NUMALLOWEDCUSTOMATTRIBUTES], richAudiosRecd[NUMALLOWEDRICHNOTS];
 
-AJ_Status AJNS_Consumer_Start(uint8_t superAgentMode, AJ_Object* proxyObjects, AJNS_Consumer_OnNotify onNotify, AJNS_Consumer_OnDismiss onDismiss)
+static void AJNS_Consumer_Register()
+{
+    AllProxyObject.flags &= ~(AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED);
+    AllProxyObject.flags |= AJ_OBJ_FLAG_IS_PROXY;
+
+    SuperAgentProxyObject.flags &= ~(AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED);
+    SuperAgentProxyObject.flags |= AJ_OBJ_FLAG_IS_PROXY;
+
+    NotificationProxyObject.flags &= ~(AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED);
+    NotificationProxyObject.flags |= AJ_OBJ_FLAG_IS_PROXY;
+
+    AJNS_ObjectList[NOTIFICATION_PRODUCER_PROXYOBJECT_INDEX].flags &= ~(AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED);
+    AJNS_ObjectList[NOTIFICATION_PRODUCER_PROXYOBJECT_INDEX].flags |= AJ_OBJ_FLAG_IS_PROXY;
+
+    AJNS_ObjectList[NOTIFICATION_DISMISSER_OBJECT_INDEX].flags &= ~(AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED);
+    AJNS_ObjectList[NOTIFICATION_DISMISSER_OBJECT_INDEX].flags |= AJ_OBJ_FLAG_IS_PROXY;
+}
+
+AJ_Status AJNS_Consumer_Start(uint8_t superAgentMode, AJNS_Consumer_OnNotify onNotify, AJNS_Consumer_OnDismiss onDismiss)
 {
     AJ_Status status = AJ_OK;
+
     appSuperAgentMode = superAgentMode;
-    appProxyObjects = proxyObjects;
-    if (appProxyObjects != NULL) {
-        appProxyObjects[NOTIFICATION_PROXYOBJECT_INDEX] = appSuperAgentMode ? AllProxyObject : NotificationProxyObject;
-    } else {
-        AJ_WarnPrintf(("appProxyObjects is NULL. Setting superAgenMode to FALSE.\n"));
-        appSuperAgentMode = FALSE;
-        status = AJ_ERR_INVALID;
-    }
     appOnNotify = onNotify;
     appOnDismiss = onDismiss;
+
+    AJNS_Common_Register();
+    AJNS_Consumer_Register();
+
+    AJNS_ObjectList[NOTIFICATION_PROXYOBJECT_INDEX] = appSuperAgentMode ? AllProxyObject : NotificationProxyObject;
+
+    status = AJ_RegisterObjectList(AJNS_ObjectList, AJNS_OBJECT_LIST_INDEX);
+
     return status;
 }
 
@@ -730,8 +752,8 @@ AJSVC_ServiceStatus AJNS_Consumer_MessageProcessor(AJ_BusAttachment* busAttachme
     case SUPERAGENT_SIGNAL:
         AJ_InfoPrintf(("Received Superagent Signal.\n"));
         *msgStatus = AJNS_Consumer_SetSignalRules(busAttachment, appSuperAgentMode, msg->sender);
-        if (AJ_OK == *msgStatus && appProxyObjects != NULL) {
-            appProxyObjects[NOTIFICATION_PROXYOBJECT_INDEX] = SuperAgentProxyObject;
+        if (AJ_OK == *msgStatus && AJNS_ObjectList != NULL) {
+            AJNS_ObjectList[NOTIFICATION_PROXYOBJECT_INDEX] = SuperAgentProxyObject;
         }
         *msgStatus = AJNS_Consumer_NotifySignalHandler(msg);
         break;
@@ -744,8 +766,8 @@ AJSVC_ServiceStatus AJNS_Consumer_MessageProcessor(AJ_BusAttachment* busAttachme
     case AJ_SIGNAL_LOST_ADV_NAME:
         if (appSuperAgentMode && AJNS_Consumer_IsSuperAgentLost(msg)) {
             *msgStatus = AJNS_Consumer_SetSignalRules(busAttachment, appSuperAgentMode, NULL);
-            if (AJ_OK == *msgStatus && appProxyObjects != NULL) {
-                appProxyObjects[NOTIFICATION_PROXYOBJECT_INDEX] = AllProxyObject;
+            if (AJ_OK == *msgStatus && AJNS_ObjectList != NULL) {
+                AJNS_ObjectList[NOTIFICATION_PROXYOBJECT_INDEX] = AllProxyObject;
             }
         } else {
             return AJSVC_SERVICE_STATUS_NOT_HANDLED;

@@ -65,8 +65,12 @@ static void InitNotificationContent()
  */
 AJ_Status NotificationProducer_Init()
 {
+    AJ_Status status;
+
     InitNotificationContent();
-    return AJ_OK;
+    status = AJNS_Producer_Start();
+
+    return status;
 }
 
 /**

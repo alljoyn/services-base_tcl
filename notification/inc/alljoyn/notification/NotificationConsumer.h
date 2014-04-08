@@ -36,19 +36,6 @@
  */
 
 /**
- * Following definitions are read by the application.
- */
-#define NUM_NOTIFICATION_CONSUMER_PROXYOBJECTS 3
-
-/**
- * Notification consumer proxy objects.
- */
-#define NOTIFICATION_CONSUMER_PROXYOBJECTS  \
-    { "*",   AJNS_NotificationInterfaces }, \
-    { AJNS_NotificationProducerObjectPath,   AJNS_NotificationProducerInterfaces }, \
-    { "*",  AJNS_NotificationDismisserInterfaces },
-
-/**
  * Utility structure for saving a reference to a received notification.
  */
 typedef struct _AJNS_Consumer_NotificationReference {
@@ -76,12 +63,11 @@ typedef AJ_Status (*AJNS_Consumer_OnDismiss)(int32_t notificationId, const char*
 /**
  * Start Notification service framework Consumer passing mode and callbacks
  * @param appSuperAgentMode
- * @param proxyObjects
  * @param appOnNotify
  * @param appOnDismiss
  * @return status
  */
-AJ_Status AJNS_Consumer_Start(uint8_t appSuperAgentMode, AJ_Object* proxyObjects, AJNS_Consumer_OnNotify appOnNotify, const AJNS_Consumer_OnDismiss appOnDismiss);
+AJ_Status AJNS_Consumer_Start(uint8_t appSuperAgentMode, AJNS_Consumer_OnNotify appOnNotify, const AJNS_Consumer_OnDismiss appOnDismiss);
 
 /**
  * Consumer_SetSignalRules, to add the correct filter for the required interface

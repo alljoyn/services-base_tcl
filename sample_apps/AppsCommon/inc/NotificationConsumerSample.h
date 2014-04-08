@@ -30,7 +30,7 @@
  * Initialize the Notification Service Consumer
  * @return status
  */
-AJ_Status NotificationConsumer_Init(AJ_Object* proxyObjects);
+AJ_Status NotificationConsumer_Init();
 
 /**
  * If idle, do work

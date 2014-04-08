@@ -53,19 +53,6 @@ static AJ_BusAttachment busAttachment;
 
 // Services Provisioning
 
-AJ_Object AppObjects[] = {
-    IOE_SERVICES_APPOBJECTS
-#ifdef CONTROLPANEL_SERVICE
-    CONTROLPANELAPPOBJECTS
-#endif
-    { NULL, NULL }
-};
-
-AJ_Object ProxyObjects[] = {
-    IOE_SERVICES_PROXYOBJECTS
-    { NULL, NULL }
-};
-
 const char* deviceManufactureName = "COMPANY";
 const char* deviceProductName = "GENERIC BOARD";
 
@@ -215,12 +202,11 @@ int AJ_Main(void)
         goto Exit;
     }
 
-    status = AJServices_Init(AJ_ABOUT_SERVICE_PORT, AppObjects, ProxyObjects, deviceManufactureName, deviceProductName);
+    status = AJServices_Init(AJ_ABOUT_SERVICE_PORT, deviceManufactureName, deviceProductName);
     if (status != AJ_OK) {
         goto Exit;
     }
 
-    AJ_RegisterObjects(AppObjects, ProxyObjects);
     SetBusAuthPwdCallback(MyBusAuthPwdCB);
 
     while (TRUE) {
@@ -236,11 +222,6 @@ int AJ_Main(void)
 
         status = AJApp_ConnectedHandler(&busAttachment);
 
-#ifdef ONBOARDING_SERVICE
-        if (!AJOBS_IsWiFiConnected()) {
-            status = AJ_ERR_RESTART;
-        }
-#endif
         if (status == AJ_OK) {
             status = AJ_UnmarshalMsg(&busAttachment, &msg, AJAPP_UNMARSHAL_TIMEOUT);
             isUnmarshalingSuccessful = (status == AJ_OK);

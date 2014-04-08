@@ -30,8 +30,8 @@
  * ConstraintList structure
  */
 typedef struct {
-    const void* value;                   //!< The constraint value
-    const char* const* display;          //!< The constraint display text
+    const void* value;                            //!< The constraint value
+    const char* const* display;                   //!< The constraint display text
     const char* (*getDisplay)(uint16_t language); //!< Getter for the display text
 
 } ConstraintList;

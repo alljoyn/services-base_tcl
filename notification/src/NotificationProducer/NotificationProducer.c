@@ -24,10 +24,36 @@
 #include <aj_debug.h>
 
 #include <alljoyn.h>
+#include <alljoyn/notification/NotificationCommon.h>
 #include <alljoyn/notification/NotificationProducer.h>
 #include <alljoyn/services_common/PropertyStore.h>
 #include <aj_crypto.h>
 #include <aj_config.h>
+
+static const uint16_t AJNS_NotificationProducerVersion = 1;
+
+static void AJNS_Producer_Register()
+{
+    uint8_t i = NOTIFICATION_PRODUCER_OBJECTS_INDEX;
+    AJ_Object currentObject;
+
+    for (; i < NOTIFICATION_PRODUCER_OBJECTS_COUNT; i++) {
+        currentObject =  AJNS_ObjectList[i];
+        currentObject.flags &= ~(AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED);
+        currentObject.flags |= AJ_OBJ_FLAG_ANNOUNCED;
+    }
+}
+
+AJ_Status AJNS_Producer_Start()
+{
+    AJ_Status status;
+
+    AJNS_Common_Register();
+    AJNS_Producer_Register();
+    status = AJ_RegisterObjectList(AJNS_ObjectList, AJNS_OBJECT_LIST_INDEX);
+
+    return status;
+}
 
 /*!
    \brief Get Property event for Emergency NotificationService object
@@ -36,7 +62,7 @@
    \skip switch (msg->msgId)
    \until }
  */
-#define EMERGENCY_NOTIFICATION_GET_PROPERTY AJ_APP_MESSAGE_ID(0 + NUM_PRE_NOTIFICATION_PRODUCER_OBJECTS, 0, AJ_PROP_GET)
+#define EMERGENCY_NOTIFICATION_GET_PROPERTY             AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_OBJECT_INDEX + AJNS_NOTIFICATION_MESSAGE_TYPE_EMERGENCY, 0, AJ_PROP_GET)
 
 /*!
    \brief Get Property event for Warning NotificationService object
@@ -45,7 +71,7 @@
    \skip switch (msg->msgId)
    \until }
  */
-#define WARNING_NOTIFICATION_GET_PROPERTY   AJ_APP_MESSAGE_ID(1 + NUM_PRE_NOTIFICATION_PRODUCER_OBJECTS, 0, AJ_PROP_GET)
+#define WARNING_NOTIFICATION_GET_PROPERTY               AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_OBJECT_INDEX + AJNS_NOTIFICATION_MESSAGE_TYPE_WARNING, 0, AJ_PROP_GET)
 
 /*!
    \brief Get Property event for Info NotificationService object
@@ -54,7 +80,7 @@
    \skip switch (msg->msgId)
    \until }
  */
-#define INFO_NOTIFICATION_GET_PROPERTY      AJ_APP_MESSAGE_ID(2 + NUM_PRE_NOTIFICATION_PRODUCER_OBJECTS, 0, AJ_PROP_GET)
+#define INFO_NOTIFICATION_GET_PROPERTY                  AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_OBJECT_INDEX + AJNS_NOTIFICATION_MESSAGE_TYPE_INFO, 0, AJ_PROP_GET)
 
 /*!
    \brief Set Property event for Emergency NotificationService object
@@ -63,7 +89,7 @@
    \skip switch (msg->msgId)
    \until }
  */
-#define EMERGENCY_NOTIFICATION_SET_PROPERTY AJ_APP_MESSAGE_ID(0 + NUM_PRE_NOTIFICATION_PRODUCER_OBJECTS, 0, AJ_PROP_SET)
+#define EMERGENCY_NOTIFICATION_SET_PROPERTY             AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_OBJECT_INDEX + AJNS_NOTIFICATION_MESSAGE_TYPE_EMERGENCY, 0, AJ_PROP_SET)
 
 /*!
    \brief Set Property event for Warning NotificationService object
@@ -72,7 +98,7 @@
    \skip switch (msg->msgId)
    \until }
  */
-#define WARNING_NOTIFICATION_SET_PROPERTY   AJ_APP_MESSAGE_ID(1 + NUM_PRE_NOTIFICATION_PRODUCER_OBJECTS, 0, AJ_PROP_SET)
+#define WARNING_NOTIFICATION_SET_PROPERTY               AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_OBJECT_INDEX + AJNS_NOTIFICATION_MESSAGE_TYPE_WARNING, 0, AJ_PROP_SET)
 
 /*!
    \brief Set Property event for Info NotificationService object
@@ -81,7 +107,7 @@
    \skip switch (msg->msgId)
    \until }
  */
-#define INFO_NOTIFICATION_SET_PROPERTY      AJ_APP_MESSAGE_ID(2 + NUM_PRE_NOTIFICATION_PRODUCER_OBJECTS, 0, AJ_PROP_SET)
+#define INFO_NOTIFICATION_SET_PROPERTY                  AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_OBJECT_INDEX + AJNS_NOTIFICATION_MESSAGE_TYPE_INFO, 0, AJ_PROP_SET)
 
 /*!
    \brief Get Version event for Emergency NotificationService object
@@ -90,7 +116,7 @@
    \skip switch (msg->msgId)
    \until }
  */
-#define GET_EMERGENCY_NOTIFICATION_VERSION_PROPERTY AJ_APP_PROPERTY_ID(0 + NUM_PRE_NOTIFICATION_PRODUCER_OBJECTS, 1, 1)
+#define GET_EMERGENCY_NOTIFICATION_VERSION_PROPERTY     AJ_ENCODE_PROPERTY_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_OBJECT_INDEX + AJNS_NOTIFICATION_MESSAGE_TYPE_EMERGENCY, 1, 1)
 
 /*!
    \brief Get Version event for Warning NotificationService object
@@ -99,7 +125,7 @@
    \skip switch (msg->msgId)
    \until }
  */
-#define GET_WARNING_NOTIFICATION_VERSION_PROPERTY   AJ_APP_PROPERTY_ID(1 + NUM_PRE_NOTIFICATION_PRODUCER_OBJECTS, 1, 1)
+#define GET_WARNING_NOTIFICATION_VERSION_PROPERTY       AJ_ENCODE_PROPERTY_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_OBJECT_INDEX + AJNS_NOTIFICATION_MESSAGE_TYPE_WARNING, 1, 1)
 
 /*!
    \brief Get Version event for Info NotificationService object
@@ -108,15 +134,15 @@
    \skip switch (msg->msgId)
    \until }
  */
-#define GET_INFO_NOTIFICATION_VERSION_PROPERTY      AJ_APP_PROPERTY_ID(2 + NUM_PRE_NOTIFICATION_PRODUCER_OBJECTS, 1, 1)
+#define GET_INFO_NOTIFICATION_VERSION_PROPERTY          AJ_ENCODE_PROPERTY_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_OBJECT_INDEX + AJNS_NOTIFICATION_MESSAGE_TYPE_INFO, 1, 1)
 
 /* Producer Object bus registration */
-#define NOTIFICATION_PRODUCER_OBJECT_INDEX 3 + NUM_PRE_NOTIFICATION_PRODUCER_OBJECTS
-#define NOTIFICATION_PRODUCER_GET_PROPERTY AJ_APP_PROPERTY_ID(NOTIFICATION_PRODUCER_OBJECT_INDEX, 0, AJ_PROP_GET)
-#define NOTIFICATION_PRODUCER_SET_PROPERTY AJ_APP_PROPERTY_ID(NOTIFICATION_PRODUCER_OBJECT_INDEX, 0, AJ_PROP_SET)
+#define NOTIFICATION_PRODUCER_OBJECT_INDEX              NOTIFICATION_OBJECT_INDEX + AJNS_NUM_MESSAGE_TYPES
+#define NOTIFICATION_PRODUCER_GET_PROPERTY              AJ_ENCODE_PROPERTY_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_PRODUCER_OBJECT_INDEX, 0, AJ_PROP_GET)
+#define NOTIFICATION_PRODUCER_SET_PROPERTY              AJ_ENCODE_PROPERTY_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_PRODUCER_OBJECT_INDEX, 0, AJ_PROP_SET)
 
-#define NOTIFICATION_PRODUCER_DISMISS                   AJ_APP_MESSAGE_ID(NOTIFICATION_PRODUCER_OBJECT_INDEX, 1, 0)
-#define GET_NOTIFICATION_PRODUCER_VERSION_PROPERTY      AJ_APP_PROPERTY_ID(NOTIFICATION_PRODUCER_OBJECT_INDEX, 1, 1)
+#define NOTIFICATION_PRODUCER_DISMISS                   AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_PRODUCER_OBJECT_INDEX, 1, 0)
+#define GET_NOTIFICATION_PRODUCER_VERSION_PROPERTY      AJ_ENCODE_PROPERTY_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_PRODUCER_OBJECT_INDEX, 1, 1)
 
 /**
  * Static non consts.
@@ -132,13 +158,6 @@ typedef struct _AJNS_MessageTracking {
 } AJNS_MessageTracking;
 
 static AJNS_MessageTracking lastSentNotifications[AJNS_NUM_MESSAGE_TYPES] = { { 0, 0 }, { 0, 0 }, { 0, 0 } };
-
-/**
- * Static constants.
- */
-const char AJNS_NotificationObjectPathEmergency[]   = "/emergency";
-const char AJNS_NotificationObjectPathWarning[]     = "/warning";
-const char AJNS_NotificationObjectPathInfo[]        = "/info";
 
 /**
  * Marshal Notification
@@ -162,7 +181,7 @@ static AJ_Status AJNS_Producer_MarshalNotificationMsg(AJ_BusAttachment* busAttac
         return status;
     }
 
-    status = AJ_MarshalSignal(busAttachment, msg, AJ_APP_MESSAGE_ID(notification->messageType + NUM_PRE_NOTIFICATION_PRODUCER_OBJECTS, 1, 0), NULL, 0, ALLJOYN_FLAG_SESSIONLESS, ttl);
+    status = AJ_MarshalSignal(busAttachment, msg, AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_OBJECT_INDEX + notification->messageType, 1, 0), NULL, 0, ALLJOYN_FLAG_SESSIONLESS, ttl);
     if (status != AJ_OK) {
         AJ_ErrPrintf(("Could not Marshal Signal\n"));
         return status;

@@ -132,77 +132,24 @@ AJ_Status AJSVC_UnmarshalAppId(AJ_Message* msg, char* buf, size_t bufLen);
  *    ii)  define the default announce objects
  */
 /*
- * Includes for all the services
+ * ObjectsList definitions for ALL the services
  */
-#define NUM_PRE_CONFIG_OBJECTS                0
 #ifdef CONFIG_SERVICE
-    #include "alljoyn/config/ConfigService.h"
-#else
-    #define NUM_CONFIG_OBJECTS 0
-    #define CONFIG_APPOBJECTS
+    #define AJCFG_OBJECT_LIST_INDEX            3
 #endif
 
-#define NUM_PRE_ONBOARDING_OBJECTS            NUM_PRE_CONFIG_OBJECTS + NUM_CONFIG_OBJECTS
 #ifdef ONBOARDING_SERVICE
-    #include "alljoyn/onboarding/OnboardingService.h"
-#else
-    #define NUM_ONBOARDING_OBJECTS 0
-    #define ONBOARDING_APPOBJECTS
+    #define AJOBS_OBJECT_LIST_INDEX            4
 #endif
 
-#define NUM_PRE_NOTIFICATION_COMMON_OBJECTS   NUM_PRE_ONBOARDING_OBJECTS + NUM_ONBOARDING_OBJECTS
 #if defined(NOTIFICATION_SERVICE_PRODUCER) || defined(NOTIFICATION_SERVICE_CONSUMER)
-    #include "alljoyn/notification/NotificationCommon.h"
-#else
-    #define NUM_NOTIFICATION_COMMON_OBJECTS 0
-    #define NOTIFICATION_COMMON_APPOBJECTS
+    #define AJNS_OBJECT_LIST_INDEX             5
 #endif
 
-#define NUM_PRE_NOTIFICATION_PRODUCER_OBJECTS NUM_PRE_NOTIFICATION_COMMON_OBJECTS + NUM_NOTIFICATION_COMMON_OBJECTS
-#ifdef NOTIFICATION_SERVICE_PRODUCER
-    #include "alljoyn/notification/NotificationProducer.h"
-#else
-    #define NUM_NOTIFICATION_PRODUCER_OBJECTS 0
-    #define NOTIFICATION_PRODUCER_APPOBJECTS
-#endif
-
-#define NUM_PRE_CONTROLPANEL_OBJECTS          NUM_PRE_NOTIFICATION_PRODUCER_OBJECTS + NUM_NOTIFICATION_PRODUCER_OBJECTS
 #ifdef CONTROLPANEL_SERVICE
-    #include "alljoyn/controlpanel/ControlPanelService.h"
-#else
-    #define NUM_CONTROLPANEL_OBJECTS 0
-    #define CONTROLPANEL_APPOBJECTS
+    #define AJCPS_OBJECT_LIST_INDEX            6
 #endif
 
-#define NUM_PRE_APPLICATION_OBJECTS (NUM_PRE_CONTROLPANEL_OBJECTS + NUM_CONTROLPANEL_OBJECTS)
-
-#define NUM_PRE_NOTIFICATION_CONSUMER_PROXYOBJECTS 0
-#ifdef NOTIFICATION_SERVICE_CONSUMER
-    #include "alljoyn/notification/NotificationConsumer.h"
-#else
-    #define NUM_NOTIFICATION_CONSUMER_PROXYOBJECTS 0
-    #define NOTIFICATION_CONSUMER_PROXYOBJECTS
-#endif
-
-#define NUM_PRE_PROXY_OBJECTS (NUM_PRE_NOTIFICATION_CONSUMER_PROXYOBJECTS + NOTIFICATION_CONSUMER_PROXYOBJECTS)
-
-/*
- * Define pre objects - the amount of objects registered before each service
- */
-
-/*
- * Defines AppObjects and Proxyobjects to be registered
- * each of those are described in the service itself
- * for example NOTIFICATION_PRODUCER_APPOBJECTS is defined in
- * services/notification/tcl/inc/alljoyn/notification/NotificationProducer.h
- */
-#define IOE_SERVICES_APPOBJECTS \
-    CONFIG_APPOBJECTS \
-    ONBOARDING_APPOBJECTS \
-    NOTIFICATION_COMMON_APPOBJECTS \
-    NOTIFICATION_PRODUCER_APPOBJECTS
-
-#define IOE_SERVICES_PROXYOBJECTS \
-    NOTIFICATION_CONSUMER_PROXYOBJECTS
+#define AJAPP_OBJECTS_LIS_INDEX                7
 
 #endif /* _SERVICES_COMMON_H_ */

@@ -40,10 +40,13 @@ static AJCPS_IdentifyMsgOrPropId appIdentifyMsgOrPropId = NULL;
 static AJCPS_IdentifyMsgOrPropIdForSignal appIdentifyMsgOrPropIdForSignal = NULL;
 static AJCPS_IdentifyRootMsgOrPropId appIdentifyRootMsgOrPropId = NULL;
 
-AJ_Status AJCPS_Start(AJSVC_MessageProcessor generatedMessageProcessor, AJCPS_IdentifyMsgOrPropId identifyMsgOrPropId, AJCPS_IdentifyMsgOrPropIdForSignal identifyMsgOrPropIdForSignal, AJCPS_IdentifyRootMsgOrPropId identifyRootMsgOrPropId)
+static AJ_Object* controlleeObjectList = NULL;
+
+AJ_Status AJCPS_Start(AJ_Object* generatedObjectList, AJSVC_MessageProcessor generatedMessageProcessor, AJCPS_IdentifyMsgOrPropId identifyMsgOrPropId, AJCPS_IdentifyMsgOrPropIdForSignal identifyMsgOrPropIdForSignal, AJCPS_IdentifyRootMsgOrPropId identifyRootMsgOrPropId)
 {
     AJ_Status status = AJ_OK;
 
+    controlleeObjectList = generatedObjectList;
     appGeneratedMessageProcessor = generatedMessageProcessor;
     appIdentifyMsgOrPropId = identifyMsgOrPropId;
     appIdentifyMsgOrPropIdForSignal = identifyMsgOrPropIdForSignal;
@@ -51,6 +54,9 @@ AJ_Status AJCPS_Start(AJSVC_MessageProcessor generatedMessageProcessor, AJCPS_Id
     if (appGeneratedMessageProcessor == NULL || appIdentifyMsgOrPropId == NULL || appIdentifyMsgOrPropIdForSignal == NULL || appIdentifyRootMsgOrPropId == NULL) {
         AJ_ErrPrintf(("AJCPS_Start(): One of the required callbacks is NULL!\n"));
         status = AJ_ERR_INVALID;
+    }
+    if (status == AJ_OK) {
+        status = AJ_RegisterObjectList(controlleeObjectList, AJCPS_OBJECT_LIST_INDEX);
     }
 
     return status;
@@ -157,7 +163,7 @@ AJ_Status AJCPS_GetAllRootProperties(AJ_Message* msg, uint32_t msgId)
         return ReturnErrorMessage(msg, AJ_ErrServiceUnknown);
     }
     status = MarshalAllRootProperties(&reply);
-    if (status != AJ_OK) {
+    if (status == AJ_OK) {
         return ReturnErrorMessage(msg, AJ_ErrServiceUnknown);
     }
     return AJ_DeliverMsg(&reply);
@@ -179,7 +185,7 @@ AJ_Status AJCPS_GetAllWidgetProperties(AJ_Message* msg, uint32_t msgId)
         return ReturnErrorMessage(msg, AJ_ErrServiceUnknown);
     }
     status = widget->marshalAllProp(widget, &reply, language);
-    if (status != AJ_OK) {
+    if (status == AJ_OK) {
         return ReturnErrorMessage(msg, AJ_ErrServiceUnknown);
     }
     return AJ_DeliverMsg(&reply);

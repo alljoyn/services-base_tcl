@@ -124,13 +124,15 @@ static AJ_Status ApplicationHandleDismiss(int32_t notificationId, const char* ap
     return AJ_OK;
 }
 
-AJ_Status NotificationConsumer_Init(AJ_Object* proxyObjects)
+AJ_Status NotificationConsumer_Init()
 {
     AJ_Status status = AJ_OK;
+
     Consumer_SetupEnv(&inputMode, &superAgentMode);
     AJ_AlwaysPrintf(("Init(): Set Consumer to detect SuperAgent option is turned %s\n", superAgentMode ? "ON" : "off"));
-    status = AJNS_Consumer_Start(superAgentMode, proxyObjects, &ApplicationHandleNotify, &ApplicationHandleDismiss);
+    status = AJNS_Consumer_Start(superAgentMode, &ApplicationHandleNotify, &ApplicationHandleDismiss);
     memset(&savedNotification, 0, sizeof(AJNS_Consumer_NotificationReference));
+
     return status;
 }
 
