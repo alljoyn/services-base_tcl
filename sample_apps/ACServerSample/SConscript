@@ -40,7 +40,7 @@ if sersamp_env['VARIANT'] == 'debug':
 sersamp_env.Append(CPPPATH = [Dir('../')])
 sersamp_env.Append(CPPPATH = [Dir('../../AppsCommon/inc')])
 sersamp_env.Append(CPPPATH = [Dir('../../AppsCommon/target/' + sersamp_env['TARG'])])
-sersamp_env.Append(CPPPATH = [Dir('../../../../notification/tcl/inc')])
+sersamp_env.Append(CPPPATH = [Dir('../../../notification/inc')])
 
 main_exe = 'ACServerSample'
 
@@ -51,21 +51,21 @@ common_samples_srcs = ['AppHandlers.c']
 objs = []
 
 common_samples_srcs.extend(['ConfigSample.c'])
-objs.extend(sersamp_env.SConscript('../../../../config/tcl/SConscript', {'config_env': sersamp_env}))
+objs.extend(sersamp_env.SConscript('../../../config/SConscript', {'config_env': sersamp_env}))
 
 srcs.extend(['ACNotificationProducerSample.c'])
-objs.extend(SConscript('../../../../notification/tcl/src/NotificationProducer/SConscript', exports = {'notif_env': sersamp_env}))
-objs.extend(SConscript('../../../../notification/tcl/src/NotificationCommon/SConscript', exports = {'notif_env': sersamp_env}))
+objs.extend(SConscript('../../../notification/src/NotificationProducer/SConscript', exports = {'notif_env': sersamp_env}))
+objs.extend(SConscript('../../../notification/src/NotificationCommon/SConscript', exports = {'notif_env': sersamp_env}))
 
 srcs.extend(['ControlPanelGenerated.c', 'ControlPanelProvided.c', 'ControlPanelSample.c'])
-objs.extend(SConscript('../../../../controlpanel/tcl/SConscript', {'cps_env': sersamp_env}))
+objs.extend(SConscript('../../../controlpanel/SConscript', {'cps_env': sersamp_env}))
 
 objs.extend(sersamp_env.Object(srcs))
 
 sersamp_env['common_samples_srcs'] = common_samples_srcs
 objs.extend(sersamp_env.SConscript('../../AppsCommon/SConscript', variant_dir = 'AppsCommon', duplicate = 1, exports = {'appsCommon_env': sersamp_env}))
 
-objs.extend(sersamp_env.SConscript('../../../../services_common/tcl/SConscript', variant_dir = 'services_common', duplicate = 1, exports = {'services_common_env': sersamp_env}))
+objs.extend(sersamp_env.SConscript('../../../services_common/SConscript', variant_dir = 'services_common', duplicate = 1, exports = {'services_common_env': sersamp_env}))
 
 prog = sersamp_env.Program(
     target = main_exe,

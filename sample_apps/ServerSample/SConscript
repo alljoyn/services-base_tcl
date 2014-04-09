@@ -77,29 +77,29 @@ common_samples_srcs = ['AppHandlers.c']
 
 if int(build_config):
     common_samples_srcs.extend(['ConfigSample.c'])
-    objs.extend(sersamp_env.SConscript('../../../../config/tcl/SConscript', {'config_env': sersamp_env}))
-    
+    objs.extend(sersamp_env.SConscript('../../../config/SConscript', {'config_env': sersamp_env}))
+
+if int(build_producer) or int(build_consumer):
+    objs.extend(SConscript('../../../notification/src/NotificationCommon/SConscript', variant_dir = '../../../notification/src/NotificationCommon/obj', duplicate = 0, exports = {'notif_env': sersamp_env}))
+
 if int(build_producer):
     srcs.extend(['SimpleNotificationProducerSample.c', '../../AppsCommon/target/' + sersamp_env['TARG'] + '/NotificationProducerSampleUtil.c'])
-    objs.extend(SConscript('../../../../notification/tcl/src/NotificationProducer/SConscript', variant_dir = '../../../../notification/tcl/src/NotificationProducer/obj', duplicate = 0, exports = {'notif_env': sersamp_env}))
+    objs.extend(SConscript('../../../notification/src/NotificationProducer/SConscript', variant_dir = '../../../notification/src/NotificationProducer/obj', duplicate = 0, exports = {'notif_env': sersamp_env}))
 
 if int(build_consumer):
     srcs.extend(['SimpleNotificationConsumerSample.c', '../../AppsCommon/target/'  + sersamp_env['TARG'] + '/NotificationConsumerSampleUtil.c'])
-    objs.extend(SConscript('../../../../notification/tcl/src/NotificationConsumer/SConscript', variant_dir = '../../../../notification/tcl/src/NotificationConsumer/obj', duplicate = 0, exports = {'notif_env': sersamp_env}))
-
-if int(build_producer) or int(build_consumer):
-    objs.extend(SConscript('../../../../notification/tcl/src/NotificationCommon/SConscript', variant_dir = '../../../../notification/tcl/src/NotificationCommon/obj', duplicate = 0, exports = {'notif_env': sersamp_env}))
+    objs.extend(SConscript('../../../notification/src/NotificationConsumer/SConscript', variant_dir = '../../../notification/src/NotificationConsumer/obj', duplicate = 0, exports = {'notif_env': sersamp_env}))
 
 if int(build_cps):
     srcs.extend(['ControlPanelGenerated.c', 'ControlPanelProvided.c', 'ControlPanelSample.c'])
-    objs.extend(SConscript('../../../../controlpanel/tcl/SConscript', {'cps_env': sersamp_env}))
+    objs.extend(SConscript('../../../controlpanel/SConscript', {'cps_env': sersamp_env}))
 
 objs.extend(sersamp_env.Object(srcs))
 
 sersamp_env['common_samples_srcs'] = common_samples_srcs
 objs.extend(sersamp_env.SConscript('../../AppsCommon/SConscript', variant_dir = 'AppsCommon', duplicate = 1, exports = {'appsCommon_env': sersamp_env}))
 
-objs.extend(sersamp_env.SConscript('../../../../services_common/tcl/SConscript', variant_dir = 'services_common', duplicate = 1, exports = {'services_common_env': sersamp_env}))
+objs.extend(sersamp_env.SConscript('../../../services_common/SConscript', variant_dir = 'services_common', duplicate = 1, exports = {'services_common_env': sersamp_env}))
 
 prog = sersamp_env.Program(
     target = main_exe,

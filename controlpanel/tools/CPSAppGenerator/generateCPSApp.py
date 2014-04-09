@@ -1,4 +1,4 @@
-# Copyright (c) 2013, AllSeen Alliance. All rights reserved.
+# Copyright (c) 2013 - 2014, AllSeen Alliance. All rights reserved.
 #
 #    Permission to use, copy, modify, and/or distribute this software for any
 #    purpose with or without fee is hereby granted, provided that the above
@@ -37,7 +37,7 @@ from optparse import OptionParser
 ### Start by validating the input and the xml ###
 
 parser = OptionParser()
-parser.add_option("-p", "--path", dest="path", default=scriptDir + "/../../samples/CPSControlleeSample/",
+parser.add_option("-p", "--path", dest="path", default=scriptDir + "/../../../sample_apps/",
                   help="destination path for generated files")
 parser.add_option("-t", "--testpath", dest="testpath", default="",
                   help="destination path for generated files of tester application")

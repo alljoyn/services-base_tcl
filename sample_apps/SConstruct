@@ -13,7 +13,7 @@
 #    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 import os.path
-ajtcl_root_default = '../../../../core/ajtcl'
+ajtcl_root_default = '../../../core/ajtcl'
 ajtcl_root = ARGUMENTS.get('AJ_TCL_ROOT', ajtcl_root_default)
 if not os.path.isfile(ajtcl_root + '/SConscript'):
     print "SConscript in 'AJ_TCL_ROOT=" + ajtcl_root + "' not found; aborting.\n"
@@ -27,9 +27,9 @@ if env['VARIANT'] == 'debug':
 
 env.Append(CPPPATH = [Dir('AppsCommon/inc')])
 env.Append(CPPPATH = [Dir('AppsCommon/target/' + env['TARG'])])
-env.Append(CPPPATH = [Dir('../../config/tcl/inc')])
-env.Append(CPPPATH = [Dir('../../notification/tcl/inc')])
-env.Append(CPPPATH = [Dir('../../controlpanel/tcl/inc')])
+env.Append(CPPPATH = [Dir('../config/inc')])
+env.Append(CPPPATH = [Dir('../notification/inc')])
+env.Append(CPPPATH = [Dir('../controlpanel/inc')])
 env.Append(CPPPATH = [Dir('.')])
 
 samples = ['ConfigSample', 'NotificationProducerSample', 'NotificationConsumerSample', 'ControlleeSample']

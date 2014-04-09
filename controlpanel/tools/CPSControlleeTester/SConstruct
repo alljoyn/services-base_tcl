@@ -20,9 +20,9 @@
 #        AJ_TCL_ROOT=path/to/ajtcl
 #        <name of target to build>
 # sample usage:
-# scons VARIANT=debug TARG=linux WS=off AJ_TCL_ROOT=../../../ajtcl
+# scons VARIANT=debug TARG=linux WS=off AJ_TCL_ROOT=../../../../../core/ajtcl
 
-ajtcl_root_default = '../../../../../../core/ajtcl'
+ajtcl_root_default = '../../../../../core/ajtcl'
 
 env = SConscript(ajtcl_root_default + '/SConscript')
 

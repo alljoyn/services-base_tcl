@@ -18,7 +18,7 @@ echo "Generating code for" "$@"
 INITIAL_DIR=`pwd` # Save current dir
 cd `dirname $0`       # Go to script dir
 
-python generateCPSApp.py "$@" -p ../../../../sample_apps/tcl/ServerSample/ -t ../CPSControlleeTester/
+python generateCPSApp.py "$@" -p ../../../sample_apps/ServerSample/ -t ../CPSControlleeTester/
 retval=$?
 
 cd ${INITIAL_DIR}

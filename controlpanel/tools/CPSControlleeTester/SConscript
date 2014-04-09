@@ -15,7 +15,7 @@
 Import('env')
 import os
 
-services_common_root_default = '../../../../services_common/tcl'
+services_common_root_default = '../../../services_common'
 
 vars = Variables()
 if not env.has_key('SERVICES_COMMON_ROOT'):
@@ -58,8 +58,8 @@ objs.extend(services_common_objs)
 if cps_env['TARG'] == 'linux':
     cps_env.Program(
                 target = target_name, 
-    			source = [
-	    			objs,
-	    			cps_env['aj_obj'],
-	    			cps_obj
-    			])
+                source = [
+                    objs,
+                    cps_env['aj_obj'],
+                    cps_obj
+                ])
