@@ -25,15 +25,14 @@
 #include <alljoyn.h>
 #include <aj_creds.h>
 #include <aj_config.h>
-#include <aj_nvram.h>
 #include <aj_link_timeout.h>
-#include "PropertyStoreOEMProvisioning.h"
 #include <alljoyn/config/ConfigService.h>
 #include <alljoyn/onboarding/OnboardingService.h>
 #include <alljoyn/onboarding/OnboardingManager.h>
 #include <alljoyn/services_common/PropertyStore.h>
 #include <alljoyn/services_common/ServicesCommon.h>
 #include <alljoyn/services_common/ServicesHandlers.h>
+#include "PropertyStoreOEMProvisioning.h"
 
 /*
  * Logger definition
@@ -431,63 +430,6 @@ static const char* GenerateSoftAPSSID(char* obSoftAPssid)
     return obSoftAPssid;
 }
 
-#define AJ_OBS_OBINFO_NV_ID (AJ_PROPERTIES_NV_ID_END + 1)
-
-AJ_Status OnboardingReadInfo(AJOBS_Info* info)
-{
-    AJ_Status status = AJ_OK;
-    size_t size = sizeof(AJOBS_Info);
-    AJ_NV_DATASET* nvramHandle;
-    int sizeRead;
-
-    if (NULL == info) {
-        return AJ_ERR_NULL;
-    }
-    memset(info, 0, size);
-
-    if (!AJ_NVRAM_Exist(AJ_OBS_OBINFO_NV_ID)) {
-        return AJ_ERR_INVALID;
-    }
-
-    nvramHandle = AJ_NVRAM_Open(AJ_OBS_OBINFO_NV_ID, "r", 0);
-    if (nvramHandle != NULL) {
-        sizeRead = AJ_NVRAM_Read(info, size, nvramHandle);
-        status = AJ_NVRAM_Close(nvramHandle);
-        if (sizeRead != sizeRead) {
-            status = AJ_ERR_READ;
-        } else {
-            AJ_AlwaysPrintf(("Read Info values: state=%d, ssid=%s authType=%d pc=%s\n", info->state, info->ssid, info->authType, info->pc));
-        }
-    }
-
-    return status;
-}
-
-AJ_Status OnboardingWriteInfo(AJOBS_Info* info)
-{
-    AJ_Status status = AJ_OK;
-    size_t size = sizeof(AJOBS_Info);
-    AJ_NV_DATASET* nvramHandle;
-    int sizeWritten;
-
-    if (NULL == info) {
-        return AJ_ERR_NULL;
-    }
-
-    AJ_AlwaysPrintf(("Going to write Info values: state=%d, ssid=%s authType=%d pc=%s\n", info->state, info->ssid, info->authType, info->pc));
-
-    nvramHandle = AJ_NVRAM_Open(AJ_OBS_OBINFO_NV_ID, "w", size);
-    if (nvramHandle != NULL) {
-        sizeWritten = AJ_NVRAM_Write(info, size, nvramHandle);
-        status = AJ_NVRAM_Close(nvramHandle);
-        if (sizeWritten != size) {
-            status = AJ_ERR_WRITE;
-        }
-    }
-
-    return status;
-}
-
 static AJOBS_Settings obSettings = AJOBS_DEFAULT_SETTINGS;
 
 static AJ_Status Onboarding_Init()
@@ -495,7 +437,7 @@ static AJ_Status Onboarding_Init()
     AJ_Status status = AJ_OK;
 
     GenerateSoftAPSSID(obSettings.AJOBS_SoftAPSSID);
-    status = AJOBS_Start(&obSettings, &OnboardingReadInfo, &OnboardingWriteInfo);
+    status = AJOBS_Start(&obSettings);
 
     return status;
 }

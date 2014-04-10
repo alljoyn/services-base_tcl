@@ -22,7 +22,6 @@
  */
 #define AJ_MODULE AJOBS
 #include <aj_debug.h>
-
 #include <alljoyn.h>
 #include <alljoyn/services_common/PropertyStore.h>
 #include <alljoyn/services_common/ServicesCommon.h>
@@ -30,6 +29,7 @@
 #include <alljoyn/onboarding/OnboardingControllerAPI.h>
 #include <aj_wifi_ctrl.h>
 #include <alljoyn/onboarding/OnboardingManager.h>
+#include <aj_nvram.h>
 
 /**
  * State and Error
@@ -49,26 +49,71 @@ static uint8_t obScanInfoCount = 0;
  */
 static uint8_t bFirstStart = TRUE;
 
-static AJOBS_ReadInfo obReadInfo = NULL;
-static AJOBS_WriteInfo obWriteInfo = NULL;
-
 static const AJOBS_Settings* obSettings;
 
-AJ_Status AJOBS_Start(const AJOBS_Settings* settings, AJOBS_ReadInfo readInfo, AJOBS_WriteInfo writeInfo)
+#define AJ_OBS_OBINFO_NV_ID AJ_OBS_NV_ID_BEGIN
+
+static AJ_Status OnboardingReadInfo(AJOBS_Info* info)
+{
+    AJ_Status status = AJ_OK;
+    size_t size = sizeof(AJOBS_Info);
+    AJ_NV_DATASET* nvramHandle;
+    int sizeRead;
+
+    if (NULL == info) {
+        return AJ_ERR_NULL;
+    }
+
+    if (!AJ_NVRAM_Exist(AJ_OBS_OBINFO_NV_ID)) {
+        return AJ_ERR_INVALID;
+    }
+
+    memset(info, 0, size);
+    nvramHandle = AJ_NVRAM_Open(AJ_OBS_OBINFO_NV_ID, "r", 0);
+    if (nvramHandle != NULL) {
+        sizeRead = AJ_NVRAM_Read(info, size, nvramHandle);
+        status = AJ_NVRAM_Close(nvramHandle);
+        if (sizeRead != sizeRead) {
+            status = AJ_ERR_READ;
+        } else {
+            AJ_AlwaysPrintf(("Read Info values: state=%d, ssid=%s authType=%d pc=%s\n", info->state, info->ssid, info->authType, info->pc));
+        }
+    }
+
+    return status;
+}
+
+static AJ_Status OnboardingWriteInfo(AJOBS_Info* info)
+{
+    AJ_Status status = AJ_OK;
+    size_t size = sizeof(AJOBS_Info);
+    AJ_NV_DATASET* nvramHandle;
+    int sizeWritten;
+
+    if (NULL == info) {
+        return AJ_ERR_NULL;
+    }
+
+    AJ_AlwaysPrintf(("Going to write Info values: state=%d, ssid=%s authType=%d pc=%s\n", info->state, info->ssid, info->authType, info->pc));
+
+    nvramHandle = AJ_NVRAM_Open(AJ_OBS_OBINFO_NV_ID, "w", size);
+    if (nvramHandle != NULL) {
+        sizeWritten = AJ_NVRAM_Write(info, size, nvramHandle);
+        status = AJ_NVRAM_Close(nvramHandle);
+        if (sizeWritten != size) {
+            status = AJ_ERR_WRITE;
+        }
+    }
+
+    return status;
+}
+
+AJ_Status AJOBS_Start(const AJOBS_Settings* settings)
 {
     AJ_Status status = AJ_OK;
 
     obSettings = settings;
-    obReadInfo = readInfo;
-    obWriteInfo = writeInfo;
-
-    if (obReadInfo == NULL) {
-        AJ_ErrPrintf(("AJOBS_Start(): Callbacks for reading Info was not provided!\n"));
-        status = AJ_ERR_INVALID;
-    } else if (obWriteInfo == NULL) {
-        AJ_ErrPrintf(("AJOBS_Start(): Callbacks for writing Info was not provided!\n"));
-        status = AJ_ERR_INVALID;
-    } else if (obSettings == NULL || obSettings->AJOBS_SoftAPSSID == NULL || (obSettings->AJOBS_SoftAPSSID)[0] == '\0') {
+    if (obSettings == NULL || obSettings->AJOBS_SoftAPSSID == NULL || (obSettings->AJOBS_SoftAPSSID)[0] == '\0') {
         AJ_ErrPrintf(("AJOBS_Start(): No SoftAP SSID was provided!\n"));
         status = AJ_ERR_INVALID;
     } else if (obSettings->AJOBS_SoftAPPassphrase != NULL && strlen(obSettings->AJOBS_SoftAPPassphrase) < 8) {
@@ -134,16 +179,22 @@ uint8_t AJOBS_GetScanInfoCount()
     return AJOBS_MAX_SCAN_INFOS;
 }
 
+static const AJOBS_Info defaultInfo = AJOBS_INFO_DEFAULT;
+
 AJ_Status AJOBS_GetInfo(AJOBS_Info* obInfo)
 {
-    AJ_Status status = (*obReadInfo == NULL) ? AJ_ERR_NULL : (*obReadInfo)(obInfo);
+    AJ_Status status = OnboardingReadInfo(obInfo);
     AJ_InfoPrintf(("ReadInfo status: %s\n", AJ_StatusText(status)));
+    if (status == AJ_ERR_INVALID) {
+        *obInfo = defaultInfo;
+        status = AJ_OK; // Handle does not exist so return default info
+    }
     return status;
 }
 
 AJ_Status AJOBS_SetInfo(AJOBS_Info* obInfo)
 {
-    AJ_Status status = (*obWriteInfo == NULL) ? AJ_ERR_NULL : (*obWriteInfo)(obInfo);
+    AJ_Status status = OnboardingWriteInfo(obInfo);
     AJ_InfoPrintf(("WriteInfo status: %s\n", AJ_StatusText(status)));
     return status;
 }

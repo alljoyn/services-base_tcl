@@ -103,6 +103,11 @@ typedef struct _AJOBS_Info {
 } AJOBS_Info;
 
 /**
+ * Deafult Onboarding information
+ */
+#define AJOBS_INFO_DEFAULT { "", "", AJOBS_AUTH_TYPE_ANY, AJOBS_STATE_NOT_CONFIGURED }
+
+/**
  * Onboarding info getter.
  */
 AJ_Status AJOBS_GetInfo(AJOBS_Info* info);
@@ -149,18 +154,6 @@ typedef struct _AJOBS_Error {
 const AJOBS_Error* AJOBS_GetError();
 
 /**
- * Prototype for a function that reads the onboarding information.
- * @return status
- */
-typedef AJ_Status (*AJOBS_ReadInfo)(AJOBS_Info* info);
-
-/**
- * Protptype for a function that writes the onboarding information.
- * @return status
- */
-typedef AJ_Status (*AJOBS_WriteInfo)(const AJOBS_Info* info);
-
-/**
  * Structure that holds all relevant configuration settings for:
  * a) the SoftAP definition and
  * b) parameter for the recovery/retry algorithm when connection attempts fail
@@ -197,11 +190,9 @@ typedef struct _AJOBS_Settings {
 /**
  * Start Onboarding service framework passing settings and persistence callbacks/
  * @param settings
- * @param readInfo
- * @param writeInfo
  * @return aj_status
  */
-AJ_Status AJOBS_Start(const AJOBS_Settings* settings, AJOBS_ReadInfo readInfo, AJOBS_WriteInfo writeInfo);
+AJ_Status AJOBS_Start(const AJOBS_Settings* settings);
 
 //Soft AP definitions
 /**

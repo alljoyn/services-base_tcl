@@ -135,21 +135,52 @@ AJ_Status AJSVC_UnmarshalAppId(AJ_Message* msg, char* buf, size_t bufLen);
  * ObjectsList definitions for ALL the services
  */
 #ifdef CONFIG_SERVICE
-    #define AJCFG_OBJECT_LIST_INDEX            3
+/*
+ * ObjectsList index for Config Service objects
+ */
+#define AJCFG_OBJECT_LIST_INDEX        3
 #endif
 
 #ifdef ONBOARDING_SERVICE
-    #define AJOBS_OBJECT_LIST_INDEX            4
+/*
+ * ObjectsList index for Onboarding Service objects
+ */
+#define AJOBS_OBJECT_LIST_INDEX        4
 #endif
 
 #if defined(NOTIFICATION_SERVICE_PRODUCER) || defined(NOTIFICATION_SERVICE_CONSUMER)
-    #define AJNS_OBJECT_LIST_INDEX             5
+/*
+ * ObjectsList index for Notification Service objects
+ */
+#define AJNS_OBJECT_LIST_INDEX         5
 #endif
 
 #ifdef CONTROLPANEL_SERVICE
-    #define AJCPS_OBJECT_LIST_INDEX            6
+/*
+ * ObjectsList index for ControlPanel Service objects
+ */
+#define AJCPS_OBJECT_LIST_INDEX            6
 #endif
 
-#define AJAPP_OBJECTS_LIS_INDEX                7
+/*
+ * ObjectsList index for Application objects
+ */
+#define AJAPP_OBJECTS_LIST_INDEX           7
+
+/**
+ * The NVRAM starting id for the PropertyStore
+ */
+#define AJ_PROPERTIES_NV_ID_BEGIN          (AJ_NVRAM_ID_CREDS_MAX + 1)
+/**
+ * The NVRAM maximum id for the PropertyStore
+ */
+#define AJ_PROPERTIES_NV_ID_MAX            (AJ_NVRAM_ID_CREDS_MAX + 1000)
+
+#ifdef ONBOARDING_SERVICE
+/**
+ * The NVRAM starting id for the Onboarding Service
+ */
+#define AJ_OBS_NV_ID_BEGIN                 (AJ_PROPERTIES_NV_ID_MAX + 1)
+#endif
 
 #endif /* _SERVICES_COMMON_H_ */
