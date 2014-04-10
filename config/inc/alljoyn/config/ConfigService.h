@@ -76,7 +76,7 @@ typedef uint8_t (*AJCFG_IsValueValid)(const char* key, const char* value);
 AJ_Status AJCFG_Start(AJCFG_FactoryReset factoryReset, AJCFG_Restart restart, AJCFG_SetPasscode setPasscode, AJCFG_IsValueValid isValueValid);
 
 /**
- * Called when router is connected.
+ * Called when Routing Node is connected.
  * @param busAttachment
  * @return aj_status
  */
@@ -92,7 +92,7 @@ AJ_Status AJCFG_ConnectedHandler(AJ_BusAttachment* busAttachment);
 AJSVC_ServiceStatus AJCFG_MessageProcessor(AJ_BusAttachment* busAttachment, AJ_Message* msg, AJ_Status* msgStatus);
 
 /**
- * Called just before the router disconnects.
+ * Called just before the Routing Node disconnects.
  * @param busAttachment
  * @return aj_status
  */

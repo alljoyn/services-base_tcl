@@ -43,16 +43,56 @@ AJ_EXPORT uint8_t dbgAJSVCAPP = ER_DEBUG_AJSVCAPP;
  * Application wide globals
  */
 
-#define ROUTER_NAME "org.alljoyn.BusNode"
+#define ROUTING_NODE_NAME "org.alljoyn.BusNode"
 static uint8_t isBusConnected = FALSE;
-static AJ_BusAttachment busAttachment;
-#define AJ_ABOUT_SERVICE_PORT 900
 
 /*
  * Define timeout/pause values. Values are in milli seconds.
  * The following may be tuned according to platform requirements such as battery usage.
  */
+#define AJAPP_BUS_LINK_TIMEOUT    60
+#define AJAPP_CONNECT_TIMEOUT     AJ_CONNECT_TIMEOUT
+#define AJAPP_CONNECT_PAUSE       (1000 * 2) // Override AJ_CONNECT_PAUSE to be more responsive
+#define AJAPP_SLEEP_TIME          (1000 * 2) // A little pause to let things settle
 #define AJAPP_UNMARSHAL_TIMEOUT   (1000 * 1) // Override AJ_UNMARSHAL_TIMEOUT to be more responsive
+
+#define AJAPP_MAX_INIT_ATTEMPTS   3 // Maximum number of attempts to initialize the services
+
+static AJ_BusAttachment busAttachment;
+#define AJ_ABOUT_SERVICE_PORT     900
+
+/**
+ * Application wide callbacks
+ */
+
+static uint32_t MyBusAuthPwdCB(uint8_t* buf, uint32_t bufLen)
+{
+    const char* myRoutingNodePwd = "000000";
+    strncpy((char*)buf, myRoutingNodePwd, bufLen);
+    return (uint32_t)strlen(myRoutingNodePwd);
+}
+
+static uint32_t PasswordCallback(uint8_t* buffer, uint32_t bufLen)
+{
+    AJ_Status status = AJ_OK;
+    const char* hexPassword = AJSVC_PropertyStore_GetValue(AJSVC_PROPERTY_STORE_PASSCODE);
+    size_t hexPasswordLen;
+    uint32_t len = 0;
+
+    if (hexPassword == NULL) {
+        AJ_AlwaysPrintf(("Password is NULL!\n"));
+        return len;
+    }
+    AJ_AlwaysPrintf(("Configured password=%s\n", hexPassword));
+    hexPasswordLen = strlen(hexPassword);
+    len = hexPasswordLen / 2;
+    status = AJ_HexToRaw(hexPassword, hexPasswordLen, buffer, bufLen);
+    if (status == AJ_ERR_RESOURCES) {
+        len = 0;
+    }
+
+    return len;
+}
 
 /**
  * Services Provisioning
@@ -67,7 +107,7 @@ const char** propertyStoreDefaultLanguages = { &DEFAULT_LANGUAGE };
 const uint8_t AJSVC_PROPERTY_STORE_NUMBER_OF_LANGUAGES = 1;
 
 /**
- * properties array of default values
+ * property array of default values
  */
 static const char* DEFAULT_PASSCODE[] = { "303030303030" }; // HEX encoded { '0', '0', '0', '0', '0', '0' }
 static const char* DEFAULT_APP_NAME[] = { "Controllee" };
@@ -137,13 +177,6 @@ const uint8_t aboutIconContent[] = { 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0
 const size_t aboutIconContentSize = sizeof(aboutIconContent);
 const char* aboutIconUrl = { "" };
 
-static uint32_t MyBusAuthPwdCB(uint8_t* buf, uint32_t bufLen)
-{
-    const char* myRouterPwd = "000000";
-    strncpy((char*)buf, myRouterPwd, bufLen);
-    return (uint32_t)strlen(myRouterPwd);
-}
-
 /**
  * The AllJoyn Message Loop
  */
@@ -154,6 +187,8 @@ int AJ_Main(void)
     uint8_t isUnmarshalingSuccessful = FALSE;
     AJSVC_ServiceStatus serviceStatus;
     AJ_Message msg;
+    uint8_t forcedDisconnnect = FALSE;
+    uint8_t rebootRequired = FALSE;
 
     AJ_Initialize();
 
@@ -176,13 +211,15 @@ int AJ_Main(void)
         serviceStatus = AJSVC_SERVICE_STATUS_NOT_HANDLED;
 
         if (!isBusConnected) {
-            isBusConnected = AJRouter_Connect(&busAttachment, ROUTER_NAME);
-            if (!isBusConnected) { // Failed to connect to router?
-                continue; // Retry establishing connection to router.
+            status = AJSVC_RoutingNodeConnect(&busAttachment, ROUTING_NODE_NAME, AJAPP_CONNECT_TIMEOUT, AJAPP_CONNECT_PAUSE, AJAPP_BUS_LINK_TIMEOUT, &isBusConnected);
+            if (!isBusConnected) { // Failed to connect to Routing Node?
+                continue; // Retry establishing connection to Routing Node.
             }
+            /* Setup password based authentication listener for secured peer to peer connections */
+            AJ_BusSetPasswordCallback(&busAttachment, PasswordCallback);
         }
 
-        status = AJApp_ConnectedHandler(&busAttachment);
+        status = AJApp_ConnectedHandler(&busAttachment, AJAPP_MAX_INIT_ATTEMPTS, AJAPP_SLEEP_TIME);
 
         if (status == AJ_OK) {
             status = AJ_UnmarshalMsg(&busAttachment, &msg, AJAPP_UNMARSHAL_TIMEOUT);
@@ -214,9 +251,11 @@ int AJ_Main(void)
 
         if (status == AJ_ERR_READ || status == AJ_ERR_RESTART || status == AJ_ERR_RESTART_APP) {
             if (isBusConnected) {
-                AJApp_DisconnectHandler(&busAttachment, status != AJ_ERR_READ);
-                isBusConnected = !AJRouter_Disconnect(&busAttachment, status != AJ_ERR_READ);
-                if (status == AJ_ERR_RESTART_APP) {
+                forcedDisconnnect = (status != AJ_ERR_READ);
+                rebootRequired = (status == AJ_ERR_RESTART_APP);
+                AJApp_DisconnectHandler(&busAttachment, forcedDisconnnect);
+                AJSVC_RoutingNodeDisconnect(&busAttachment, forcedDisconnnect, AJAPP_SLEEP_TIME, AJAPP_SLEEP_TIME, &isBusConnected);
+                if (rebootRequired) {
                     AJ_Reboot();
                 }
             }

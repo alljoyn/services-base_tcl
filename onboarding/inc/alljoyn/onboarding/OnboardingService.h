@@ -95,14 +95,14 @@ AJ_Status AJOBS_GetScanInfoHandler(AJ_Message* msg);
  */
 
 /**
- * Called when router is connected.
+ * Called when Routing Node is connected.
  * @param busAttachment
  * @return aj_status
  */
 AJ_Status AJOBS_ConnectedHandler(AJ_BusAttachment* busAttachment);
 
 /**
- * Called just before the router disconnects.
+ * Called just before disconnecting from the Router Node.
  * @param busAttachment
  * @return aj_status
  */

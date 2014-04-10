@@ -54,7 +54,7 @@ AJ_Status AJNS_Producer_Start();
 
 /*!
    \brief Send a notification with the given content
-   \param busAttachment The bus through which the router is reached
+   \param busAttachment The bus through which the Routing Node is reached
    \param content
    \param messageType
    \param ttl
@@ -67,7 +67,7 @@ AJ_Status AJNS_Producer_SendNotification(AJ_BusAttachment* busAttachment, AJNS_N
    \brief Instruct the AllJoyn bus to remove last message of the specified message type from the bus
    \details
    Effectively, this overrides the ttl parameter in the function
-   \param busAttachment The bus through which the router is reached
+   \param busAttachment The bus through which the Routing Node is reached
    \param messageType One of \ref AJNS_NOTIFICATION_MESSAGE_TYPE_INFO, \ref AJNS_NOTIFICATION_MESSAGE_TYPE_WARNING, or \ref AJNS_NOTIFICATION_MESSAGE_TYPE_EMERGENCY
    \return AJ_Status
  */
@@ -77,7 +77,7 @@ AJ_Status AJNS_Producer_DeleteLastNotification(AJ_BusAttachment* busAttachment, 
    \brief Instruct the AllJoyn bus to remove message of the specified notification id the bus
    \details
    Effectively, this overrides the ttl parameter in the function
-   \param busAttachment The bus through which the router is reached
+   \param busAttachment The bus through which the Routing Node is reached
    \param messageSerialNumber The serial number of the notification to cancel on the daemon
    \return AJ_Status
  */
@@ -87,7 +87,7 @@ AJ_Status AJNS_Producer_CancelNotification(AJ_BusAttachment* busAttachment, uint
    \brief Implementation of Dismiss functionality canceling the message on daemon and sending a Dismiss SSL to recall received message
    \details
    Effectively, this overrides the ttl parameter in the function
-   \param busAttachment The bus through which the router is reached
+   \param busAttachment The bus through which the Routing Node is reached
    \param msg The received Dismiss request message to process
    \return AJ_Status
  */
@@ -120,7 +120,7 @@ AJ_Status AJNS_Producer_PropGetHandler(AJ_Message* replyMsg, uint32_t propId, vo
 AJ_Status AJNS_Producer_PropSetHandler(AJ_Message* replyMsg, uint32_t propId, void* context);
 
 /**
- * Function called after busAttachment connects to router
+ * Function called after busAttachment connects to Routing Node
  * @param busAttachment
  * @return status
  */
@@ -144,7 +144,7 @@ uint8_t AJNS_Producer_CheckSessionAccepted(uint16_t port, uint32_t sessionId, co
 AJSVC_ServiceStatus AJNS_Producer_MessageProcessor(AJ_BusAttachment* busAttachment, AJ_Message* msg, AJ_Status* msgStatus);
 
 /**
- * Function called after busAttachment disconnects from router
+ * Function called after busAttachment disconnects from Routing Node
  * @param busAttachment
  * @return status
  */

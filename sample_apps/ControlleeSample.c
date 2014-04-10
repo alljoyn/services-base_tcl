@@ -51,6 +51,7 @@ AJ_EXPORT uint8_t dbgAJSVCAPP = ER_DEBUG_AJSVCAPP;
  * The following may be tuned according to platform requirements such as battery usage.
  */
 
+#define AJAPP_BUS_LINK_TIMEOUT    60
 #define AJAPP_CONNECT_TIMEOUT     AJ_CONNECT_TIMEOUT
 #define AJAPP_CONNECT_PAUSE       (1000 * 2) // Override AJ_CONNECT_PAUSE to be more responsive
 #define AJAPP_SLEEP_TIME          (1000 * 2) // A little pause to let things settle
@@ -60,7 +61,7 @@ AJ_EXPORT uint8_t dbgAJSVCAPP = ER_DEBUG_AJSVCAPP;
  * Application wide globals
  */
 
-#define ROUTER_NAME "org.alljoyn.BusNode"
+#define ROUTING_NODE_NAME "org.alljoyn.BusNode"
 static uint8_t isBusConnected = FALSE;
 static AJ_BusAttachment busAttachment;
 #define AJ_ABOUT_SERVICE_PORT 900
@@ -71,9 +72,9 @@ static AJ_BusAttachment busAttachment;
 
 static uint32_t MyBusAuthPwdCB(uint8_t* buf, uint32_t bufLen)
 {
-    const char* myRouterPwd = "000000";
-    strncpy((char*)buf, myRouterPwd, bufLen);
-    return (uint32_t)strlen(myRouterPwd);
+    const char* myRoutingNodePwd = "000000";
+    strncpy((char*)buf, myRoutingNodePwd, bufLen);
+    return (uint32_t)strlen(myRoutingNodePwd);
 }
 
 static uint32_t PasswordCallback(uint8_t* buffer, uint32_t bufLen)
@@ -107,37 +108,6 @@ typedef enum {
     INIT_CHECK_ANNOUNCE,
     INIT_FINISHED = INIT_CHECK_ANNOUNCE
 } enum_init_state_t;
-
-static uint8_t AJRouter_Connect(AJ_BusAttachment* busAttachment, const char* routerName)
-{
-    AJ_Status status;
-    const char* busUniqueName;
-
-    while (TRUE) {
-        AJ_InfoPrintf(("Attempting to connect to bus '%s'\n", routerName));
-        status = AJ_FindBusAndConnect(busAttachment, routerName, AJAPP_CONNECT_TIMEOUT);
-        if (status != AJ_OK) {
-            AJ_InfoPrintf(("Failed to connect to bus sleeping for %d seconds\n", AJAPP_CONNECT_PAUSE / 1000));
-            AJ_Sleep(AJAPP_CONNECT_PAUSE);
-            continue;
-        }
-        busUniqueName = AJ_GetUniqueName(busAttachment);
-        if (busUniqueName == NULL) {
-            AJ_ErrPrintf(("Failed to GetUniqueName() from newly connected bus, retrying\n"));
-            continue;
-        }
-        AJ_InfoPrintf(("Connected to router with BusUniqueName=%s\n", busUniqueName));
-        break;
-    }
-
-    /* Setup password based authentication listener for secured peer to peer connections */
-    AJ_BusSetPasswordCallback(busAttachment, PasswordCallback);
-
-    /* Configure timeout for the link to the Router bus */
-    AJ_SetBusLinkTimeout(busAttachment, 60);     // 60 seconds
-
-    return TRUE;
-}
 
 static enum_init_state_t currentServicesInitializationState = INIT_START;
 static enum_init_state_t nextServicesInitializationState = INIT_START;
@@ -252,16 +222,6 @@ static AJ_Status AJApp_DisconnectHandler(AJ_BusAttachment* busAttachment, uint8_
 
     status = AJSVC_DisconnectHandler(busAttachment);
     return status;
-}
-
-static uint8_t AJRouter_Disconnect(AJ_BusAttachment* busAttachment, uint8_t disconnectWiFi)
-{
-    AJ_InfoPrintf(("AllJoyn disconnect\n"));
-    AJ_Sleep(AJAPP_SLEEP_TIME); // Sleep a little to let any pending requests to router to be sent
-    AJ_Disconnect(busAttachment);
-    AJ_Sleep(AJAPP_SLEEP_TIME); // Sleep a little while before trying to reconnect
-
-    return TRUE;
 }
 
 const char* deviceManufactureName = "COMPANY";
@@ -394,6 +354,8 @@ int AJ_Main(void)
     uint8_t isUnmarshalingSuccessful = FALSE;
     AJSVC_ServiceStatus serviceStatus;
     AJ_Message msg;
+    uint8_t forcedDisconnnect = FALSE;
+    uint8_t rebootRequired = FALSE;
 
     AJ_Initialize();
 
@@ -416,10 +378,12 @@ int AJ_Main(void)
         serviceStatus = AJSVC_SERVICE_STATUS_NOT_HANDLED;
 
         if (!isBusConnected) {
-            isBusConnected = AJRouter_Connect(&busAttachment, ROUTER_NAME);
-            if (!isBusConnected) { // Failed to connect to router?
-                continue; // Retry establishing connection to router.
+            status = AJSVC_RoutingNodeConnect(&busAttachment, ROUTING_NODE_NAME, AJAPP_CONNECT_TIMEOUT, AJAPP_CONNECT_PAUSE, AJAPP_BUS_LINK_TIMEOUT, &isBusConnected);
+            if (!isBusConnected) { // Failed to connect to Routing Node?
+                continue; // Retry establishing connection to Routing Node.
             }
+            /* Setup password based authentication listener for secured peer to peer connections */
+            AJ_BusSetPasswordCallback(&busAttachment, PasswordCallback);
         }
 
         status = AJApp_ConnectedHandler(&busAttachment);
@@ -451,9 +415,11 @@ int AJ_Main(void)
 
         if (status == AJ_ERR_READ || status == AJ_ERR_RESTART || status == AJ_ERR_RESTART_APP) {
             if (isBusConnected) {
-                AJApp_DisconnectHandler(&busAttachment, status != AJ_ERR_READ);
-                isBusConnected = !AJRouter_Disconnect(&busAttachment, status != AJ_ERR_READ);
-                if (status == AJ_ERR_RESTART_APP) {
+                forcedDisconnnect = (status != AJ_ERR_READ);
+                rebootRequired = (status == AJ_ERR_RESTART_APP);
+                AJApp_DisconnectHandler(&busAttachment, forcedDisconnnect);
+                AJSVC_RoutingNodeDisconnect(&busAttachment, forcedDisconnnect, AJAPP_SLEEP_TIME, AJAPP_SLEEP_TIME, &isBusConnected);
+                if (rebootRequired) {
                     AJ_Reboot();
                 }
             }

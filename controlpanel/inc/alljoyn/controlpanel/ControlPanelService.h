@@ -96,7 +96,7 @@ uint32_t AJCPS_GetCurrentSessionId();
 uint8_t AJCPS_CheckSessionAccepted(uint16_t port, uint32_t sessionId, char* joiner);
 
 /**
- * Function called after busAttachment connects to router
+ * Function called after busAttachment connects to Routing Node
  * @param busAttachment
  * @return aj_status
  */
@@ -112,7 +112,7 @@ AJ_Status AJCPS_ConnectedHandler(AJ_BusAttachment* busAttachment);
 AJSVC_ServiceStatus AJCPS_MessageProcessor(AJ_BusAttachment* busAttachment, AJ_Message* msg, AJ_Status* msgStatus);
 
 /**
- * Function called after busAttachment disconnects from router
+ * Function called after busAttachment disconnects from Routing Node
  * @param busAttachment
  * @return aj_status
  */

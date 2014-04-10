@@ -21,9 +21,9 @@
 #include <alljoyn/services_common/ServicesCommon.h>
 
 /**
- * Functions to call after the Router is Connected
+ * Functions to call after the Routing Node is Connected
  * @param busAttachment
- * @return ajStatus - status of last request to Router
+ * @return ajStatus - status of last request to Routing Node
  */
 AJ_Status AJSVC_ConnectedHandler(AJ_BusAttachment* busAttachment);
 
@@ -47,7 +47,7 @@ uint8_t AJSVC_CheckSessionAccepted(uint16_t port, uint32_t sessionId, char* join
 /**
  * Shutdown services. Should be called on bus disconnect
  * @param busAttachment
- * @return ajStatus - status of last request to Router
+ * @return ajStatus - status of last request to Routing Node
  */
 AJ_Status AJSVC_DisconnectHandler(AJ_BusAttachment* busAttachment);
 

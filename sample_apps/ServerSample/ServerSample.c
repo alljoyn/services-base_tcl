@@ -39,19 +39,68 @@
 AJ_EXPORT uint8_t dbgAJSVCAPP = ER_DEBUG_AJSVCAPP;
 #endif
 
-// Application wide globals
-#define ROUTER_NAME "org.alljoyn.BusNode"
+/**
+ * Application wide globals
+ */
+
+#define ROUTING_NODE_NAME "org.alljoyn.BusNode"
 static uint8_t isBusConnected = FALSE;
-static AJ_BusAttachment busAttachment;
-#define AJ_ABOUT_SERVICE_PORT 900
 
 /*
  * Define timeout/pause values. Values are in milli seconds.
  * The following may be tuned according to platform requirements such as battery usage.
  */
+#define AJAPP_BUS_LINK_TIMEOUT    60
+#define AJAPP_CONNECT_TIMEOUT     AJ_CONNECT_TIMEOUT
+#define AJAPP_CONNECT_PAUSE       (1000 * 2) // Override AJ_CONNECT_PAUSE to be more responsive
+#define AJAPP_SLEEP_TIME          (1000 * 2) // A little pause to let things settle
 #define AJAPP_UNMARSHAL_TIMEOUT   (1000 * 1) // Override AJ_UNMARSHAL_TIMEOUT to be more responsive
 
-// Services Provisioning
+#define AJAPP_MAX_INIT_ATTEPTS    3 // Maximum number of attempts to initialize the services
+
+static AJ_BusAttachment busAttachment;
+#define AJ_ABOUT_SERVICE_PORT     900
+
+/**
+ * Application wide callbacks
+ */
+
+static uint32_t MyBusAuthPwdCB(uint8_t* buf, uint32_t bufLen)
+{
+    const char* myRoutingNodePwd = "000000";
+    strncpy((char*)buf, myRoutingNodePwd, bufLen);
+    return (uint32_t)strlen(myRoutingNodePwd);
+}
+
+static uint32_t PasswordCallback(uint8_t* buffer, uint32_t bufLen)
+{
+    AJ_Status status = AJ_OK;
+#ifdef CONFIG_SERVICE
+    const char* hexPassword = AJSVC_PropertyStore_GetValue(AJSVC_PROPERTY_STORE_PASSCODE);
+#else
+    const char* hexPassword = "303030303030";
+#endif
+    size_t hexPasswordLen;
+    uint32_t len = 0;
+
+    if (hexPassword == NULL) {
+        AJ_AlwaysPrintf(("Password is NULL!\n"));
+        return len;
+    }
+    AJ_AlwaysPrintf(("Configured password=%s\n", hexPassword));
+    hexPasswordLen = strlen(hexPassword);
+    len = hexPasswordLen / 2;
+    status = AJ_HexToRaw(hexPassword, hexPasswordLen, buffer, bufLen);
+    if (status == AJ_ERR_RESOURCES) {
+        len = 0;
+    }
+
+    return len;
+}
+
+/**
+ * Services Provisioning
+ */
 
 const char* deviceManufactureName = "COMPANY";
 const char* deviceProductName = "GENERIC BOARD";
@@ -64,18 +113,18 @@ const char** propertyStoreDefaultLanguages = SUPPORTED_LANGUAGES;
 const uint8_t AJSVC_PROPERTY_STORE_NUMBER_OF_LANGUAGES = sizeof(SUPPORTED_LANGUAGES) / sizeof(char*);
 
 /**
- * property array of structure with defaults
+ * property array of default values
  */
-#if     defined CONFIG_SERVICE
+#if defined CONFIG_SERVICE
 static const char* DEFAULT_PASSCODES[] = { "303030303030" }; // HEX encoded { '0', '0', '0', '0', '0', '0' }
 #endif
-#if     defined CONTROLPANEL_SERVICE
+#if   defined CONTROLPANEL_SERVICE
 static const char* DEFAULT_APP_NAMES[] = { "Controllee" };
-#elif   defined NOTIFICATION_SERVICE_PRODUCER
+#elif defined NOTIFICATION_SERVICE_PRODUCER
 static const char* DEFAULT_APP_NAMES[] = { "Notifier" };
-#elif   defined ONBOARDING_SERVICE
+#elif defined ONBOARDING_SERVICE
 static const char* DEFAULT_APP_NAMES[] = { "Onboardee" };
-#elif   defined CONFIG_SERVICE
+#elif defined CONFIG_SERVICE
 static const char* DEFAULT_APP_NAMES[] = { "Configuree" };
 #else
 static const char* DEFAULT_APP_NAMES[] = { "Announcer" };
@@ -96,29 +145,29 @@ static const char* DEFAULT_SUPPORT_URLS[] = { DEFAULT_SUPPORT_URL_LANG1, DEFAULT
 
 const char** propertyStoreDefaultValues[AJSVC_PROPERTY_STORE_NUMBER_OF_KEYS] =
 {
-// "Default Values per language",                    "Key Name"
-    NULL,                                           /*DeviceId*/
-    NULL,                                           /*AppId*/
-    NULL,                                           /*DeviceName*/
-    DEFAULT_LANGUAGES,                              /*DefaultLanguage*/
+// "Default Values per language",    "Key Name"
+    NULL,                           /*DeviceId*/
+    NULL,                           /*AppId*/
+    NULL,                           /*DeviceName*/
+    DEFAULT_LANGUAGES,              /*DefaultLanguage*/
 #if defined CONFIG_SERVICE
-    DEFAULT_PASSCODES,                              /*Passcode*/
-    NULL,                                           /*RealmName*/
+    DEFAULT_PASSCODES,              /*Passcode*/
+    NULL,                           /*RealmName*/
 #endif
 // Add other runtime or configurable keys above this line
-    DEFAULT_APP_NAMES,                              /*AppName*/
-    DEFAULT_DESCRIPTIONS,                           /*Description*/
-    DEFAULT_MANUFACTURERS,                          /*Manufacturer*/
-    DEFAULT_DEVICE_MODELS,                          /*ModelNumber*/
-    DEFAULT_DATE_OF_MANUFACTURES,                   /*DateOfManufacture*/
-    DEFAULT_SOFTWARE_VERSIONS,                      /*SoftwareVersion*/
-    NULL,                                           /*AJSoftwareVersion*/
+    DEFAULT_APP_NAMES,              /*AppName*/
+    DEFAULT_DESCRIPTIONS,           /*Description*/
+    DEFAULT_MANUFACTURERS,          /*Manufacturer*/
+    DEFAULT_DEVICE_MODELS,          /*ModelNumber*/
+    DEFAULT_DATE_OF_MANUFACTURES,   /*DateOfManufacture*/
+    DEFAULT_SOFTWARE_VERSIONS,      /*SoftwareVersion*/
+    NULL,                           /*AJSoftwareVersion*/
 #if defined CONFIG_SERVICE
-    NULL,                                           /*MaxLength*/
+    NULL,                           /*MaxLength*/
 #endif
 // Add other mandatory about keys above this line
-    DEFAULT_HARDWARE_VERSIONS,                      /*HardwareVersion*/
-    DEFAULT_SUPPORT_URLS,                           /*SupportUrl*/
+    DEFAULT_HARDWARE_VERSIONS,      /*HardwareVersion*/
+    DEFAULT_SUPPORT_URLS,           /*SupportUrl*/
 // Add other optional about keys above this line
 };
 
@@ -177,14 +226,9 @@ const uint8_t aboutIconContent[] =
 const size_t aboutIconContentSize = sizeof(aboutIconContent);
 const char* aboutIconUrl = { "https://www.alljoyn.org/sites/all/themes/at_alljoyn/images/img-alljoyn-logo.png" };
 
-static uint32_t MyBusAuthPwdCB(uint8_t* buf, uint32_t bufLen)
-{
-    const char* myRouterPwd = "000000";
-    strncpy((char*)buf, myRouterPwd, bufLen);
-    return (uint32_t)strlen(myRouterPwd);
-}
-
-// The AllJoyn Message Loop
+/**
+ * The AllJoyn Message Loop
+ */
 
 int AJ_Main(void)
 {
@@ -192,6 +236,8 @@ int AJ_Main(void)
     uint8_t isUnmarshalingSuccessful = FALSE;
     AJSVC_ServiceStatus serviceStatus;
     AJ_Message msg;
+    uint8_t forcedDisconnnect = FALSE;
+    uint8_t rebootRequired = FALSE;
 
     AJ_Initialize();
 
@@ -214,13 +260,15 @@ int AJ_Main(void)
         serviceStatus = AJSVC_SERVICE_STATUS_NOT_HANDLED;
 
         if (!isBusConnected) {
-            isBusConnected = AJRouter_Connect(&busAttachment, ROUTER_NAME);
-            if (!isBusConnected) { // Failed to connect to router?
-                continue; // Retry establishing connection to router.
+            status = AJSVC_RoutingNodeConnect(&busAttachment, ROUTING_NODE_NAME, AJAPP_CONNECT_TIMEOUT, AJAPP_CONNECT_PAUSE, AJAPP_BUS_LINK_TIMEOUT, &isBusConnected);
+            if (!isBusConnected) { // Failed to connect to Routing Node?
+                continue; // Retry establishing connection to Routing Node.
             }
+            /* Setup password based authentication listener for secured peer to peer connections */
+            AJ_BusSetPasswordCallback(&busAttachment, PasswordCallback);
         }
 
-        status = AJApp_ConnectedHandler(&busAttachment);
+        status = AJApp_ConnectedHandler(&busAttachment, AJAPP_MAX_INIT_ATTEPTS, AJAPP_SLEEP_TIME);
 
         if (status == AJ_OK) {
             status = AJ_UnmarshalMsg(&busAttachment, &msg, AJAPP_UNMARSHAL_TIMEOUT);
@@ -252,9 +300,11 @@ int AJ_Main(void)
 
         if (status == AJ_ERR_READ || status == AJ_ERR_RESTART || status == AJ_ERR_RESTART_APP) {
             if (isBusConnected) {
-                AJApp_DisconnectHandler(&busAttachment, status != AJ_ERR_READ);
-                isBusConnected = !AJRouter_Disconnect(&busAttachment, status != AJ_ERR_READ);
-                if (status == AJ_ERR_RESTART_APP) {
+                forcedDisconnnect = (status != AJ_ERR_READ);
+                rebootRequired = (status == AJ_ERR_RESTART_APP);
+                AJApp_DisconnectHandler(&busAttachment, forcedDisconnnect);
+                AJSVC_RoutingNodeDisconnect(&busAttachment, forcedDisconnnect, AJAPP_SLEEP_TIME, AJAPP_SLEEP_TIME, &isBusConnected);
+                if (rebootRequired) {
                     AJ_Reboot();
                 }
             }

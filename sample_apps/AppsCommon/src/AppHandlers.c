@@ -52,14 +52,6 @@
 extern AJ_EXPORT uint8_t dbgAJSVCAPP;
 #endif
 
-/*
- * Define timeout/pause values. Values are in milli seconds.
- * The following may be tuned according to platform requirements such as battery usage.
- */
-#define AJAPP_CONNECT_TIMEOUT     AJ_CONNECT_TIMEOUT
-#define AJAPP_CONNECT_PAUSE       (1000 * 2) // Override AJ_CONNECT_PAUSE to be more responsive
-#define AJAPP_SLEEP_TIME          (1000 * 2) // A little pause to let things settle
-
 uint16_t servicePort = 0;
 
 typedef enum {
@@ -72,34 +64,10 @@ typedef enum {
     INIT_FINISHED = INIT_CHECK_ANNOUNCE
 } enum_init_state_t;
 
-static const uint8_t MAX_INIT_RETRIES = 5;
-static uint8_t init_retries = 0;
+static uint8_t initAttempts = 0;
 
-static uint32_t PasswordCallback(uint8_t* buffer, uint32_t bufLen)
-{
-    AJ_Status status = AJ_OK;
-#ifdef CONFIG_SERVICE
-    const char* hexPassword = AJSVC_PropertyStore_GetValue(AJSVC_PROPERTY_STORE_PASSCODE);
-#else
-    const char* hexPassword = "303030303030";
-#endif
-    size_t hexPasswordLen;
-    uint32_t len = 0;
-
-    if (hexPassword == NULL) {
-        AJ_AlwaysPrintf(("Password is NULL!\n"));
-        return len;
-    }
-    AJ_AlwaysPrintf(("Configured password=%s\n", hexPassword));
-    hexPasswordLen = strlen(hexPassword);
-    len = hexPasswordLen / 2;
-    status = AJ_HexToRaw(hexPassword, hexPasswordLen, buffer, bufLen);
-    if (status == AJ_ERR_RESOURCES) {
-        len = 0;
-    }
-
-    return len;
-}
+static enum_init_state_t currentServicesInitializationState = INIT_START;
+static enum_init_state_t nextServicesInitializationState = INIT_START;
 
 AJ_Status AJServices_Init(uint16_t aboutServicePort, const char* deviceManufactureName, const char* deviceProductName)
 {
@@ -142,59 +110,7 @@ Exit:
     return status;
 }
 
-uint8_t AJRouter_Connect(AJ_BusAttachment* busAttachment, const char* routerName)
-{
-    AJ_Status status = AJ_OK;
-    const char* busUniqueName;
-
-    while (TRUE) {
-#ifdef ONBOARDING_SERVICE
-//      if (!AJOBS_IsWiFiConnected()) { // Check if there is already Wi-Fi connectivity and if not establish it
-        status = AJOBS_EstablishWiFi();
-//      }
-        if (status != AJ_OK) {
-            AJ_AlwaysPrintf(("Failed to establish WiFi connectivity with status=%s\n", AJ_StatusText(status)));
-            AJ_Sleep(AJAPP_CONNECT_PAUSE);
-            return FALSE;
-        }
-#endif
-        AJ_AlwaysPrintf(("Attempting to connect to bus '%s'\n", routerName));
-        status = AJ_FindBusAndConnect(busAttachment, routerName, AJAPP_CONNECT_TIMEOUT);
-        if (status != AJ_OK) {
-            AJ_AlwaysPrintf(("Failed attempt to connect to bus, sleeping for %d seconds\n", AJAPP_CONNECT_PAUSE / 1000));
-            AJ_Sleep(AJAPP_CONNECT_PAUSE);
-#ifdef ONBOARDING_SERVICE
-            if (status == AJ_ERR_DHCP) {
-                status = AJOBS_SwitchToRetry();
-                if (status != AJ_OK) {
-                    AJ_AlwaysPrintf(("Failed to switch to Retry mode status=%s\n", AJ_StatusText(status)));
-                }
-            }
-#endif
-            continue;
-        }
-        busUniqueName = AJ_GetUniqueName(busAttachment);
-        if (busUniqueName == NULL) {
-            AJ_AlwaysPrintf(("Failed to GetUniqueName() from newly connected bus, retrying\n"));
-            continue;
-        }
-        AJ_AlwaysPrintf(("Connected to router with BusUniqueName=%s\n", busUniqueName));
-        break;
-    }
-
-    /* Setup password based authentication listener for secured peer to peer connections */
-    AJ_BusSetPasswordCallback(busAttachment, PasswordCallback);
-
-    /* Configure timeout for the link to the Router bus */
-    AJ_SetBusLinkTimeout(busAttachment, 60);     // 60 seconds
-
-    return TRUE;
-}
-
-static enum_init_state_t currentServicesInitializationState = INIT_START;
-static enum_init_state_t nextServicesInitializationState = INIT_START;
-
-AJ_Status AJApp_ConnectedHandler(AJ_BusAttachment* busAttachment)
+AJ_Status AJApp_ConnectedHandler(AJ_BusAttachment* busAttachment, uint8_t maxNumberOfAttempts, uint32_t sleepTimeBetweenAttempts)
 {
     AJ_Status status = AJ_OK;
 
@@ -251,12 +167,12 @@ ErrorExit:
 
     AJ_ErrPrintf(("Application ConnectedHandler returned an error %s\n", (AJ_StatusText(status))));
     if (status == AJ_ERR_RESOURCES) {
-        init_retries++;
-        if (init_retries > MAX_INIT_RETRIES) {
-            status = AJ_ERR_READ; // Force disconnect from router
+        initAttempts++;
+        if (initAttempts > maxNumberOfAttempts) {
+            status = AJ_ERR_READ; // Force disconnect from Routing Node
         } else {
-            AJ_ErrPrintf(("Application ConnectedHandler attempt %u of %u\n", init_retries, MAX_INIT_RETRIES));
-            AJ_Sleep(AJAPP_SLEEP_TIME);
+            AJ_ErrPrintf(("Application ConnectedHandler attempt %u of %u\n", initAttempts, maxNumberOfAttempts));
+            AJ_Sleep(sleepTimeBetweenAttempts);
         }
     }
 
@@ -332,23 +248,8 @@ AJ_Status AJApp_DisconnectHandler(AJ_BusAttachment* busAttachment, uint8_t resta
 
     AJ_AboutSetShouldAnnounce();
     currentServicesInitializationState = nextServicesInitializationState = INIT_START;
-    init_retries = 0;
+    initAttempts = 0;
 
     status = AJSVC_DisconnectHandler(busAttachment);
     return status;
-}
-
-uint8_t AJRouter_Disconnect(AJ_BusAttachment* busAttachment, uint8_t disconnectWiFi)
-{
-    AJ_AlwaysPrintf(("AllJoyn disconnect\n"));
-    AJ_Sleep(AJAPP_SLEEP_TIME); // Sleep a little to let any pending requests to router to be sent
-    AJ_Disconnect(busAttachment);
-#ifdef ONBOARDING_SERVICE
-    if (disconnectWiFi) {
-        AJOBS_DisconnectWiFi();
-    }
-#endif
-    AJ_Sleep(AJAPP_SLEEP_TIME); // Sleep a little while before trying to reconnect
-
-    return TRUE;
 }

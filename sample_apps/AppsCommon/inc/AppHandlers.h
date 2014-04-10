@@ -30,20 +30,14 @@
 AJ_Status AJServices_Init(uint16_t aboutServicePort, const char* deviceManufactureName, const char* deviceProductName);
 
 /**
- * Connect to Router
- * @param busAttachment
- * @param routerName - name of the Router to connect to
- * @return true/false if connected successfully
- */
-uint8_t AJRouter_Connect(AJ_BusAttachment* busAttachment, const char* routerName);
-
-/**
- * Run when the bus is connected to the Router
+ * Run when the bus is connected to the Routing Node
  * application is idle
  * @param busAttachment
- * @return aj_status for last request to router
+ * @param maxNumberOfAttempts - maximum number of attempts to initialize the services
+ * @param sleepTimeBetweenAttempts - time in ms to sleep between attempts to initialize the services
+ * @return aj_status for last request to Routing Node
  */
-AJ_Status AJApp_ConnectedHandler(AJ_BusAttachment* busAttachment);
+AJ_Status AJApp_ConnectedHandler(AJ_BusAttachment* busAttachment, uint8_t maxNumberOfAttempts, uint32_t sleepTimeBetweenAttempts);
 
 /**
  * Process an incoming message
@@ -62,20 +56,12 @@ AJSVC_ServiceStatus AJApp_MessageProcessor(AJ_BusAttachment* busAttachment, AJ_M
 void AJApp_DoWork(AJ_BusAttachment* busAttachment);
 
 /**
- * Run when the bus is disconnecting from the Router
- * Connection to Router is either restarting or was stopped
+ * Run when the bus is disconnecting from the Routing Node
+ * Connection to Routing Node is either restarting or was stopped
  * @param busAttachment
  * @param restart
- * @return aj_status for last request to Router
+ * @return aj_status for last request to Routing Node
  */
 AJ_Status AJApp_DisconnectHandler(AJ_BusAttachment* busAttachment, uint8_t restart);
-
-/**
- * Disconnect from the Router
- * @param busAttachment
- * @param disconnectWiFi
- * @return true/false if disconnected successfully
- */
-uint8_t AJRouter_Disconnect(AJ_BusAttachment* busAttachment, uint8_t disconnectWiFi);
 
 #endif /* _APP_HANDLERS_H_ */
