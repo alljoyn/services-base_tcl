@@ -101,27 +101,17 @@ void AJOBS_Register()
 AJ_Status AJOBS_PropGetHandler(AJ_Message* replyMsg, uint32_t propId, void* context)
 {
     AJ_Status status = AJ_OK;
-    AJ_Arg structure;
     const AJOBS_Error* obError = AJOBS_GetError();
+
     if (propId == OBS_VERSION_PROP) {
         status = AJ_MarshalArgs(replyMsg, "q", AJSVC_OnboardingVersion);
     } else if (propId == OBS_STATE_PROP) {
         status = AJ_MarshalArgs(replyMsg, "n", AJOBS_GetState());
     } else if (propId == OBS_LASTERROR_PROP) {
-        status = AJ_MarshalContainer(replyMsg, &structure, AJ_ARG_STRUCT);
-        if (status != AJ_OK) {
-            goto Exit;
-        }
-        status = AJ_MarshalArgs(replyMsg, "ns", obError->code, obError->message);
-        if (status != AJ_OK) {
-            goto Exit;
-        }
-        status = AJ_MarshalCloseContainer(replyMsg, &structure);
+        status = AJ_MarshalArgs(replyMsg, "(ns)", obError->code, obError->message);
     } else {
         status = AJ_ERR_UNEXPECTED;
     }
-
-Exit:
 
     return status;
 }
@@ -232,8 +222,8 @@ AJ_Status AJOBS_GetScanInfoHandler(AJ_Message* msg)
     AJ_Status status = AJ_OK;
     AJ_Message reply;
     AJ_Arg array;
-    AJ_Arg structure;
     uint32_t elapsed;
+    int i = 0;
 
     AJ_InfoPrintf(("Handling GetScanInfo request\n"));
 
@@ -250,35 +240,22 @@ AJ_Status AJOBS_GetScanInfoHandler(AJ_Message* msg)
     if (status != AJ_OK) {
         return status;
     }
+
     status = AJ_MarshalContainer(&reply, &array, AJ_ARG_ARRAY);
     if (status != AJ_OK) {
         return status;
     }
-
-    int i = 0;
     for (; i < AJOBS_GetScanInfoCount(); ++i) {
-        status = AJ_MarshalContainer(&reply, &structure, AJ_ARG_STRUCT);
-        if (status != AJ_OK) {
-            return status;
-        }
-        status = AJ_MarshalArgs(&reply, "s", (AJOBS_GetScanInfos())[i].ssid);
-        if (status != AJ_OK) {
-            return status;
-        }
-        status = AJ_MarshalArgs(&reply, "n", (AJOBS_GetScanInfos())[i].authType);
-        if (status != AJ_OK) {
-            return status;
-        }
-        status = AJ_MarshalCloseContainer(&reply, &structure);
+        status = AJ_MarshalArgs(&reply, "(sn)", (AJOBS_GetScanInfos())[i].ssid, (AJOBS_GetScanInfos())[i].authType);
         if (status != AJ_OK) {
             return status;
         }
     }
-
     status = AJ_MarshalCloseContainer(&reply, &array);
     if (status != AJ_OK) {
         return status;
     }
+
     status = AJ_DeliverMsg(&reply);
     if (status != AJ_OK) {
         return status;
@@ -294,25 +271,12 @@ AJ_Status AJOBS_GetScanInfoHandler(AJ_Message* msg)
     AJ_Status status = AJ_OK;
     const AJOBS_Error* obError = AJOBS_GetError();
     AJ_Message out;
-    AJ_Arg structure;
     AJ_InfoPrintf(("Sending ConnectionResult signal\n"));
     status = AJ_MarshalSignal(bus, &out, OBS_CONNECTION_RESULT, NULL, obsSessionId, AJ_FLAG_GLOBAL_BROADCAST, AJOBS_CONNECTION_RESULT_TTL);
     if (status != AJ_OK) {
         return status;
     }
-    status = AJ_MarshalContainer(&out, &structure, AJ_ARG_STRUCT);
-    if (status != AJ_OK) {
-        return status;
-    }
-    status = AJ_MarshalArgs(&out, "n", obError->code);
-    if (status != AJ_OK) {
-        return status;
-    }
-    status = AJ_MarshalArgs(&out, "s", obError->message);
-    if (status != AJ_OK) {
-        return status;
-    }
-    status = AJ_MarshalCloseContainer(&out, &structure);
+    status = AJ_MarshalArgs(&out, "(ns)", obError->code, obError->message);
     if (status != AJ_OK) {
         return status;
     }
