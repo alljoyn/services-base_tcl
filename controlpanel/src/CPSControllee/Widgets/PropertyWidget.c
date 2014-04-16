@@ -36,7 +36,7 @@ AJ_Status marshalPropertyValue(PropertyWidget* widget, AJ_Message* reply, uint16
 {
     switch (widget->propertyType) {
     case SINGLE_VALUE_PROPERTY:
-        return MarshalVariant(reply, widget->signature, widget->getValue(widget));
+        return AJ_MarshalArgs(reply, "v", widget->signature, *((void**)widget->getValue(widget)));
 
     case DATE_VALUE_PROPERTY:
         return marshalDatePropertyValue(widget->getValue(widget), reply);

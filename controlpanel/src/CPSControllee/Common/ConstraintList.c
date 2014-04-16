@@ -25,6 +25,8 @@ AJ_Status marshalConstraintList(BaseWidget* widget, ConstraintList* constraints,
     AJ_Arg arrayArg, opParams;
     uint16_t cnt;
     PropertyWidget* propWidget = (PropertyWidget*)widget;
+    const void* value;
+    const char* display;
 
     status = StartComplexOptionalParam(reply, &opParams, PROPERTY_CONSTRAINT_LIST, PROPERTY_CONSTRAINT_LIST_SIG);
     if (status != AJ_OK) {
@@ -37,8 +39,6 @@ AJ_Status marshalConstraintList(BaseWidget* widget, ConstraintList* constraints,
     }
 
     for (cnt = 0; cnt < numConstraints; cnt++) {
-        const void* value;
-        const char* display;
         if (propWidget->optParams.getConstraint) {
             display = propWidget->optParams.getConstraint(propWidget, cnt, &value, language);
         } else if (constraints[cnt].getDisplay != 0) {
