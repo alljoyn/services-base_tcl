@@ -87,7 +87,6 @@ typedef AJSVC_ServiceStatus (*AJSVC_MessageProcessor)(AJ_BusAttachment* busAttac
  */
 #define AJSVC_ERROR_LANGUAGE_NOT_SUPPORTED AJ_ErrLanguageNotSuppored
 
-
 /**
  * returns the language index for the given language name possibly creating an error reply message if erred
  * @param msg
@@ -98,24 +97,46 @@ typedef AJSVC_ServiceStatus (*AJSVC_MessageProcessor)(AJ_BusAttachment* busAttac
  */
 uint8_t AJSVC_IsLanguageSupported(AJ_Message* msg, AJ_Message* reply, const char* language, int8_t* langIndex);
 
-/*!
-   \brief Length of the AppID field
+/**
+ * Signature of the AppId field
+ */
+#define APP_ID_SIGNATURE "ay"
+
+/**
+ * Length of UUID that is used for the AppId field
  */
 #define UUID_LENGTH 16
 
 /**
- * Marshals the provided appId as an 'ay'.
- * @param msg   the message to marshal the appId into
- * @param appId the application id to marshal
+ * Marshals the appId Hex string as a variant into the provided message.
+ * @param msg       the message to marshal the appId into
+ * @param appId     the application id to marshal
+ * @return status
+ */
+AJ_Status AJSVC_MarshalAppIdAsVariant(AJ_Message* msg, const char* appId);
+
+/**
+ * Marshals the appId Hex string into the provided message.
+ * @param msg       the message to marshal the appId into
+ * @param appId     the application id to marshal
  * @return status
  */
 AJ_Status AJSVC_MarshalAppId(AJ_Message* msg, const char* appId);
 
 /**
+ * Unmarshals the appId from a variant in the provided message.
+ * @param msg       the message to unmarshal the appId from
+ * @param buf       the buffer where the application id is unmarshalled into
+ * @param bufLen    the size of the provided buffer. Should be UUID_LENGTH * 2 + 1.
+ * @return status
+ */
+AJ_Status AJSVC_UnmarshalAppIdFromVariant(AJ_Message* msg, char* buf, size_t bufLen);
+
+/**
  * Unmarshals the appId from the provided message.
- * @param msg     the message to unmarshal the appId from
- * @param buf     the buffer where the application id is unmarshalled into
- * @param bufLen  the size of the provided buffer. Should be UUID_LENGTH * 2 + 1.
+ * @param msg       the message to unmarshal the appId from
+ * @param buf       the buffer where the application id is unmarshalled into
+ * @param bufLen    the size of the provided buffer. Should be UUID_LENGTH * 2 + 1.
  * @return status
  */
 AJ_Status AJSVC_UnmarshalAppId(AJ_Message* msg, char* buf, size_t bufLen);

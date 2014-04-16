@@ -78,38 +78,76 @@ uint8_t AJSVC_IsLanguageSupported(AJ_Message* msg, AJ_Message* reply, const char
     return supported;
 }
 
-AJ_Status AJSVC_MarshalAppId(AJ_Message* msg, const char* appId)
+AJ_Status AJSVC_MarshalAppIdAsVariant(AJ_Message* msg, const char* appId)
 {
-    AJ_Arg appIdArg;
+    AJ_Status status;
     uint8_t binAppId[UUID_LENGTH];
     uint32_t sz = strlen(appId);
+
     if (sz > UUID_LENGTH * 2) { // Crop application id that is too long
         sz = UUID_LENGTH * 2;
     }
-    AJ_HexToRaw(appId, sz, binAppId, UUID_LENGTH);
+    status = AJ_HexToRaw(appId, sz, binAppId, UUID_LENGTH);
+    if (status != AJ_OK) {
+        return status;
+    }
+    status = AJ_MarshalArgs(msg, "v", APP_ID_SIGNATURE, binAppId, sz / 2);
 
-    AJ_InitArg(&appIdArg, AJ_ARG_BYTE, AJ_ARRAY_FLAG, binAppId, UUID_LENGTH);
-
-    return AJ_MarshalArg(msg, &appIdArg);
+    return status;
 }
 
-AJ_Status AJSVC_UnmarshalAppId(AJ_Message* msg, char* buf, size_t bufLen)
+AJ_Status AJSVC_MarshalAppId(AJ_Message* msg, const char* appId)
 {
-    AJ_Arg appIdArray;
     AJ_Status status;
+    uint8_t binAppId[UUID_LENGTH];
+    uint32_t sz = strlen(appId);
+
+    if (sz > UUID_LENGTH * 2) { // Crop application id that is too long
+        sz = UUID_LENGTH * 2;
+    }
+    status = AJ_HexToRaw(appId, sz, binAppId, UUID_LENGTH);
+    if (status != AJ_OK) {
+        return status;
+    }
+    status = AJ_MarshalArgs(msg, APP_ID_SIGNATURE, binAppId, sz / 2);
+
+    return status;
+}
+
+AJ_Status AJSVC_UnmarshalAppIdFromVariant(AJ_Message* msg, char* buf, size_t bufLen)
+{
+    AJ_Status status;
+    char appId[UUID_LENGTH];
     size_t appIdLen;
 
     if (bufLen < (UUID_LENGTH * 2 + 1)) {
         AJ_ErrPrintf(("UnmarshalAppId: Insufficient buffer size! Should be at least %u but got %u\n", UUID_LENGTH * 2 + 1, (uint32_t)bufLen));
         return AJ_ERR_RESOURCES;
     }
-
-    status = AJ_UnmarshalArg(msg, &appIdArray);
+    status = AJ_UnmarshalArgs(msg, "v", APP_ID_SIGNATURE, appId, &appIdLen);
     if (status != AJ_OK) {
         return status;
     }
+    status = AJ_RawToHex(appId, appIdLen, buf, ((appIdLen > UUID_LENGTH) ? UUID_LENGTH : appIdLen) * 2 + 1, FALSE);
 
-    appIdLen = ((appIdArray.len > UUID_LENGTH) ? UUID_LENGTH : appIdArray.len) * 2 + 1;
+    return status;
+}
 
-    return AJ_RawToHex(appIdArray.val.v_byte, appIdArray.len, buf, appIdLen, FALSE);
+AJ_Status AJSVC_UnmarshalAppId(AJ_Message* msg, char* buf, size_t bufLen)
+{
+    AJ_Status status;
+    char appId[UUID_LENGTH];
+    size_t appIdLen;
+
+    if (bufLen < (UUID_LENGTH * 2 + 1)) {
+        AJ_ErrPrintf(("UnmarshalAppId: Insufficient buffer size! Should be at least %u but got %u\n", UUID_LENGTH * 2 + 1, (uint32_t)bufLen));
+        return AJ_ERR_RESOURCES;
+    }
+    status = AJ_UnmarshalArgs(msg, APP_ID_SIGNATURE, appId, &appIdLen);
+    if (status != AJ_OK) {
+        return status;
+    }
+    status = AJ_RawToHex(appId, appIdLen, buf, ((appIdLen > UUID_LENGTH) ? UUID_LENGTH : appIdLen) * 2 + 1, FALSE);
+
+    return status;
 }

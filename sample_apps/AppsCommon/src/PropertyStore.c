@@ -430,12 +430,8 @@ AJ_Status AJSVC_PropertyStore_ReadAll(AJ_Message* msg, AJSVC_PropertyStoreCatego
 {
     AJ_Status status = AJ_OK;
     AJ_Arg array;
-    AJ_Arg array2;
     AJ_Arg dict;
     const char* value;
-    AJ_Arg arg;
-    uint8_t rawValue[16];
-    uint8_t index;
     const char* ajVersion;
     AJSVC_PropertyStoreFieldIndices fieldIndex = 0;
 
@@ -462,7 +458,6 @@ AJ_Status AJSVC_PropertyStore_ReadAll(AJ_Message* msg, AJSVC_PropertyStoreCatego
                         AJ_ErrPrintf(("PropertyStore_ReadAll - Failed to get value for mandatory field=(name=%s, index=%d) and language=(name=%s, index=%d), aborting.\n", AJSVC_PropertyStore_GetFieldName(fieldIndex), (int)fieldIndex, AJSVC_PropertyStore_GetLanguageName(langIndex), (int)langIndex));
                         return AJ_ERR_NULL;
                     }
-
                     status = AJ_MarshalContainer(msg, &dict, AJ_ARG_DICT_ENTRY);
                     if (status != AJ_OK) {
                         return status;
@@ -471,45 +466,17 @@ AJ_Status AJSVC_PropertyStore_ReadAll(AJ_Message* msg, AJSVC_PropertyStoreCatego
                     if (status != AJ_OK) {
                         return status;
                     }
-
-                    status = AJ_MarshalVariant(msg, "ay");
+                    status = AJSVC_MarshalAppIdAsVariant(msg, value);
                     if (status != AJ_OK) {
                         return status;
                     }
-                    status = AJ_HexToRaw(value, 0, rawValue, (size_t)sizeof(rawValue));
-                    if (status != AJ_OK) {
-                        return status;
-                    }
-                    status = AJ_MarshalArg(msg, AJ_InitArg(&arg, AJ_ARG_BYTE, AJ_ARRAY_FLAG, rawValue, sizeof(rawValue)));
-                    if (status != AJ_OK) {
-                        return status;
-                    }
-
                     status = AJ_MarshalCloseContainer(msg, &dict);
                     if (status != AJ_OK) {
                         return status;
                     }
 #ifdef CONFIG_SERVICE
                 } else if (fieldIndex == AJSVC_PROPERTY_STORE_MAX_LENGTH) {
-                    status = AJ_MarshalContainer(msg, &dict, AJ_ARG_DICT_ENTRY);
-                    if (status != AJ_OK) {
-                        return status;
-                    }
-                    status = AJ_MarshalArgs(msg, "s", propertyStoreProperties[fieldIndex].keyName);
-                    if (status != AJ_OK) {
-                        return status;
-                    }
-
-                    status = AJ_MarshalVariant(msg, "q");
-                    if (status != AJ_OK) {
-                        return status;
-                    }
-                    status = AJ_MarshalArgs(msg, "q", DEVICE_NAME_VALUE_LENGTH);
-                    if (status != AJ_OK) {
-                        return status;
-                    }
-
-                    status = AJ_MarshalCloseContainer(msg, &dict);
+                    status = AJ_MarshalArgs(msg, "{sv}", propertyStoreProperties[fieldIndex].keyName, "q", DEVICE_NAME_VALUE_LENGTH);
                     if (status != AJ_OK) {
                         return status;
                     }
@@ -521,26 +488,7 @@ AJ_Status AJSVC_PropertyStore_ReadAll(AJ_Message* msg, AJSVC_PropertyStoreCatego
                         AJ_ErrPrintf(("PropertyStore_ReadAll - Failed to get value for mandatory field=(name=%s, index=%d) and language=(name=%s, index=%d), aborting.\n", AJSVC_PropertyStore_GetFieldName(fieldIndex), (int)fieldIndex, AJSVC_PropertyStore_GetLanguageName(langIndex), (int)langIndex));
                         return AJ_ERR_NULL;
                     }
-
-                    status = AJ_MarshalContainer(msg, &dict, AJ_ARG_DICT_ENTRY);
-                    if (status != AJ_OK) {
-                        return status;
-                    }
-                    status = AJ_MarshalArgs(msg, "s", propertyStoreProperties[fieldIndex].keyName);
-                    if (status != AJ_OK) {
-                        return status;
-                    }
-
-                    status = AJ_MarshalVariant(msg, "s");
-                    if (status != AJ_OK) {
-                        return status;
-                    }
-                    status = AJ_MarshalArgs(msg, "s", ajVersion);
-                    if (status != AJ_OK) {
-                        return status;
-                    }
-
-                    status = AJ_MarshalCloseContainer(msg, &dict);
+                    status = AJ_MarshalArgs(msg, "{sv}", propertyStoreProperties[fieldIndex].keyName, "s", ajVersion);
                     if (status != AJ_OK) {
                         return status;
                     }
@@ -550,26 +498,7 @@ AJ_Status AJSVC_PropertyStore_ReadAll(AJ_Message* msg, AJSVC_PropertyStoreCatego
                         AJ_ErrPrintf(("PropertyStore_ReadAll - Failed to get value for mandatory field=(name=%s, index=%d) and language=(name=%s, index=%d), aborting.\n", AJSVC_PropertyStore_GetFieldName(fieldIndex), (int)fieldIndex, AJSVC_PropertyStore_GetLanguageName(langIndex), (int)langIndex));
                         return AJ_ERR_NULL;
                     }
-
-                    status = AJ_MarshalContainer(msg, &dict, AJ_ARG_DICT_ENTRY);
-                    if (status != AJ_OK) {
-                        return status;
-                    }
-                    status = AJ_MarshalArgs(msg, "s", propertyStoreProperties[fieldIndex].keyName);
-                    if (status != AJ_OK) {
-                        return status;
-                    }
-
-                    status = AJ_MarshalVariant(msg, "s");
-                    if (status != AJ_OK) {
-                        return status;
-                    }
-                    status = AJ_MarshalArgs(msg, "s", value);
-                    if (status != AJ_OK) {
-                        return status;
-                    }
-
-                    status = AJ_MarshalCloseContainer(msg, &dict);
+                    status = AJ_MarshalArgs(msg, "{sv}", propertyStoreProperties[fieldIndex].keyName, "s", value);
                     if (status != AJ_OK) {
                         return status;
                     }
@@ -580,36 +509,7 @@ AJ_Status AJSVC_PropertyStore_ReadAll(AJ_Message* msg, AJSVC_PropertyStoreCatego
 
     if (filter.bit0About) {
         // Add supported languages
-        status = AJ_MarshalContainer(msg, &dict, AJ_ARG_DICT_ENTRY);
-        if (status != AJ_OK) {
-            return status;
-        }
-        status = AJ_MarshalArgs(msg, "s", defaultLanguagesKeyName);
-        if (status != AJ_OK) {
-            return status;
-        }
-        status = AJ_MarshalVariant(msg, "as");
-        if (status != AJ_OK) {
-            return status;
-        }
-        status = AJ_MarshalContainer(msg, &array2, AJ_ARG_ARRAY);
-        if (status != AJ_OK) {
-            return status;
-        }
-
-        index = AJSVC_PROPERTY_STORE_NO_LANGUAGE_INDEX;
-        for (; index < AJSVC_PROPERTY_STORE_NUMBER_OF_LANGUAGES; index++) {
-            status = AJ_MarshalArgs(msg, "s", propertyStoreDefaultLanguages[index]);
-            if (status != AJ_OK) {
-                return status;
-            }
-        }
-
-        status = AJ_MarshalCloseContainer(msg, &array2);
-        if (status != AJ_OK) {
-            return status;
-        }
-        status = AJ_MarshalCloseContainer(msg, &dict);
+        status = AJ_MarshalArgs(msg, "{sv}", defaultLanguagesKeyName, "as", propertyStoreDefaultLanguages, AJSVC_PROPERTY_STORE_NUMBER_OF_LANGUAGES);
         if (status != AJ_OK) {
             return status;
         }
