@@ -242,6 +242,14 @@ static AJ_Object controllerObjectList[] =
  */
 void CPS_Init()
 {
+    AJ_Object* controllerObject = controllerObjectList;
+
+    while (controllerObject->path) {
+        if (controllerObject->flags & (AJ_OBJ_FLAG_ANNOUNCED | AJ_OBJ_FLAG_IS_PROXY)) {
+            controllerObject->flags &= ~(AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED);
+        }
+        ++controllerObject;
+    }
     AJ_RegisterObjectList(controllerObjectList, AJCPS_OBJECT_LIST_INDEX);
     TestsInit(testsToRun);
 }

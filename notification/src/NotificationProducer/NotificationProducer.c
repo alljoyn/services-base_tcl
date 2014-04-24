@@ -32,25 +32,24 @@
 
 static const uint16_t AJNS_NotificationProducerVersion = 1;
 
-static void AJNS_Producer_Register()
+static AJ_Status RegisterObjectList()
 {
     uint8_t i = NOTIFICATION_PRODUCER_OBJECTS_INDEX;
-    AJ_Object currentObject;
 
-    for (; i < NOTIFICATION_PRODUCER_OBJECTS_COUNT; i++) {
-        currentObject =  AJNS_ObjectList[i];
-        currentObject.flags &= ~(AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED);
-        currentObject.flags |= AJ_OBJ_FLAG_ANNOUNCED;
+    AJNS_Common_RegisterObjects();
+    for (; i < NOTIFICATION_PRODUCER_OBJECTS_INDEX + NOTIFICATION_PRODUCER_OBJECTS_COUNT; i++) {
+        AJNS_ObjectList[i].flags &= ~(AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED);
+        AJNS_ObjectList[i].flags |= AJ_OBJ_FLAG_ANNOUNCED;
     }
+
+    return AJ_RegisterObjectList(AJNS_ObjectList, AJNS_OBJECT_LIST_INDEX);
 }
 
 AJ_Status AJNS_Producer_Start()
 {
     AJ_Status status;
 
-    AJNS_Common_Register();
-    AJNS_Producer_Register();
-    status = AJ_RegisterObjectList(AJNS_ObjectList, AJNS_OBJECT_LIST_INDEX);
+    status = RegisterObjectList();
 
     return status;
 }

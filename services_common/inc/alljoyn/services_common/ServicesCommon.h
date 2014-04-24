@@ -182,21 +182,21 @@ AJ_Status AJSVC_RoutingNodeDisconnect(AJ_BusAttachment* busAttachment, uint8_t d
 /*
  * ObjectsList index for Config Service objects
  */
-#define AJCFG_OBJECT_LIST_INDEX        3
+#define AJCFG_OBJECT_LIST_INDEX            3
 #endif
 
 #ifdef ONBOARDING_SERVICE
 /*
  * ObjectsList index for Onboarding Service objects
  */
-#define AJOBS_OBJECT_LIST_INDEX        4
+#define AJOBS_OBJECT_LIST_INDEX            4
 #endif
 
 #if defined(NOTIFICATION_SERVICE_PRODUCER) || defined(NOTIFICATION_SERVICE_CONSUMER)
 /*
  * ObjectsList index for Notification Service objects
  */
-#define AJNS_OBJECT_LIST_INDEX         5
+#define AJNS_OBJECT_LIST_INDEX             5
 #endif
 
 #ifdef CONTROLPANEL_SERVICE

@@ -74,10 +74,12 @@ static AJ_Object AJCFG_ObjectList[] = {
 #define CONFIG_RESET_CONFIGURATIONS                             AJ_ENCODE_MESSAGE_ID(AJCFG_OBJECT_LIST_INDEX, CONFIG_OBJECT_INDEX, 1, 5)
 #define CONFIG_SET_PASSCODE                                     AJ_ENCODE_MESSAGE_ID(AJCFG_OBJECT_LIST_INDEX, CONFIG_OBJECT_INDEX, 1, 6)
 
-static void AJCFG_Register()
+static AJ_Status RegisterObjectList()
 {
     AJCFG_ObjectList[CONFIG_OBJECT_INDEX].flags &= ~(AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED);
     AJCFG_ObjectList[CONFIG_OBJECT_INDEX].flags |= AJ_OBJ_FLAG_ANNOUNCED;
+
+    return AJ_RegisterObjectList(AJCFG_ObjectList, AJCFG_OBJECT_LIST_INDEX);
 }
 
 /*
@@ -97,10 +99,7 @@ AJ_Status AJCFG_Start(AJCFG_FactoryReset factoryReset, AJCFG_Restart restart, AJ
     appRestart = restart;
     appSetPasscode = setPasscode;
     appIsValueValid = isValueValid;
-
-    AJCFG_Register();
-
-    status = AJ_RegisterObjectList(AJCFG_ObjectList, AJCFG_OBJECT_LIST_INDEX);
+    status = RegisterObjectList();
 
     return status;
 }

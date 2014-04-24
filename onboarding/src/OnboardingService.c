@@ -80,10 +80,12 @@ AJ_Object AJOBS_ObjectList[] = {
 #define OBS_GET_SCAN_INFO      AJ_SVC_MESSAGE_ID(OBS_OBJECT_INDEX, 1, 6)            /**< get scan info */
 #define OBS_CONNECTION_RESULT  AJ_SVC_MESSAGE_ID(OBS_OBJECT_INDEX, 1, 7)            /**< connection result */
 
-void AJOBS_Register()
+AJ_Status AJOBS_RegisterObjectList()
 {
     AJOBS_ObjectList[OBS_OBJECT_INDEX].flags &= ~(AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED);
     AJOBS_ObjectList[OBS_OBJECT_INDEX].flags |= AJ_OBJ_FLAG_ANNOUNCED;
+
+    return AJ_RegisterObjectList(AJOBS_ObjectList, AJOBS_OBJECT_LIST_INDEX);
 }
 
 /*

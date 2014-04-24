@@ -122,8 +122,7 @@ AJ_Status AJOBS_Start(const AJOBS_Settings* settings)
     }
 
     if (status == AJ_OK) {
-        AJOBS_Register();
-        status = AJ_RegisterObjectList(AJOBS_ObjectList, AJOBS_OBJECT_LIST_INDEX);
+        status = AJOBS_RegisterObjectList();
     }
 
     return status;
@@ -669,7 +668,7 @@ AJ_Status AJOBS_EstablishWiFi()
 
 ErrorExit:
 
-    AJ_ErrPrintf(("SwitchToRetry status: %s\n", AJ_StatusText(status)));
+    AJ_ErrPrintf(("EstablishWiFi status: %s\n", AJ_StatusText(status)));
     return status;
 }
 

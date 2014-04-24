@@ -32,10 +32,10 @@
 extern AJ_Object AJOBS_ObjectList[];                  /**< onboarding objects */
 
 /**
- * Register the Onboarding Service BusObjects
+ * Register the Onboarding Service Bus Objects list
+ * @return aj_status
  */
-
-void AJOBS_Register();
+AJ_Status AJOBS_RegisterObjectList();
 
 #define AJOBS_SSID_MAX_LENGTH  32                     /**< ssid max length */
 

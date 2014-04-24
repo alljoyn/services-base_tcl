@@ -161,7 +161,7 @@ AJ_Object AJNS_ObjectList[] = {
     NULL
 };
 
-void AJNS_Common_Register()
+void AJNS_Common_RegisterObjects()
 {
     AJNS_ObjectList[NOTIFICATION_DISMISSER_OBJECT_INDEX].flags &= ~(AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED);
     AJNS_ObjectList[NOTIFICATION_DISMISSER_OBJECT_INDEX].flags |= AJ_OBJ_FLAG_ANNOUNCED;

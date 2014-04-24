@@ -122,7 +122,7 @@ AJ_Status AJSVC_MarshalAppId(AJ_Message* msg, const char* appId)
 AJ_Status AJSVC_UnmarshalAppIdFromVariant(AJ_Message* msg, char* buf, size_t bufLen)
 {
     AJ_Status status;
-    char appId[UUID_LENGTH];
+    uint8_t appId[UUID_LENGTH];
     size_t appIdLen;
 
     if (bufLen < (UUID_LENGTH * 2 + 1)) {
@@ -133,7 +133,7 @@ AJ_Status AJSVC_UnmarshalAppIdFromVariant(AJ_Message* msg, char* buf, size_t buf
     if (status != AJ_OK) {
         return status;
     }
-    status = AJ_RawToHex(appId, appIdLen, buf, ((appIdLen > UUID_LENGTH) ? UUID_LENGTH : appIdLen) * 2 + 1, FALSE);
+    status = AJ_RawToHex((const uint8_t*)appId, appIdLen, buf, ((appIdLen > UUID_LENGTH) ? UUID_LENGTH : appIdLen) * 2 + 1, FALSE);
 
     return status;
 }
@@ -141,7 +141,7 @@ AJ_Status AJSVC_UnmarshalAppIdFromVariant(AJ_Message* msg, char* buf, size_t buf
 AJ_Status AJSVC_UnmarshalAppId(AJ_Message* msg, char* buf, size_t bufLen)
 {
     AJ_Status status;
-    char appId[UUID_LENGTH];
+    uint8_t appId[UUID_LENGTH];
     size_t appIdLen;
 
     if (bufLen < (UUID_LENGTH * 2 + 1)) {
@@ -152,7 +152,7 @@ AJ_Status AJSVC_UnmarshalAppId(AJ_Message* msg, char* buf, size_t bufLen)
     if (status != AJ_OK) {
         return status;
     }
-    status = AJ_RawToHex(appId, appIdLen, buf, ((appIdLen > UUID_LENGTH) ? UUID_LENGTH : appIdLen) * 2 + 1, FALSE);
+    status = AJ_RawToHex((const uint8_t*)appId, appIdLen, buf, ((appIdLen > UUID_LENGTH) ? UUID_LENGTH : appIdLen) * 2 + 1, FALSE);
 
     return status;
 }

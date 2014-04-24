@@ -42,6 +42,22 @@ static AJCPS_IdentifyRootMsgOrPropId appIdentifyRootMsgOrPropId = NULL;
 
 static AJ_Object* controlleeObjectList = NULL;
 
+static AJ_Status RegisterObjectList()
+{
+    AJ_Object* controlleeObject = controlleeObjectList;
+
+    if (controlleeObject != NULL) {
+        while (controlleeObject->path) {
+            if (controlleeObject->flags & AJ_OBJ_FLAG_ANNOUNCED) {
+                controlleeObject->flags &= ~(AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED);
+            }
+            ++controlleeObject;
+        }
+    }
+
+    return AJ_RegisterObjectList(controlleeObjectList, AJCPS_OBJECT_LIST_INDEX);
+}
+
 AJ_Status AJCPS_Start(AJ_Object* generatedObjectList, AJSVC_MessageProcessor generatedMessageProcessor, AJCPS_IdentifyMsgOrPropId identifyMsgOrPropId, AJCPS_IdentifyMsgOrPropIdForSignal identifyMsgOrPropIdForSignal, AJCPS_IdentifyRootMsgOrPropId identifyRootMsgOrPropId)
 {
     AJ_Status status = AJ_OK;
@@ -56,7 +72,7 @@ AJ_Status AJCPS_Start(AJ_Object* generatedObjectList, AJSVC_MessageProcessor gen
         status = AJ_ERR_INVALID;
     }
     if (status == AJ_OK) {
-        status = AJ_RegisterObjectList(controlleeObjectList, AJCPS_OBJECT_LIST_INDEX);
+        status = RegisterObjectList();
     }
 
     return status;
@@ -163,7 +179,7 @@ AJ_Status AJCPS_GetAllRootProperties(AJ_Message* msg, uint32_t msgId)
         return ReturnErrorMessage(msg, AJ_ErrServiceUnknown);
     }
     status = MarshalAllRootProperties(&reply);
-    if (status == AJ_OK) {
+    if (status != AJ_OK) {
         return ReturnErrorMessage(msg, AJ_ErrServiceUnknown);
     }
     return AJ_DeliverMsg(&reply);
@@ -185,7 +201,7 @@ AJ_Status AJCPS_GetAllWidgetProperties(AJ_Message* msg, uint32_t msgId)
         return ReturnErrorMessage(msg, AJ_ErrServiceUnknown);
     }
     status = widget->marshalAllProp(widget, &reply, language);
-    if (status == AJ_OK) {
+    if (status != AJ_OK) {
         return ReturnErrorMessage(msg, AJ_ErrServiceUnknown);
     }
     return AJ_DeliverMsg(&reply);

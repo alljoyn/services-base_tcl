@@ -72,8 +72,8 @@ typedef uint8_t (*AJCPS_IdentifyRootMsgOrPropId)(uint32_t identifier);
 
 /**
  * Start ControlPanel service framework passing callbacks from generated code
- * @param generatedObjectsList
- * @param generatedMessageProcessor
+ * @param generatedObjectsList         - A NULL terminated array of generated objects which model the ControlPanel
+ * @param generatedMessageProcessor    - A message processing callback for the generated objects' protocol
  * @param identifyMsgOrPropId
  * @param identifyMsgOrPropIdForSignal
  * @param identifyRootMsgOrPropId

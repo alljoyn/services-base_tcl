@@ -120,7 +120,10 @@ extern const uint16_t AJNS_NOTIFICATION_TTL_MAX;
 #define NOTIFICATION_COMMON_OBJECTS_INDEX           0
 #define NOTIFICATION_COMMON_OBJECTS_COUNT           1
 
-void AJNS_Common_Register();
+/**
+ * Register Notfication Common objects
+ */
+void AJNS_Common_RegisterObjects();
 
 /**
  * Notification Dismisser object for the Dismiss signal emitter

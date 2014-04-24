@@ -121,8 +121,10 @@ static AJNS_Consumer_OnDismiss appOnDismiss;
 
 static AJNS_DictionaryEntry textsRecd[NUMALLOWEDTEXTS], customAttributesRecd[NUMALLOWEDCUSTOMATTRIBUTES], richAudiosRecd[NUMALLOWEDRICHNOTS];
 
-static void AJNS_Consumer_Register()
+static AJ_Status RegisterObjectList()
 {
+    AJNS_Common_RegisterObjects();
+
     AllProxyObject.flags &= ~(AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED);
     AllProxyObject.flags |= AJ_OBJ_FLAG_IS_PROXY;
 
@@ -137,6 +139,8 @@ static void AJNS_Consumer_Register()
 
     AJNS_ObjectList[NOTIFICATION_DISMISSER_OBJECT_INDEX].flags &= ~(AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED);
     AJNS_ObjectList[NOTIFICATION_DISMISSER_OBJECT_INDEX].flags |= AJ_OBJ_FLAG_IS_PROXY;
+
+    return AJ_RegisterObjectList(AJNS_ObjectList, AJNS_OBJECT_LIST_INDEX);
 }
 
 AJ_Status AJNS_Consumer_Start(uint8_t superAgentMode, AJNS_Consumer_OnNotify onNotify, AJNS_Consumer_OnDismiss onDismiss)
@@ -147,12 +151,9 @@ AJ_Status AJNS_Consumer_Start(uint8_t superAgentMode, AJNS_Consumer_OnNotify onN
     appOnNotify = onNotify;
     appOnDismiss = onDismiss;
 
-    AJNS_Common_Register();
-    AJNS_Consumer_Register();
-
     AJNS_ObjectList[NOTIFICATION_PROXYOBJECT_INDEX] = appSuperAgentMode ? AllProxyObject : NotificationProxyObject;
 
-    status = AJ_RegisterObjectList(AJNS_ObjectList, AJNS_OBJECT_LIST_INDEX);
+    status = RegisterObjectList();
 
     return status;
 }
