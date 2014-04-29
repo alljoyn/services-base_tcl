@@ -83,8 +83,9 @@ void NotificationProducer_DoWork(AJ_BusAttachment* busAttachment)
         notificationContent.numTexts = NUM_TEXTS;
         textToSend[0].key   = langEng;
         textToSend[0].value = getNotificationString();
+        notificationContent.controlPanelServiceObjectPath = getNotificationActionObjPath();
 
-        AJ_AlwaysPrintf(("About to send Notification ==> %s \n", textToSend[0].value));
+        AJ_AlwaysPrintf(("About to send Notification ==> %s with action [%s]\n", textToSend[0].value, (notificationContent.controlPanelServiceObjectPath == NULL ? "NULL" : notificationContent.controlPanelServiceObjectPath)));
         AJNS_Producer_SendNotification(busAttachment, &notificationContent, AJNS_NOTIFICATION_MESSAGE_TYPE_INFO, 20000, NULL);
     }
 }

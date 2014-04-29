@@ -46,6 +46,7 @@ static uint16_t targetTemp = 68;
 static uint16_t prevTargetTemp = 68;
 static uint16_t currentMode = 4;
 static uint16_t previousMode = 4;
+static uint16_t preFanMode = 4;
 static uint16_t fanSpeed = 1;
 static uint16_t previousFanSpeed = 1;
 static char statusText[31] = "Unit is off";
@@ -56,15 +57,22 @@ static char* notificationString = notificationText;
 static uint16_t sendANotification = 0;
 static uint8_t signalsToSend = 0;
 static uint8_t modeOrTargetTempChanged = 0;
+static const char* notificationActionObjPath = NULL;
+static AJ_Time fanTime;
+static AJ_Time* fanTimer = NULL;
+#define FAN_ON_TIME 15000
 
 void disableFan()
 {
     setBaseEnabled(&MyDeviceFan_speed.base, FALSE);
+    fanTimer = NULL; // Disable timer
 }
 
 void enableFan()
 {
     setBaseEnabled(&MyDeviceFan_speed.base, TRUE);
+    fanTimer = &fanTime; // Enable timer
+    AJ_InitTimer(fanTimer);
 }
 
 void disableTempSelect()
@@ -81,6 +89,13 @@ const char* getNotificationString()
 {
     sendANotification = 0;
     return notificationString;
+}
+
+const char* getNotificationActionObjPath()
+{
+    const char* retObjPath = notificationActionObjPath;
+    notificationActionObjPath = NULL;
+    return retObjPath;
 }
 
 uint16_t isThereANotificationToSend()
@@ -169,6 +184,9 @@ void checkTargetTempReached()
         statusText[snprintf(statusString, sizeof(statusText), "Target temp reached")] = '\0';
         setStatusFieldUpdate();
         notificationText[snprintf(notificationString, sizeof(notificationText), "Target temperature of %d F reached", targetTemp)] = '\0';
+        if (currentMode == 1) { // If mode is "cool" send action to turn fan on
+            notificationActionObjPath = MyDeviceTurnFanOnObjectPath;
+        }
         sendANotification = 1;
     }
 }
@@ -189,6 +207,39 @@ void setFanSpeedSelectorFieldUpdate() {
     signalsToSend |= 1 << 3;
 }
 
+void setACModeSelectorFieldUpdate() {
+    signalsToSend |= 1 << 4;
+}
+
+static void addDismissSignal(ExecuteActionContext* context, int32_t dismissSignal)
+{
+    context->numSignals = 1;
+    context->signals[0].signalId = dismissSignal;
+    context->signals[0].signalType = SIGNAL_TYPE_DISMISS;
+}
+
+void turnFanOnActionAccepted(ExecuteActionContext* context)
+{
+    setCurrentMode(3);
+    addDismissSignal(context, MYDEVICE_NOTIFICATION_ACTION_TURNFANON_SIGNAL_DISMISS);
+}
+
+void turnFanOnActionRejected(ExecuteActionContext* context)
+{
+    addDismissSignal(context, MYDEVICE_NOTIFICATION_ACTION_TURNFANON_SIGNAL_DISMISS);
+}
+
+void turnFanOffActionAccepted(ExecuteActionContext* context)
+{
+    setCurrentMode(preFanMode);
+    addDismissSignal(context, MYDEVICE_NOTIFICATION_ACTION_TURNFANOFF_SIGNAL_DISMISS);
+}
+
+void turnFanOffActionRejected(ExecuteActionContext* context)
+{
+    addDismissSignal(context, MYDEVICE_NOTIFICATION_ACTION_TURNFANOFF_SIGNAL_DISMISS);
+}
+
 uint8_t checkForUpdatesToSend()
 {
     // this needs to be the brain
@@ -203,10 +254,11 @@ uint8_t checkForUpdatesToSend()
     //4 == off
 
     signalsToSend = 0;
-    // 0001 == need to update the temperature text field
-    // 0010 == need to update the status text field
-    // 0100 == need to update the state of temperature selector
-    // 1000 == need to update the state of fan speed selector
+    // 0x01 == need to update the temperature text field
+    // 0x02 == need to update the status text field
+    // 0x04 == need to update the state of temperature selector
+    // 0x08 == need to update the state of fan speed selector
+    // 0x10 == need to update the state of ac mode selector
 
     modeOrTargetTempChanged = 0;
 
@@ -280,7 +332,7 @@ uint8_t checkForUpdatesToSend()
         AJ_AlwaysPrintf(("##### currentMode (%d) != previousMode (%d) \n", currentMode, previousMode));
         modeOrTargetTempChanged = 1;
 
-        previousMode = currentMode;
+        setACModeSelectorFieldUpdate();
         setStatusFieldUpdate();
 
         if (currentMode == 0) {
@@ -360,6 +412,7 @@ uint8_t checkForUpdatesToSend()
                 notificationText[snprintf(notificationString, sizeof(notificationText), "Mode changed to Fan, fan on high")] = '\0';
                 sendANotification = 1;
             }
+            preFanMode = previousMode; // Save mode prior to change to FAN ON
 
             // if in fan mode, disable the temperature selector
             enableFan();
@@ -378,7 +431,7 @@ uint8_t checkForUpdatesToSend()
             setTempSelectorFieldUpdate();
             setFanSpeedSelectorFieldUpdate();
         }
-
+        previousMode = currentMode;
     }
 
     if (currentMode == 3) {
@@ -402,6 +455,12 @@ uint8_t checkForUpdatesToSend()
                 notificationText[snprintf(notificationString, sizeof(notificationText), "Fan on high")] = '\0';
                 sendANotification = 1;
             }
+        } else if (fanTimer != NULL && AJ_GetElapsedTime(fanTimer, TRUE) > FAN_ON_TIME) { // If a set timer elapsed add action to turn fan off
+            statusText[snprintf(statusString, sizeof(statusText), "Fan is still ON")] = '\0';
+            notificationText[snprintf(notificationString, sizeof(notificationText), "Fan is still ON")] = '\0';
+            notificationActionObjPath = MyDeviceTurnFanOffObjectPath;
+            sendANotification = 1;
+            fanTimer = NULL; // Disable timer
         }
     }
 

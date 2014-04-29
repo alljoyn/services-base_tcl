@@ -13,12 +13,12 @@
 #    ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 #    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #
-echo "Generating code for testOneOfEachWidget.xml"
+echo "Generating code for aj_on_airconditioner.xml"
 
 INITIAL_DIR=`pwd` # Save current dir
 cd `dirname $0`       # Go to script dir
 
-python generateCPSApp.py SampleXMLs/testOneOfEachWidget.xml -p ../../../sample_apps/ServerSample/ -t ../CPSControlleeTester/
+python generateCPSApp.py SampleXMLs/aj_on_airconditioner.xml -p ../../../sample_apps/ACServerSample/
 
 cd ${INITIAL_DIR}
 

@@ -41,6 +41,10 @@ const char enMyDeviceAc_modeObjectPath[] = "/ControlPanel/MyDevice/rootContainer
 const char enMyDeviceStatusStringPropertyObjectPath[] = "/ControlPanel/MyDevice/rootContainer/en/controlsContainer/statusStringProperty";
 const char enMyDeviceSet_temperatureObjectPath[] = "/ControlPanel/MyDevice/rootContainer/en/set_temperature";
 const char enMyDeviceFan_speedObjectPath[] = "/ControlPanel/MyDevice/rootContainer/en/fan_speed";
+const char MyDeviceTurnFanOnObjectPath[] = "/ControlPanel/MyDevice/TurnFanOn";
+const char enMyDeviceTurnFanOnObjectPath[] = "/ControlPanel/MyDevice/TurnFanOn/en";
+const char MyDeviceTurnFanOffObjectPath[] = "/ControlPanel/MyDevice/TurnFanOff";
+const char enMyDeviceTurnFanOffObjectPath[] = "/ControlPanel/MyDevice/TurnFanOff/en";
 
 ContainerWidget MyDeviceRootContainer;
 ContainerWidget MyDeviceTempAndHumidityContainer;
@@ -51,6 +55,8 @@ PropertyWidget MyDeviceAc_mode;
 PropertyWidget MyDeviceStatusStringProperty;
 PropertyWidget MyDeviceSet_temperature;
 PropertyWidget MyDeviceFan_speed;
+DialogWidget MyDeviceTurnFanOn;
+DialogWidget MyDeviceTurnFanOff;
 
 /*
  * Static variables used to fill widgets
@@ -98,6 +104,14 @@ static const uint16_t MyDeviceFan_speedConstraintValue1 = 1;
 static const char* const MyDeviceFan_speedDisplay1[] = { "Medium" };
 static const uint16_t MyDeviceFan_speedConstraintValue2 = 2;
 static const char* const MyDeviceFan_speedDisplay2[] = { "High" };
+static const char* const MyDeviceTurnFanOnMessage[] = { "Turn Fan ON?" };
+static const char* const MyDeviceTurnFanOnLabel[] = { "Comfort Control" };
+static const char* const MyDeviceTurnFanOnLabelaction1[] = { "Yes" };
+static const char* const MyDeviceTurnFanOnLabelaction2[] = { "No" };
+static const char* const MyDeviceTurnFanOffMessage[] = { "Turn Fan OFF?" };
+static const char* const MyDeviceTurnFanOffLabel[] = { "Comfort Control" };
+static const char* const MyDeviceTurnFanOffLabelaction1[] = { "Yes" };
+static const char* const MyDeviceTurnFanOffLabelaction2[] = { "No" };
 
 
 void WidgetsInit()
@@ -237,6 +251,26 @@ void WidgetsInit()
     MyDeviceFan_speed.optParams.constraintList[1].display = MyDeviceFan_speedDisplay1;
     MyDeviceFan_speed.optParams.constraintList[2].value = &MyDeviceFan_speedConstraintValue2;
     MyDeviceFan_speed.optParams.constraintList[2].display = MyDeviceFan_speedDisplay2;
+    initializeDialogWidget(&MyDeviceTurnFanOn);
+    MyDeviceTurnFanOn.base.numLanguages = 1;
+    setBaseEnabled(&MyDeviceTurnFanOn.base, TRUE);
+    MyDeviceTurnFanOn.message = MyDeviceTurnFanOnMessage;
+    MyDeviceTurnFanOn.numActions = 2;
+
+    MyDeviceTurnFanOn.base.optParams.bgColor = 0x789;
+    MyDeviceTurnFanOn.base.optParams.label = MyDeviceTurnFanOnLabel;
+    MyDeviceTurnFanOn.optParams.labelAction1 = MyDeviceTurnFanOnLabelaction1;
+    MyDeviceTurnFanOn.optParams.labelAction2 = MyDeviceTurnFanOnLabelaction2;
+    initializeDialogWidget(&MyDeviceTurnFanOff);
+    MyDeviceTurnFanOff.base.numLanguages = 1;
+    setBaseEnabled(&MyDeviceTurnFanOff.base, TRUE);
+    MyDeviceTurnFanOff.message = MyDeviceTurnFanOffMessage;
+    MyDeviceTurnFanOff.numActions = 2;
+
+    MyDeviceTurnFanOff.base.optParams.bgColor = 0x789;
+    MyDeviceTurnFanOff.base.optParams.label = MyDeviceTurnFanOffLabel;
+    MyDeviceTurnFanOff.optParams.labelAction1 = MyDeviceTurnFanOffLabelaction1;
+    MyDeviceTurnFanOff.optParams.labelAction2 = MyDeviceTurnFanOffLabelaction2;
 
     return;
 }
@@ -487,6 +521,52 @@ void* IdentifyMsgOrPropId(uint32_t identifier, uint16_t* widgetType, uint16_t* p
         *language = MYDEVICE_MYLANGUAGES_EN;
         return &MyDeviceFan_speed;
 
+    case EN_MYDEVICE_TURNFANON_GET_ALL_VALUES:
+        *widgetType = WIDGET_TYPE_DIALOG;
+        *language = MYDEVICE_MYLANGUAGES_EN;
+        return &MyDeviceTurnFanOn;
+
+    case EN_MYDEVICE_TURNFANON_VERSION_PROPERTY:
+        *widgetType = WIDGET_TYPE_DIALOG;
+        *propType = PROPERTY_TYPE_VERSION;
+        *language = MYDEVICE_MYLANGUAGES_EN;
+        return &MyDeviceTurnFanOn;
+
+    case EN_MYDEVICE_TURNFANON_STATES_PROPERTY:
+        *widgetType = WIDGET_TYPE_DIALOG;
+        *propType = PROPERTY_TYPE_STATES;
+        *language = MYDEVICE_MYLANGUAGES_EN;
+        return &MyDeviceTurnFanOn;
+
+    case EN_MYDEVICE_TURNFANON_OPTPARAMS_PROPERTY:
+        *widgetType = WIDGET_TYPE_DIALOG;
+        *propType = PROPERTY_TYPE_OPTPARAMS;
+        *language = MYDEVICE_MYLANGUAGES_EN;
+        return &MyDeviceTurnFanOn;
+
+    case EN_MYDEVICE_TURNFANOFF_GET_ALL_VALUES:
+        *widgetType = WIDGET_TYPE_DIALOG;
+        *language = MYDEVICE_MYLANGUAGES_EN;
+        return &MyDeviceTurnFanOff;
+
+    case EN_MYDEVICE_TURNFANOFF_VERSION_PROPERTY:
+        *widgetType = WIDGET_TYPE_DIALOG;
+        *propType = PROPERTY_TYPE_VERSION;
+        *language = MYDEVICE_MYLANGUAGES_EN;
+        return &MyDeviceTurnFanOff;
+
+    case EN_MYDEVICE_TURNFANOFF_STATES_PROPERTY:
+        *widgetType = WIDGET_TYPE_DIALOG;
+        *propType = PROPERTY_TYPE_STATES;
+        *language = MYDEVICE_MYLANGUAGES_EN;
+        return &MyDeviceTurnFanOff;
+
+    case EN_MYDEVICE_TURNFANOFF_OPTPARAMS_PROPERTY:
+        *widgetType = WIDGET_TYPE_DIALOG;
+        *propType = PROPERTY_TYPE_OPTPARAMS;
+        *language = MYDEVICE_MYLANGUAGES_EN;
+        return &MyDeviceTurnFanOff;
+
     default:
         return FALSE;
     }
@@ -546,6 +626,12 @@ void* IdentifyMsgOrPropIdForSignal(uint32_t identifier, uint8_t* isProperty)
         *isProperty = TRUE;
         return &MyDeviceFan_speed;
 
+    case EN_MYDEVICE_TURNFANON_SIGNAL_PROPERTIES_CHANGED:
+        return &MyDeviceTurnFanOn;
+
+    case EN_MYDEVICE_TURNFANOFF_SIGNAL_PROPERTIES_CHANGED:
+        return &MyDeviceTurnFanOff;
+
     default:
         return FALSE;
     }
@@ -556,6 +642,16 @@ uint8_t IdentifyRootMsgOrPropId(uint32_t identifier)
     switch (identifier) {
     case MYDEVICE_ROOT_CONTROLPANEL_ROOTCONTAINER_VERSION_PROPERTY:
     case MYDEVICE_ROOT_CONTROLPANEL_ROOTCONTAINER_GET_ALL_VALUES:
+        return TRUE;
+
+    case MYDEVICE_NOTIFICATION_ACTION_TURNFANON_VERSION_PROPERTY:
+    case MYDEVICE_NOTIFICATION_ACTION_TURNFANON_GET_ALL_VALUES:
+    case MYDEVICE_NOTIFICATION_ACTION_TURNFANON_SIGNAL_DISMISS:
+        return TRUE;
+
+    case MYDEVICE_NOTIFICATION_ACTION_TURNFANOFF_VERSION_PROPERTY:
+    case MYDEVICE_NOTIFICATION_ACTION_TURNFANOFF_GET_ALL_VALUES:
+    case MYDEVICE_NOTIFICATION_ACTION_TURNFANOFF_SIGNAL_DISMISS:
         return TRUE;
 
     default:
@@ -661,6 +757,42 @@ AJ_Status ExecuteAction(AJ_Message* msg, uint32_t msgId, ExecuteActionContext* c
     AJ_MarshalReplyMsg(msg, &reply);
 
     switch (msgId) {
+    case EN_MYDEVICE_TURNFANON_EXEC_ACTION1:
+        {
+            turnFanOnActionAccepted(context);
+        }
+        break;
+
+    case EN_MYDEVICE_TURNFANON_EXEC_ACTION2:
+        {
+            turnFanOnActionRejected(context);
+        }
+        break;
+
+    case EN_MYDEVICE_TURNFANON_EXEC_ACTION3:
+        {
+            AJ_MarshalErrorMsg(msg, &reply, AJ_ErrServiceUnknown);
+        }
+        break;
+
+    case EN_MYDEVICE_TURNFANOFF_EXEC_ACTION1:
+        {
+            turnFanOffActionAccepted(context);
+        }
+        break;
+
+    case EN_MYDEVICE_TURNFANOFF_EXEC_ACTION2:
+        {
+            turnFanOffActionRejected(context);
+        }
+        break;
+
+    case EN_MYDEVICE_TURNFANOFF_EXEC_ACTION3:
+        {
+            AJ_MarshalErrorMsg(msg, &reply, AJ_ErrServiceUnknown);
+        }
+        break;
+
 
     }
 

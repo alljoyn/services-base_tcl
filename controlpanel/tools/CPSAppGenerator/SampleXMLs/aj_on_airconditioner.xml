@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
    <!--
 
-        Copyright (c) 2013, AllSeen Alliance. All rights reserved.
+        Copyright (c) 2013 - 2014, AllSeen Alliance. All rights reserved.
 
            Permission to use, copy, modify, and/or distribute this software for any
            purpose with or without fee is hereby granted, provided that the above
@@ -29,30 +29,23 @@
                 <secured>false</secured>
                 <enabled>true</enabled>
                 <bgcolor>0x1e90ff</bgcolor>
-            <!--    <label>
-                    <value type="literal" language="en">Root Container</value>
-                </label>
-			-->	
                 <hints>
                     <hint>vertical_linear</hint>
                     <hint>horizontal_linear</hint>
                 </hints>
-				<elements>
-				
-					<container>
-						<name>tempAndHumidityContainer</name>
-						<secured>false</secured>
-						<enabled>true</enabled>
-						<bgcolor>0x200</bgcolor>
-					<!--	<label>
+                <elements>
+                    <container>
+                        <name>tempAndHumidityContainer</name>
+                        <secured>false</secured>
+                        <enabled>true</enabled>
+                        <bgcolor>0x200</bgcolor>
+						<!--<label>
 							<value type="literal" language="en">Temperature and Humidity Container</value>
-						</label>
-					-->	
-						<hints>
-							<hint>vertical_linear</hint>
-						</hints>
-						<elements>
-							
+						</label>-->
+                        <hints>
+                            <hint>vertical_linear</hint>
+                        </hints>
+                        <elements>
 						<!--	<labelProperty>
 								<name>CurrentTemp</name>
 								<enabled>true</enabled>
@@ -75,115 +68,104 @@
 								<hints>
 									<hint>textlabel</hint>
 								</hints>            
-							</labelProperty>
-						-->
-						
-							<stringProperty>
-							   <name>CurrentTempStringProperty</name>
-							   <getCode>getCurrentTemperatureString</getCode>
-							   <setCode>setCurrentTemperatureString(%s)</setCode>
-							   <secured>false</secured>
-							   <enabled>true</enabled>
-							   <writable>false</writable>
-							   <label>
-								  <value type="literal" language="en">Current Temperature: </value>
-							   </label>
-							   <bgcolor>0x500</bgcolor>
-							   <hints>
-								  <hint>textview</hint>
-							   </hints>
-							</stringProperty>
-							
-							<stringProperty>
-							   <name>CurrentHumidityStringProperty</name>
-							   <getCode>getCurrentHumidityString</getCode>
-							   <setCode>setCurrentHumidityString(%s)</setCode>
-							   <secured>false</secured>
-							   <enabled>true</enabled>
-							   <writable>false</writable>
-							   <label>
-								  <value type="literal" language="en">Current Humidity: </value>
-							   </label>
-							   <bgcolor>0x500</bgcolor>
-							   <hints>
-								  <hint>textview</hint>
-							   </hints>
-							</stringProperty>
-					
-					
-						</elements>
-					</container>	
-								
-					
-					<container>
-						<name>controlsContainer</name>
-						<secured>false</secured>
-						<enabled>true</enabled>
-						<bgcolor>0x200</bgcolor>
-					<!--	<label>
+							</labelProperty>-->
+                            <stringProperty>
+                               <name>CurrentTempStringProperty</name>
+                               <getCode>getCurrentTemperatureString</getCode>
+                               <setCode>setCurrentTemperatureString(%s)</setCode>
+                               <secured>false</secured>
+                               <enabled>true</enabled>
+                               <writable>false</writable>
+                               <label>
+                                  <value type="literal" language="en">Current Temperature: </value>
+                               </label>
+                               <bgcolor>0x500</bgcolor>
+                               <hints>
+                                  <hint>textview</hint>
+                               </hints>
+                            </stringProperty>
+                            <stringProperty>
+                               <name>CurrentHumidityStringProperty</name>
+                               <getCode>getCurrentHumidityString</getCode>
+                               <setCode>setCurrentHumidityString(%s)</setCode>
+                               <secured>false</secured>
+                               <enabled>true</enabled>
+                               <writable>false</writable>
+                               <label>
+                                  <value type="literal" language="en">Current Humidity: </value>
+                               </label>
+                               <bgcolor>0x500</bgcolor>
+                               <hints>
+                                  <hint>textview</hint>
+                               </hints>
+                            </stringProperty>
+                        </elements>
+                    </container>
+                    <container>
+                        <name>controlsContainer</name>
+                        <secured>false</secured>
+                        <enabled>true</enabled>
+                        <bgcolor>0x200</bgcolor>
+					<!--<label>
 							<value type="literal" language="en">Controls Container</value>
-						</label>
-					-->	
-						<hints>
-							<hint>horizontal_linear</hint>
-						</hints>
-						<elements>
-					
-							<scalarProperty dataType="UINT16">
-								<name>ac_mode</name>
-								<getCode>getCurrentMode</getCode>
-								<setCode>setCurrentMode(%s)</setCode>
-								<secured>false</secured>
-								<enabled>true</enabled>
-								<writable>true</writable>
-								<label>
-									<value type="literal" language="en">Mode</value>
-								</label>
-								<bgcolor>0xffd700</bgcolor>
-								<hints>
-									<hint>spinner</hint>
-								</hints>
-								<constraintDefs>
-									<constraintVals>
-										<constraint>
-											<display>
-												<value type="literal" language="en">Auto</value>
-											</display>
-											<value>0</value>
-										</constraint>
-										<constraint>
-											<display>
-												<value type="literal" language="en">Cool</value>
-											</display>
-											<value>1</value>
-										</constraint>
-										<constraint>
-											<display>
-												<value type="literal" language="en">Heat</value>
-											</display>
-											<value>2</value>
-										</constraint>
-										<constraint>
-											<display>
-												<value type="literal" language="en">Fan</value>
-											</display>
-											<value>3</value>
-										</constraint>
-										<constraint>
-											<display>
-												<value type="literal" language="en">Off</value>
-											</display>
-											<value>4</value>
-										</constraint>
-									</constraintVals>
-								</constraintDefs>
-						<!--	<unitMeasure>
-								  <value type="literal" language="en">Degrees</value>
-								</unitMeasure>
-						-->		
-							</scalarProperty>
-							
-						<!--	<labelProperty>
+						</label>-->	
+                        <hints>
+                            <hint>horizontal_linear</hint>
+                        </hints>
+                        <elements>
+                            <scalarProperty dataType="UINT16">
+                                <name>ac_mode</name>
+                                <getCode>getCurrentMode</getCode>
+                                <setCode>setCurrentMode(%s)</setCode>
+                                <secured>false</secured>
+                                <enabled>true</enabled>
+                                <writable>true</writable>
+                                <label>
+                                    <value type="literal" language="en">Mode</value>
+                                </label>
+                                <bgcolor>0xffd700</bgcolor>
+                                <hints>
+                                    <hint>spinner</hint>
+                                </hints>
+                                <constraintDefs>
+                                    <constraintVals>
+                                        <constraint>
+                                            <display>
+                                                <value type="literal" language="en">Auto</value>
+                                            </display>
+                                            <value>0</value>
+                                        </constraint>
+                                        <constraint>
+                                            <display>
+                                                <value type="literal" language="en">Cool</value>
+                                            </display>
+                                            <value>1</value>
+                                        </constraint>
+                                        <constraint>
+                                            <display>
+                                                <value type="literal" language="en">Heat</value>
+                                            </display>
+                                            <value>2</value>
+                                        </constraint>
+                                        <constraint>
+                                            <display>
+                                                <value type="literal" language="en">Fan</value>
+                                            </display>
+                                            <value>3</value>
+                                        </constraint>
+                                        <constraint>
+                                            <display>
+                                                <value type="literal" language="en">Off</value>
+                                            </display>
+                                            <value>4</value>
+                                        </constraint>
+                                    </constraintVals>
+                                </constraintDefs>
+							<!--<unitMeasure>
+								    <value type="literal" language="en">Degrees</value>
+								</unitMeasure>-->
+                            </scalarProperty>
+						<!--<labelProperty>
 								<name>StatusString</name>
 								<enabled>true</enabled>
 								<label>
@@ -193,34 +175,25 @@
 								<hints>
 									<hint>textlabel</hint>
 								</hints>            
-							</labelProperty>
-						-->	
-							
-							<stringProperty>
-							   <name>statusStringProperty</name>
-							   <getCode>getStatusString</getCode>
-							   <setCode>setStatusString(%s)</setCode>
-							   <secured>false</secured>
-							   <enabled>true</enabled>
-							   <writable>false</writable>
-							   <label>
-								  <value type="literal" language="en">Status: </value>
-							   </label>
-							   <bgcolor>0x500</bgcolor>
-							   <hints>
-								  <hint>textview</hint>
-							   </hints>
-							</stringProperty> 
-
-							
-					
-							
-					
-						</elements>
-					</container>
-					
-					
-					<scalarProperty dataType="UINT16">
+							</labelProperty>-->
+                            <stringProperty>
+                                <name>statusStringProperty</name>
+                                <getCode>getStatusString</getCode>
+                                <setCode>setStatusString(%s)</setCode>
+                                <secured>false</secured>
+                                <enabled>true</enabled>
+                                <writable>false</writable>
+                                <label>
+                                    <value type="literal" language="en">Status: </value>
+                                </label>
+                                <bgcolor>0x500</bgcolor>
+                                <hints>
+                                    <hint>textview</hint>
+                                </hints>
+                            </stringProperty> 
+                        </elements>
+                    </container>
+                    <scalarProperty dataType="UINT16">
                         <name>set_temperature</name>
                         <getCode>getTargetTemperature</getCode>
                         <setCode>setTargetTemperature(%s)</setCode>
@@ -235,61 +208,58 @@
                             <hint>slider</hint>
                         </hints>
                         <constraintDefs>
-                        	<constraintRange>
-								<min>50</min>
-								<max>90</max>
-								<increment>1</increment >
-							</constraintRange>
+                            <constraintRange>
+                                <min>50</min>
+                                <max>90</max>
+                                <increment>1</increment >
+                            </constraintRange>
                         </constraintDefs>
                         <unitMeasure>
                           <value type="literal" language="en">Degrees</value>
                         </unitMeasure>
                     </scalarProperty>
-					
-					<scalarProperty dataType="UINT16">
-						<name>fan_speed</name>
-						<getCode>getFanSpeed</getCode>
-						<setCode>setFanSpeed(%s)</setCode>
-						<secured>false</secured>
-						<enabled>false</enabled>
-						<writable>true</writable>
-						<label>
-							<value type="literal" language="en">Fan Speed</value>
-						</label>
-						<bgcolor>0xff69b4</bgcolor>
-						<hints>
-							<hint>spinner</hint>
-						</hints>
-						<constraintDefs>
-							<constraintVals>
-								<constraint>
-									<display>
-										<value type="literal" language="en">Low</value>
-									</display>
-									<value>0</value>
-								</constraint>
-								<constraint>
-									<display>
-										<value type="literal" language="en">Medium</value>
-									</display>
-									<value>1</value>
-								</constraint>
-								<constraint>
-									<display>
-										<value type="literal" language="en">High</value>
-									</display>
-									<value>2</value>
-								</constraint>
-							</constraintVals>
-						</constraintDefs>
+                    <scalarProperty dataType="UINT16">
+                        <name>fan_speed</name>
+                        <getCode>getFanSpeed</getCode>
+                        <setCode>setFanSpeed(%s)</setCode>
+                        <secured>false</secured>
+                        <enabled>false</enabled>
+                        <writable>true</writable>
+                        <label>
+                            <value type="literal" language="en">Fan Speed</value>
+                        </label>
+                        <bgcolor>0xff69b4</bgcolor>
+                        <hints>
+                            <hint>spinner</hint>
+                        </hints>
+                        <constraintDefs>
+                            <constraintVals>
+                                <constraint>
+                                    <display>
+                                        <value type="literal" language="en">Low</value>
+                                    </display>
+                                    <value>0</value>
+                                </constraint>
+                                <constraint>
+                                    <display>
+                                        <value type="literal" language="en">Medium</value>
+                                    </display>
+                                    <value>1</value>
+                                </constraint>
+                                <constraint>
+                                    <display>
+                                        <value type="literal" language="en">High</value>
+                                    </display>
+                                    <value>2</value>
+                                </constraint>
+                            </constraintVals>
+                        </constraintDefs>
 					<!--	<unitMeasure>
 						  <value type="literal" language="en">Degrees</value>
 						</unitMeasure>
 					-->	
-					</scalarProperty>
-					
-					
-<!--					<container>
+                    </scalarProperty>
+				<!--<container>
 						<name>smartSettingsContainer</name>
 						<secured>false</secured>
 						<enabled>true</enabled>
@@ -345,9 +315,9 @@
 										</constraint>
 									</constraintVals>
 								</constraintDefs>
-							<unitMeasure>
-								  <value type="literal" language="en">Degrees</value>
-								</unitMeasure>		
+								<unitMeasure>
+									<value type="literal" language="en">Degrees</value>
+								</unitMeasure>
 							</scalarProperty>
 						
 						
@@ -386,17 +356,66 @@
 									</constraintRange>
 								</constraintDefs>
 								<unitMeasure>
-								  <value type="literal" language="en">Degrees</value>
-								</unitMeasure>		
+									<value type="literal" language="en">Degrees</value>
+								</unitMeasure>
 							</scalarProperty>
 							
 						
 						</elements>
 					</container> -->
-
                 </elements>
             </rootContainer>
         </controlPanel>
     </controlPanels>
+    <notificationActions>
+        <dialog languageSet="myLanguages">
+            <name>TurnFanOn</name>
+            <secured>false</secured>
+            <enabled>true</enabled>
+            <message>
+                <value type="literal" language="en">Turn Fan ON?</value>
+            </message>
+            <label>
+                <value type="literal" language="en">Comfort Control</value>
+            </label>
+            <bgcolor>0x789</bgcolor>
+            <button>
+                <label>
+                    <value type="literal" language="en">Yes</value>
+                </label>
+                <executeCode>turnFanOnActionAccepted(context);</executeCode>
+            </button>
+            <button>
+                <label>
+                    <value type="literal" language="en">No</value>
+                </label>
+                <executeCode>turnFanOnActionRejected(context);</executeCode>
+            </button>
+        </dialog>
+        <dialog languageSet="myLanguages">
+            <name>TurnFanOff</name>
+            <secured>false</secured>
+            <enabled>true</enabled>
+            <message>
+                <value type="literal" language="en">Turn Fan OFF?</value>
+            </message>
+            <label>
+                <value type="literal" language="en">Comfort Control</value>
+            </label>
+            <bgcolor>0x789</bgcolor>
+            <button>
+                <label>
+                    <value type="literal" language="en">Yes</value>
+                </label>
+                <executeCode>turnFanOffActionAccepted(context);</executeCode>
+            </button>
+            <button>
+                <label>
+                    <value type="literal" language="en">No</value>
+                </label>
+                <executeCode>turnFanOffActionRejected(context);</executeCode>
+            </button>
+        </dialog>
+    </notificationActions>
 </controlPanelDevice>
 

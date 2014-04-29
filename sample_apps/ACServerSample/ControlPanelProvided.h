@@ -69,6 +69,7 @@ void disableTempSelect();
 void enableTempSelect();
 
 const char* getNotificationString();
+const char* getNotificationActionObjPath();
 uint16_t isThereANotificationToSend();
 
 uint16_t getCurrentTargetTemp();
@@ -99,6 +100,11 @@ void setFanSpeed(uint16_t newSpeed);
 
 void* getStatusString(PropertyWidget* thisWidget);
 void setStatusString(const char* newStatusString);
+
+void turnFanOnActionAccepted(ExecuteActionContext* context);
+void turnFanOnActionRejected(ExecuteActionContext* context);
+void turnFanOffActionAccepted(ExecuteActionContext* context);
+void turnFanOffActionRejected(ExecuteActionContext* context);
 
 //void simulateTemperatureChange();
 uint8_t checkForUpdatesToSend();

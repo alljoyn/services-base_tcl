@@ -49,10 +49,11 @@ void Controlee_DoWork(AJ_BusAttachment* busAttachment)
     uint8_t sendUpdates = checkForUpdatesToSend();
     if (sendUpdates > 0) {
 
-        // 0001 == need to update the temperature text field
-        // 0010 == need to update the status text field
-        // 0100 == need to update the state of temperature selector
-        // 1000 == need to update the state of fan speed selector
+        // 0x01 == need to update the temperature text field
+        // 0x02 == need to update the status text field
+        // 0x04 == need to update the state of temperature selector
+        // 0x08 == need to update the state of fan speed selector
+        // 0x10 == need to update the state of ac mode selector
 
         if ((sendUpdates & (1 << 0)) != 0) {
             AJ_AlwaysPrintf(("##### Sending update signal: temperature string field \n"));
@@ -69,6 +70,10 @@ void Controlee_DoWork(AJ_BusAttachment* busAttachment)
         if ((sendUpdates & (1 << 3)) != 0) {
             AJ_AlwaysPrintf(("##### Sending update signal: fan speed selector state \n"));
             AJCPS_SendPropertyChangedSignal(busAttachment, EN_MYDEVICE_FAN_SPEED_SIGNAL_PROPERTIES_CHANGED, AJCPS_GetCurrentSessionId());
+        }
+        if ((sendUpdates & (1 << 4)) != 0) {
+            AJ_AlwaysPrintf(("##### Sending update signal: ac mode field \n"));
+            AJCPS_SendPropertyChangedSignal(busAttachment, EN_MYDEVICE_AC_MODE_SIGNAL_VALUE_CHANGED, AJCPS_GetCurrentSessionId());
         }
     }
     return;
