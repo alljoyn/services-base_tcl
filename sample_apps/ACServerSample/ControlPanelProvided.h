@@ -101,10 +101,8 @@ void setFanSpeed(uint16_t newSpeed);
 void* getStatusString(PropertyWidget* thisWidget);
 void setStatusString(const char* newStatusString);
 
-void turnFanOnActionAccepted(ExecuteActionContext* context);
-void turnFanOnActionRejected(ExecuteActionContext* context);
-void turnFanOffActionAccepted(ExecuteActionContext* context);
-void turnFanOffActionRejected(ExecuteActionContext* context);
+void onTurnFanOn(ExecuteActionContext* context, uint8_t accepted);
+void onTurnFanOff(ExecuteActionContext* context, uint8_t accepted);
 
 //void simulateTemperatureChange();
 uint8_t checkForUpdatesToSend();

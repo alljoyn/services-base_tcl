@@ -218,25 +218,19 @@ static void addDismissSignal(ExecuteActionContext* context, int32_t dismissSigna
     context->signals[0].signalType = SIGNAL_TYPE_DISMISS;
 }
 
-void turnFanOnActionAccepted(ExecuteActionContext* context)
+void onTurnFanOn(ExecuteActionContext* context, uint8_t accepted)
 {
-    setCurrentMode(3);
+    if (accepted) {
+        setCurrentMode(3);
+    }
     addDismissSignal(context, MYDEVICE_NOTIFICATION_ACTION_TURNFANON_SIGNAL_DISMISS);
 }
 
-void turnFanOnActionRejected(ExecuteActionContext* context)
+void onTurnFanOff(ExecuteActionContext* context, uint8_t accepted)
 {
-    addDismissSignal(context, MYDEVICE_NOTIFICATION_ACTION_TURNFANON_SIGNAL_DISMISS);
-}
-
-void turnFanOffActionAccepted(ExecuteActionContext* context)
-{
-    setCurrentMode(preFanMode);
-    addDismissSignal(context, MYDEVICE_NOTIFICATION_ACTION_TURNFANOFF_SIGNAL_DISMISS);
-}
-
-void turnFanOffActionRejected(ExecuteActionContext* context)
-{
+    if (accepted) {
+        setCurrentMode(preFanMode);
+    }
     addDismissSignal(context, MYDEVICE_NOTIFICATION_ACTION_TURNFANOFF_SIGNAL_DISMISS);
 }
 
@@ -412,7 +406,8 @@ uint8_t checkForUpdatesToSend()
                 notificationText[snprintf(notificationString, sizeof(notificationText), "Mode changed to Fan, fan on high")] = '\0';
                 sendANotification = 1;
             }
-            preFanMode = previousMode; // Save mode prior to change to FAN ON
+            // Uncomment if you wish for the mode prior to switching the FAN ON to be restored when it is turned OFF.
+            //preFanMode = previousMode; // Save mode prior to change to FAN ON
 
             // if in fan mode, disable the temperature selector
             enableFan();

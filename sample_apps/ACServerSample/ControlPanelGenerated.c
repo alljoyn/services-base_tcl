@@ -759,13 +759,13 @@ AJ_Status ExecuteAction(AJ_Message* msg, uint32_t msgId, ExecuteActionContext* c
     switch (msgId) {
     case EN_MYDEVICE_TURNFANON_EXEC_ACTION1:
         {
-            turnFanOnActionAccepted(context);
+            onTurnFanOn(context, TRUE);
         }
         break;
 
     case EN_MYDEVICE_TURNFANON_EXEC_ACTION2:
         {
-            turnFanOnActionRejected(context);
+            onTurnFanOn(context, FALSE);
         }
         break;
 
@@ -777,13 +777,13 @@ AJ_Status ExecuteAction(AJ_Message* msg, uint32_t msgId, ExecuteActionContext* c
 
     case EN_MYDEVICE_TURNFANOFF_EXEC_ACTION1:
         {
-            turnFanOffActionAccepted(context);
+            onTurnFanOff(context, TRUE);
         }
         break;
 
     case EN_MYDEVICE_TURNFANOFF_EXEC_ACTION2:
         {
-            turnFanOffActionRejected(context);
+            onTurnFanOff(context, FALSE);
         }
         break;
 

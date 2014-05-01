@@ -524,7 +524,7 @@ AJ_Status AJNS_Producer_SendNotification(AJ_BusAttachment* busAttachment, AJNS_N
     }
 
     notification.deviceId = AJSVC_PropertyStore_GetValue(AJSVC_PROPERTY_STORE_DEVICE_ID);
-    notification.deviceName = AJSVC_PropertyStore_GetValue(AJSVC_PROPERTY_STORE_DEVICE_NAME);
+    notification.deviceName = AJSVC_PropertyStore_GetValueForLang(AJSVC_PROPERTY_STORE_DEVICE_NAME, AJSVC_PropertyStore_GetLanguageIndex(""));
     notification.appId = AJSVC_PropertyStore_GetValue(AJSVC_PROPERTY_STORE_APP_ID);
     notification.appName = AJSVC_PropertyStore_GetValue(AJSVC_PROPERTY_STORE_APP_NAME);
 
