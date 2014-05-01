@@ -430,8 +430,10 @@ AJ_Status AJSVC_PropertyStore_ReadAll(AJ_Message* msg, AJSVC_PropertyStoreCatego
 {
     AJ_Status status = AJ_OK;
     AJ_Arg array;
+    AJ_Arg array2;
     AJ_Arg dict;
     const char* value;
+    uint8_t index;
     const char* ajVersion;
     AJSVC_PropertyStoreFieldIndices fieldIndex = 0;
 
@@ -509,7 +511,36 @@ AJ_Status AJSVC_PropertyStore_ReadAll(AJ_Message* msg, AJSVC_PropertyStoreCatego
 
     if (filter.bit0About) {
         // Add supported languages
-        status = AJ_MarshalArgs(msg, "{sv}", defaultLanguagesKeyName, "as", propertyStoreDefaultLanguages, AJSVC_PROPERTY_STORE_NUMBER_OF_LANGUAGES);
+        status = AJ_MarshalContainer(msg, &dict, AJ_ARG_DICT_ENTRY);
+        if (status != AJ_OK) {
+            return status;
+        }
+        status = AJ_MarshalArgs(msg, "s", defaultLanguagesKeyName);
+        if (status != AJ_OK) {
+            return status;
+        }
+        status = AJ_MarshalVariant(msg, "as");
+        if (status != AJ_OK) {
+            return status;
+        }
+        status = AJ_MarshalContainer(msg, &array2, AJ_ARG_ARRAY);
+        if (status != AJ_OK) {
+            return status;
+        }
+
+        index = AJSVC_PROPERTY_STORE_NO_LANGUAGE_INDEX;
+        for (; index < AJSVC_PROPERTY_STORE_NUMBER_OF_LANGUAGES; index++) {
+            status = AJ_MarshalArgs(msg, "s", propertyStoreDefaultLanguages[index]);
+            if (status != AJ_OK) {
+                return status;
+            }
+        }
+
+        status = AJ_MarshalCloseContainer(msg, &array2);
+        if (status != AJ_OK) {
+            return status;
+        }
+        status = AJ_MarshalCloseContainer(msg, &dict);
         if (status != AJ_OK) {
             return status;
         }
