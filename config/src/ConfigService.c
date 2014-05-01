@@ -86,19 +86,19 @@ static AJ_Status RegisterObjectList()
  * Application registered Callbacks
  */
 
-static AJCFG_FactoryReset appFactoryReset = NULL;
-static AJCFG_Restart appRestart = NULL;
-static AJCFG_SetPasscode appSetPasscode = NULL;
-static AJCFG_IsValueValid appIsValueValid = NULL;
+static AJCFG_FactoryReset AppFactoryReset = NULL;
+static AJCFG_Restart AppRestart = NULL;
+static AJCFG_SetPasscode AppSetPasscode = NULL;
+static AJCFG_IsValueValid AppIsValueValid = NULL;
 
 AJ_Status AJCFG_Start(AJCFG_FactoryReset factoryReset, AJCFG_Restart restart, AJCFG_SetPasscode setPasscode, AJCFG_IsValueValid isValueValid)
 {
     AJ_Status status = AJ_OK;
 
-    appFactoryReset = factoryReset;
-    appRestart = restart;
-    appSetPasscode = setPasscode;
-    appIsValueValid = isValueValid;
+    AppFactoryReset = factoryReset;
+    AppRestart = restart;
+    AppSetPasscode = setPasscode;
+    AppIsValueValid = isValueValid;
     status = RegisterObjectList();
 
     return status;
@@ -122,8 +122,8 @@ AJ_Status AJCFG_FactoryResetHandler(AJ_Message* msg)
 {
     AJ_Status status = AJ_OK;
 
-    if (appFactoryReset) {
-        status = (appFactoryReset)();
+    if (AppFactoryReset) {
+        status = (AppFactoryReset)();
     }
 
     return status;
@@ -133,8 +133,8 @@ AJ_Status AJCFG_RestartHandler(AJ_Message* msg)
 {
     AJ_Status status = AJ_OK;
 
-    if (appRestart) {
-        status = (appRestart)();
+    if (AppRestart) {
+        status = (AppRestart)();
     }
 
     return status;
@@ -177,8 +177,10 @@ AJ_Status AJCFG_GetConfigurationsHandler(AJ_Message* msg)
 static uint8_t IsValueValid(AJ_Message* msg, AJ_Message* reply, const char* key, const char* value)
 {
     if (strcmp(AJSVC_PropertyStore_GetFieldName(AJSVC_PROPERTY_STORE_DEFAULT_LANGUAGE), key) == 0) { // Check that if language was updated that it is supported
-        if (AJSVC_IsLanguageSupported(msg, reply, value, NULL)) {
-            return TRUE;
+        if (strlen(value) > 0) {                                                   // that it is not empty
+            return AJSVC_IsLanguageSupported(msg, reply, value, NULL);
+        } else {
+            AJ_MarshalErrorMsg(msg, reply, AJSVC_ERROR_INVALID_VALUE);
         }
     } else if (strcmp(AJSVC_PropertyStore_GetFieldName(AJSVC_PROPERTY_STORE_DEVICE_NAME), key) == 0) { // Check that if device name was updated
         if (strlen(value) <= AJSVC_PropertyStore_GetMaxValueLength(AJSVC_PROPERTY_STORE_DEVICE_NAME)) {        // that it does not exceed maximum length
@@ -190,8 +192,10 @@ static uint8_t IsValueValid(AJ_Message* msg, AJ_Message* reply, const char* key,
         } else {
             AJ_MarshalErrorMsg(msg, reply, AJSVC_ERROR_MAX_SIZE_EXCEEDED);
         }
+    } else if (AJSVC_PropertyStore_GetFieldIndex(key) == AJSVC_PROPERTY_STORE_ERROR_FIELD_INDEX) { // Check that the key exists
+        AJ_MarshalErrorMsg(msg, reply, AJSVC_ERROR_INVALID_VALUE);
     } else {
-        if (appIsValueValid == NULL || (appIsValueValid)(key, value)) {
+        if (AppIsValueValid == NULL || (AppIsValueValid)(key, value)) {
             return TRUE;
         }
         AJ_MarshalErrorMsg(msg, reply, AJSVC_ERROR_INVALID_VALUE);
@@ -289,8 +293,12 @@ AJ_Status AJCFG_UpdateConfigurationsHandler(AJ_Message* msg)
 Exit:
 
     if (numOfUpdatedItems) {
-        AJSVC_PropertyStore_SaveAll();
-        AJ_AboutSetShouldAnnounce();
+        if (errorReply) {
+            AJSVC_PropertyStore_LoadAll(); // Discard partial successful updates
+        } else {
+            AJSVC_PropertyStore_SaveAll();
+            AJ_AboutSetShouldAnnounce();
+        }
     }
 
     return status;
@@ -363,8 +371,12 @@ AJ_Status AJCFG_ResetConfigurationsHandler(AJ_Message* msg)
 Exit:
 
     if (numOfDeletedItems) {
-        AJSVC_PropertyStore_SaveAll();
-        AJ_AboutSetShouldAnnounce();
+        if (errorReply) {
+            AJSVC_PropertyStore_LoadAll(); // Discard partial successful deletions
+        } else {
+            AJSVC_PropertyStore_SaveAll();
+            AJ_AboutSetShouldAnnounce();
+        }
     }
 
     return status;
@@ -392,8 +404,8 @@ AJ_Status AJCFG_SetPasscodeHandler(AJ_Message* msg)
     }
     AJ_InfoPrintf(("Passcode=%d bytes long\n", newPasscode.len));
     if (newPasscode.len > 0) { // Check passcode is not empty
-        if (appSetPasscode) {
-            status = (appSetPasscode)(daemonRealm, (const uint8_t*)newPasscode.val.v_string, (uint8_t)newPasscode.len);
+        if (AppSetPasscode) {
+            status = (AppSetPasscode)(daemonRealm, (const uint8_t*)newPasscode.val.v_string, (uint8_t)newPasscode.len);
             if (status == AJ_ERR_RESOURCES) { // Check passcode is too long to persist
                 status = AJ_MarshalErrorMsg(msg, &reply, AJSVC_ERROR_MAX_SIZE_EXCEEDED);
                 if (status != AJ_OK) {
