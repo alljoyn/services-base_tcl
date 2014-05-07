@@ -234,36 +234,30 @@ const char* deviceProductName = "GENERIC BOARD";
  */
 static const char DEFAULT_LANGUAGE[] = "en";
 static const char* DEFAULT_LANGUAGES[] = { DEFAULT_LANGUAGE };
-static const char SUPPORTED_LANG2[] = "de-AT";
-static const char* SUPPORTED_LANGUAGES[] = { DEFAULT_LANGUAGE, SUPPORTED_LANG2 };
+static const char* SUPPORTED_LANGUAGES[] = { DEFAULT_LANGUAGE };
 const char** propertyStoreDefaultLanguages = SUPPORTED_LANGUAGES;
 const uint8_t AJSVC_PROPERTY_STORE_NUMBER_OF_LANGUAGES = sizeof(SUPPORTED_LANGUAGES) / sizeof(char*);
 
 /**
  * property array of structure with defaults
  */
+static const char* DEFAULT_DEVICE_NAMES[] = { "" }; // Leave empty to be generated at run-time
 static const char* DEFAULT_PASSCODES[] = { "303030303030" }; // HEX encoded { '0', '0', '0', '0', '0', '0' }
 static const char* DEFAULT_APP_NAMES[] = { "Onboardee" };
-static const char DEFAULT_DESCRIPTION_LANG1[] = "My First IOE device";
-static const char DEFAULT_DESCRIPTION_LANG2[] = "Mein erstes IOE Geraet";
-static const char* DEFAULT_DESCRIPTIONS[] = { DEFAULT_DESCRIPTION_LANG1, DEFAULT_DESCRIPTION_LANG2 };
-static const char DEFAULT_MANUFACTURER_LANG1[] = "Company A(EN)";
-static const char DEFAULT_MANUFACTURER_LANG2[] = "Firma A(DE-AT)";
-static const char* DEFAULT_MANUFACTURERS[] = { DEFAULT_MANUFACTURER_LANG1, DEFAULT_MANUFACTURER_LANG2 };
+static const char* DEFAULT_DESCRIPTIONS[] = { "My First IOE device" };
+static const char* DEFAULT_MANUFACTURERS[] = { "Company A" };
 static const char* DEFAULT_DEVICE_MODELS[] = { "0.0.1" };
-static const char* DEFAULT_DATE_OF_MANUFACTURES[] = { "2014-02-01" };
+static const char* DEFAULT_DATE_OF_MANUFACTURES[] = { "2014-05-01" };
 static const char* DEFAULT_SOFTWARE_VERSIONS[] = { "0.0.1" };
 static const char* DEFAULT_HARDWARE_VERSIONS[] = { "0.0.1" };
-static const char DEFAULT_SUPPORT_URL_LANG1[] = "www.company_a.com";
-static const char DEFAULT_SUPPORT_URL_LANG2[] = "www.company_a.com/de-AT";
-static const char* DEFAULT_SUPPORT_URLS[] = { DEFAULT_SUPPORT_URL_LANG1, DEFAULT_SUPPORT_URL_LANG2 };
+static const char* DEFAULT_SUPPORT_URLS[] = { "www.company_a.com" };
 
 const char** propertyStoreDefaultValues[AJSVC_PROPERTY_STORE_NUMBER_OF_KEYS] =
 {
 // "Default Values per language",                    "Key Name"
     NULL,                                           /*DeviceId*/
     NULL,                                           /*AppId*/
-    NULL,                                           /*DeviceName*/
+    DEFAULT_DEVICE_NAMES,                           /*DeviceName*/
     DEFAULT_LANGUAGES,                              /*DefaultLanguage*/
     DEFAULT_PASSCODES,                              /*Passcode*/
     NULL,                                           /*RealmName*/

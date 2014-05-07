@@ -246,6 +246,9 @@ const uint8_t AJSVC_PROPERTY_STORE_NUMBER_OF_LANGUAGES = sizeof(SUPPORTED_LANGUA
 /**
  * property array of structure with defaults
  */
+static const char DEFAULT_DEVICE_NAME_LANG1[] = { "Company A - \"Generic Board\"" };
+static const char DEFAULT_DEVICE_NAME_LANG2[] = { "Firma A - \"Generic Board\"" };
+static const char* DEFAULT_DEVICE_NAMES[] = { DEFAULT_DEVICE_NAME_LANG1, DEFAULT_DEVICE_NAME_LANG2 };
 static const char* DEFAULT_PASSCODES[] = { "303030303030" }; // HEX encoded { '0', '0', '0', '0', '0', '0' }
 static const char* DEFAULT_APP_NAMES[] = { "Configuree" };
 static const char DEFAULT_DESCRIPTION_LANG1[] = "My First IOE device";
@@ -255,7 +258,7 @@ static const char DEFAULT_MANUFACTURER_LANG1[] = "Company A(EN)";
 static const char DEFAULT_MANUFACTURER_LANG2[] = "Firma A(DE-AT)";
 static const char* DEFAULT_MANUFACTURERS[] = { DEFAULT_MANUFACTURER_LANG1, DEFAULT_MANUFACTURER_LANG2 };
 static const char* DEFAULT_DEVICE_MODELS[] = { "0.0.1" };
-static const char* DEFAULT_DATE_OF_MANUFACTURES[] = { "2014-02-01" };
+static const char* DEFAULT_DATE_OF_MANUFACTURES[] = { "2014-05-01" };
 static const char* DEFAULT_SOFTWARE_VERSIONS[] = { "0.0.1" };
 static const char* DEFAULT_HARDWARE_VERSIONS[] = { "0.0.1" };
 static const char DEFAULT_SUPPORT_URL_LANG1[] = "www.company_a.com";
@@ -267,7 +270,7 @@ const char** propertyStoreDefaultValues[AJSVC_PROPERTY_STORE_NUMBER_OF_KEYS] =
 // "Default Values per language",                    "Key Name"
     NULL,                                           /*DeviceId*/
     NULL,                                           /*AppId*/
-    NULL,                                           /*DeviceName*/
+    DEFAULT_DEVICE_NAMES,                           /*DeviceName*/
     DEFAULT_LANGUAGES,                              /*DefaultLanguage*/
     DEFAULT_PASSCODES,                              /*Passcode*/
     NULL,                                           /*RealmName*/
@@ -291,8 +294,9 @@ const char** propertyStoreDefaultValues[AJSVC_PROPERTY_STORE_NUMBER_OF_KEYS] =
  */
 static char machineIdVar[MACHINE_ID_LENGTH + 1] = { 0 };
 static char* machineIdVars[] = { machineIdVar };
-static char deviceNameVar[DEVICE_NAME_VALUE_LENGTH + 1] = { 0 };
-static char* deviceNameVars[] = { deviceNameVar };
+static char deviceNameVarLang1[DEVICE_NAME_VALUE_LENGTH + 1] = { 0 };
+static char deviceNameVarLang2[DEVICE_NAME_VALUE_LENGTH + 1] = { 0 };
+static char* deviceNameVars[] = { deviceNameVarLang1, deviceNameVarLang2 };
 static char defaultLanguageVar[LANG_VALUE_LENGTH + 1] = { 0 };
 static char* defaultLanguageVars[] = { defaultLanguageVar };
 static char passcodeVar[PASSWORD_VALUE_LENGTH + 1] = { 0 };
