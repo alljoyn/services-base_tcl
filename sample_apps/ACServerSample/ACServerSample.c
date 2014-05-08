@@ -51,10 +51,10 @@ static uint8_t isBusConnected = FALSE;
  * The following may be tuned according to platform requirements such as battery usage.
  */
 #define AJAPP_BUS_LINK_TIMEOUT    60
-#define AJAPP_CONNECT_TIMEOUT     AJ_CONNECT_TIMEOUT
-#define AJAPP_CONNECT_PAUSE       (1000 * 2) // Override AJ_CONNECT_PAUSE to be more responsive
-#define AJAPP_SLEEP_TIME          (1000 * 2) // A little pause to let things settle
-#define AJAPP_UNMARSHAL_TIMEOUT   (1000 * 1) // Override AJ_UNMARSHAL_TIMEOUT to be more responsive
+#define AJAPP_CONNECT_TIMEOUT     (1000 * 60 * 10) // Override AJ_CONNECT_TIMEOUT to wait longer for a successful connection to a Routing Node
+#define AJAPP_CONNECT_PAUSE       (1000 * 2)       // Override AJ_CONNECT_PAUSE to be more responsive
+#define AJAPP_SLEEP_TIME          (1000 * 2)       // A little pause to let things settle
+#define AJAPP_UNMARSHAL_TIMEOUT   (1000 * 1)       // Override AJ_UNMARSHAL_TIMEOUT to be more responsive
 
 #define AJAPP_MAX_INIT_ATTEMPTS   3 // Maximum number of attempts to initialize the services
 

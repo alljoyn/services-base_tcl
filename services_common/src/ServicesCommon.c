@@ -182,7 +182,7 @@ AJ_Status AJSVC_RoutingNodeConnect(AJ_BusAttachment* busAttachment, const char* 
             AJ_AlwaysPrintf(("Failed attempt to connect to bus, sleeping for %d seconds\n", connectPause / 1000));
             AJ_Sleep(connectPause);
 #ifdef ONBOARDING_SERVICE
-            if (status == AJ_ERR_DHCP) {
+            if (status == AJ_ERR_DHCP || status == AJ_ERR_TIMEOUT) {
                 status = AJOBS_SwitchToRetry();
                 if (status != AJ_OK) {
                     AJ_AlwaysPrintf(("Failed to switch to Retry mode status=%s\n", AJ_StatusText(status)));
