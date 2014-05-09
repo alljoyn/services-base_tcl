@@ -158,7 +158,7 @@ AJ_Object AJNS_ObjectList[] = {
     { AJNS_NotificationObjectPathWarning,   AJNS_NotificationInterfaces,          AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED },
     { AJNS_NotificationObjectPathInfo,      AJNS_NotificationInterfaces,          AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED },
     { AJNS_NotificationProducerObjectPath,  AJNS_NotificationProducerInterfaces,  AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED },
-    NULL
+    { NULL }
 };
 
 void AJNS_Common_RegisterObjects()

@@ -54,7 +54,7 @@ static const AJ_InterfaceDescription AJSVC_ConfigInterfaces[] = {
 
 static AJ_Object AJCFG_ObjectList[] = {
     { "/Config", AJSVC_ConfigInterfaces, AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED },
-    NULL
+    { NULL }
 };
 
 /*
