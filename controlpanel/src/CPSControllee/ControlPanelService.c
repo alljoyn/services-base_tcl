@@ -58,6 +58,16 @@ static AJ_Status RegisterObjectList()
     return AJ_RegisterObjectList(controlleeObjectList, AJCPS_OBJECT_LIST_INDEX);
 }
 
+AJ_Status AJCPS_Stop()
+{
+    controlleeObjectList = NULL;
+    appGeneratedMessageProcessor = NULL;
+    appIdentifyMsgOrPropId = NULL;
+    appIdentifyMsgOrPropIdForSignal = NULL;
+    appIdentifyRootMsgOrPropId = NULL;
+    return AJ_RegisterObjectList(NULL, AJCPS_OBJECT_LIST_INDEX);
+}
+
 AJ_Status AJCPS_Start(AJ_Object* generatedObjectList, AJSVC_MessageProcessor generatedMessageProcessor, AJCPS_IdentifyMsgOrPropId identifyMsgOrPropId, AJCPS_IdentifyMsgOrPropIdForSignal identifyMsgOrPropIdForSignal, AJCPS_IdentifyRootMsgOrPropId identifyRootMsgOrPropId)
 {
     AJ_Status status = AJ_OK;
@@ -317,7 +327,11 @@ uint8_t AJCPS_CheckSessionAccepted(uint16_t port, uint32_t sessionId, char* join
 
 AJSVC_ServiceStatus AJCPS_MessageProcessor(AJ_BusAttachment* busAttachment, AJ_Message* msg, AJ_Status* msgStatus)
 {
-    return (appGeneratedMessageProcessor)(busAttachment, msg, msgStatus);
+    if (appGeneratedMessageProcessor) {
+        return (appGeneratedMessageProcessor)(busAttachment, msg, msgStatus);
+    } else {
+        return AJSVC_SERVICE_STATUS_NOT_HANDLED;
+    }
 }
 
 AJ_Status AJCPS_DisconnectHandler(AJ_BusAttachment* busAttachment)
