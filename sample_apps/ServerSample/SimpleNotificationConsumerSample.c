@@ -41,6 +41,9 @@ static uint8_t inputMode = FALSE;
 static uint8_t superAgentMode = TRUE;
 static uint8_t nextAction = CONSUMER_ACTION_NOTHING;
 static uint8_t processingAction = FALSE;
+#define DISMISS_DELAY_PERIOD 30000
+static AJ_Time dismissTime;
+static AJ_Time* dismissTimer = NULL;
 
 static AJNS_Consumer_NotificationReference savedNotification;
 
@@ -94,7 +97,7 @@ static AJ_Status ApplicationHandleNotify(AJNS_Notification* notification)
         AJ_AlwaysPrintf(("ControlPanelService object path: %s\n", notification->content->controlPanelServiceObjectPath));
     }
 
-    if (processingAction == FALSE) {
+    if (processingAction == FALSE || dismissTimer == NULL) {
         // Save notification reference so that it can be later dimissed
         savedNotification.version = notification->version;
         savedNotification.notificationId = notification->notificationId;
@@ -102,6 +105,10 @@ static AJ_Status ApplicationHandleNotify(AJNS_Notification* notification)
         savedNotification.originalSenderName[0] = '\0';
         if (notification->originalSenderName != 0 && strlen(notification->originalSenderName) > 0) {
             strncpy(savedNotification.originalSenderName, notification->originalSenderName, sizeof(savedNotification.originalSenderName) - 1);
+        }
+        if (!inputMode && DISMISS_DELAY_PERIOD > 0 && dismissTimer == NULL) { // If feature is enabled and there is no set timer
+            dismissTimer = &dismissTime; //  Setup the delay timer before dismissing this notification
+            AJ_InitTimer(dismissTimer);
         }
     }
     AJ_AlwaysPrintf(("******************** End New Message Received ********************\n"));
@@ -144,7 +151,6 @@ static void DismissActionCompleted(AJ_Status status, void* context)
     }
     processingAction = FALSE;
     savedNotification.version = 0;
-
     return;
 }
 
@@ -156,7 +162,11 @@ static void Consumer_DoAction(AJ_BusAttachment* busAttachment)
     if (inputMode) {
         Consumer_GetActionFromUser(&nextAction);
         AJ_AlwaysPrintf(("Action received is %u\n", nextAction));
+    } else if (dismissTimer != NULL && AJ_GetElapsedTime(dismissTimer, TRUE) > DISMISS_DELAY_PERIOD) { // Delay timer expired
+        nextAction = CONSUMER_ACTION_DISMISS; // Dismiss last saved notification
+        dismissTimer = NULL;                  // Disable/delete timer
     }
+
     switch (nextAction) {
     case CONSUMER_ACTION_DISMISS:
         processingAction = TRUE;
@@ -165,7 +175,7 @@ static void Consumer_DoAction(AJ_BusAttachment* busAttachment)
 
     case CONSUMER_ACTION_NOTHING:
         savedNotification.version = 0;
-        if (!inputMode) { // default behaviour is to dismiss next notification
+        if (!inputMode && DISMISS_DELAY_PERIOD == 0) { // default behaviour is to dismiss next notification
             nextAction = CONSUMER_ACTION_DISMISS;
         }
         break;
