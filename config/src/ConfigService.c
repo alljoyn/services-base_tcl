@@ -180,7 +180,7 @@ static uint8_t IsValueValid(AJ_Message* msg, AJ_Message* reply, const char* key,
         if (strlen(value) > 0) {                                                   // that it is not empty
             return AJSVC_IsLanguageSupported(msg, reply, value, NULL);
         } else {
-            AJ_MarshalErrorMsg(msg, reply, AJSVC_ERROR_INVALID_VALUE);
+            AJ_MarshalErrorMsg(msg, reply, AJSVC_ERROR_LANGUAGE_NOT_SUPPORTED);
         }
     } else if (strcmp(AJSVC_PropertyStore_GetFieldName(AJSVC_PROPERTY_STORE_DEVICE_NAME), key) == 0) { // Check that if device name was updated
         if (strlen(value) <= AJSVC_PropertyStore_GetMaxValueLength(AJSVC_PROPERTY_STORE_DEVICE_NAME)) {        // that it does not exceed maximum length
