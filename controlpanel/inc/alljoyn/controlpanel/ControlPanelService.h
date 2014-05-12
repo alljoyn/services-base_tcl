@@ -82,6 +82,11 @@ typedef uint8_t (*AJCPS_IdentifyRootMsgOrPropId)(uint32_t identifier);
 AJ_Status AJCPS_Start(AJ_Object* generatedObjectsList, AJSVC_MessageProcessor generatedMessageProcessor, AJCPS_IdentifyMsgOrPropId identifyMsgOrPropId, AJCPS_IdentifyMsgOrPropIdForSignal identifyMsgOrPropIdForSignal, AJCPS_IdentifyRootMsgOrPropId identifyRootMsgOrPropId);
 
 /**
+ * Stop the control panel service if it has been previously started.
+ */
+AJ_Status AJCPS_Stop();
+
+/**
  * Return the current session's id.
  * @return sessionId
  */
