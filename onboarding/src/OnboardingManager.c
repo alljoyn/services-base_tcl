@@ -587,7 +587,7 @@ AJ_Status AJOBS_ControllerAPI_StartSoftAPIfNeededOrConnect(AJOBS_Info* obInfo)
         }
     }
     while (1) {
-        status = AJOBS_ControllerAPI_GotoIdleWiFi(TRUE); // Go into IDLE mode, reset wifi and perfrom scan
+        status = AJOBS_ControllerAPI_GotoIdleWiFi(obSettings->AJOBS_RESET_WIFI_ON_IDLE); // Go into IDLE mode, reset Wi-Fi and perfrom scan
         if (status != AJ_OK) {
             break;
         }
@@ -698,6 +698,8 @@ ErrorExit:
 AJ_Status AJOBS_DisconnectWiFi()
 {
     AJ_Status status = AJ_OK;
-    status = AJOBS_ControllerAPI_GotoIdleWiFi(TRUE);
+
+    status = AJOBS_ControllerAPI_GotoIdleWiFi(obSettings->AJOBS_RESET_WIFI_ON_IDLE);
+
     return status;
 }

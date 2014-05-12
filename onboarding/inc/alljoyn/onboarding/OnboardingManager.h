@@ -183,9 +183,13 @@ typedef struct _AJOBS_Settings {
      * SoftAP passpharse. If NULL means OPEN network otherwise assumes WPA2 8 to 63 characters long.
      */
     const char* AJOBS_SoftAPPassphrase; // NULL
+    /**
+     * Whether to reset the Wi-Fi chip when switching to Idle mode
+     */
+    const uint8_t AJOBS_RESET_WIFI_ON_IDLE; // TRUE;
 } AJOBS_Settings;
 
-#define AJOBS_DEFAULT_SETTINGS { 600000, 2, 180000, { 0 }, FALSE, NULL };             /**< jobs default settings */
+#define AJOBS_DEFAULT_SETTINGS { 600000, 2, 180000, { 0 }, FALSE, NULL, TRUE };             /**< default settings */
 
 /**
  * Start Onboarding service framework passing settings and persistence callbacks/
