@@ -140,6 +140,10 @@ AJ_Status NotificationConsumer_Init()
     status = AJNS_Consumer_Start(superAgentMode, &ApplicationHandleNotify, &ApplicationHandleDismiss);
     memset(&savedNotification, 0, sizeof(AJNS_Consumer_NotificationReference));
 
+    AJ_AlwaysPrintf(("\n---------------------\nNotification Consumer started!\n"));
+    AJ_AlwaysPrintf(("DISMISS_DELAY_PERIOD: %u ms\n", DISMISS_DELAY_PERIOD));
+    AJ_AlwaysPrintf(("---------------------\n\n"));
+
     return status;
 }
 

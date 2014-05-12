@@ -30,7 +30,7 @@
 #ifdef __linux
 #include <NotificationProducerSampleUtil.h>
 #else
-#define MESSAGES_INTERVAL 10000
+#define MESSAGES_INTERVAL 60000
 #define Producer_GetNotificationFromUser(...) do { } while (0)
 #define Producer_SetupEnv(...) do { } while (0)
 #define Producer_GetShouldDeleteNotificationFromUser(...) do { } while (0)
@@ -68,20 +68,24 @@ static uint32_t nextMessageTime = MESSAGES_INTERVAL;
 AJNS_DictionaryEntry textToSend[NUM_TEXTS], customAttributesToSend[NUM_CUSTOMS], richAudioUrls[NUM_RICH_AUDIO];
 
 typedef enum _PriorityType {
-    PRIORITY_TYPE_FIXED,
-    PRIORITY_TYPE_RANDOM,
+    PRIORITY_TYPE_FIXED = 0,
+    PRIORITY_TYPE_RANDOM = 1,
 } PriorityType;
 
 static PriorityType priorityType = PRIORITY_TYPE_FIXED;
+static const char* const PRIORITY_TYPES[] = { "Fixed", "Random" };
 
 typedef enum _IntervalType {
-    INTERVAL_TYPE_FIXED,
-    INTERVAL_TYPE_RANDOM,
+    INTERVAL_TYPE_FIXED = 0,
+    INTERVAL_TYPE_RANDOM = 1,
 } IntervalType;
 
 static IntervalType intervalType = INTERVAL_TYPE_RANDOM;
+static const char* const INTERVAL_TYPES[] = { "Fixed", "Random" };
 
 #define FIXED_MESSAGE_TYPE AJNS_NOTIFICATION_MESSAGE_TYPE_INFO
+static const char* const PRIORITIES[AJNS_NUM_MESSAGE_TYPES] = { "Emergency", "Warning", "Info" };
+
 #define FIXED_TTL 20000
 
 /**
@@ -131,6 +135,14 @@ AJ_Status NotificationProducer_Init()
     isMessageTime.milliseconds -= nextMessageTime % 1000; // Expire next message timer
     status = AJNS_Producer_Start();
 
+    AJ_AlwaysPrintf(("\n---------------------\nNotification Producer started!\n"));
+    AJ_AlwaysPrintf(("Interval:     %u ms\n", MESSAGES_INTERVAL));
+    AJ_AlwaysPrintf(("IntervalType: %s (%u)\n", INTERVAL_TYPES[intervalType], intervalType));
+    AJ_AlwaysPrintf(("Priority      %s (%u)\n", PRIORITIES[FIXED_MESSAGE_TYPE], FIXED_MESSAGE_TYPE));
+    AJ_AlwaysPrintf(("PriorityType: %s (%u)\n", PRIORITY_TYPES[priorityType], priorityType));
+    AJ_AlwaysPrintf(("TTL:          %u ms\n", FIXED_TTL));
+    AJ_AlwaysPrintf(("---------------------\n\n"));
+
     return status;
 }
 
@@ -165,16 +177,16 @@ static void PossiblySendNotification(AJ_BusAttachment* busAttachment)
                     offset = 0;
                 }
                 nextMessageTime = (((random & 0xFFFF) * MESSAGES_INTERVAL) / 0xFFFF) + offset;
-                AJ_AlwaysPrintf(("\n\nRANDOM: %x => nextMessageTime: %u offset: %u\n\n", random & 0xFFFF, nextMessageTime, offset));
             }
         } else {
             Producer_GetNotificationFromUser(&notificationContent, &messageType, &ttl, &nextMessageTime);
         }
         status = AJNS_Producer_SendNotification(busAttachment, &notificationContent, messageType, ttl, &serialNum);
-        AJ_AlwaysPrintf(("Send Message Type: %d returned: '%s'\n", messageType, AJ_StatusText(status)));
+        AJ_AlwaysPrintf(("Send Message Type: %u with TTL: %u ms returned: '%s'\n", messageType, ttl, AJ_StatusText(status)));
         if (inputMode) {
             Producer_FreeNotification(&notificationContent);
         }
+        AJ_AlwaysPrintf(("Next message will be sent in %u ms\n", nextMessageTime));
         AJ_InitTimer(&isMessageTime);
     }
 }
