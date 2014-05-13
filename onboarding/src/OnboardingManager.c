@@ -422,6 +422,7 @@ AJ_Status AJOBS_ControllerAPI_GotoIdleWiFi(uint8_t reset)
         if (reset) {
             status = AJ_ResetWiFi();
         }
+        wifiConnectState = AJ_GetWifiConnectState();
     }
     AJ_Sleep(1000);
 
@@ -431,7 +432,6 @@ AJ_Status AJOBS_ControllerAPI_GotoIdleWiFi(uint8_t reset)
         AJ_Sleep(500);
     }
 
-    status = AJOBS_ControllerAPI_DoScanInfo();
     return status;
 }
 
@@ -587,7 +587,11 @@ AJ_Status AJOBS_ControllerAPI_StartSoftAPIfNeededOrConnect(AJOBS_Info* obInfo)
         }
     }
     while (1) {
-        status = AJOBS_ControllerAPI_GotoIdleWiFi(obSettings->AJOBS_RESET_WIFI_ON_IDLE); // Go into IDLE mode, reset Wi-Fi and perfrom scan
+        status = AJOBS_ControllerAPI_GotoIdleWiFi(obSettings->AJOBS_RESET_WIFI_ON_IDLE); // Go into IDLE mode, reset Wi-Fi
+        if (status != AJ_OK) {
+            break;
+        }
+        status = AJOBS_ControllerAPI_DoScanInfo(); // Perform scan of available Wi-Fi networks
         if (status != AJ_OK) {
             break;
         }
