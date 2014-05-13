@@ -103,9 +103,9 @@ static const AJ_InterfaceDescription AllInterfaces[] = {
     NULL
 };
 
-static AJ_Object AllProxyObject          = { "*",   AllInterfaces };
-static AJ_Object SuperAgentProxyObject   = { "*",   SuperagentInterfaces };
-static AJ_Object NotificationProxyObject = { "*",   AJNS_NotificationInterfaces };
+static AJ_Object AllProxyObject          = { "!",   AllInterfaces };
+static AJ_Object SuperAgentProxyObject   = { "!",   SuperagentInterfaces };
+static AJ_Object NotificationProxyObject = { "!",   AJNS_NotificationInterfaces };
 
 static uint8_t appSuperAgentMode = TRUE;
 

@@ -151,9 +151,9 @@ static const AJ_InterfaceDescription AJNS_NotificationProducerInterfaces[] = {
 
 AJ_Object AJNS_ObjectList[] = {
     { AJNS_NotificationDismisserObjectPath, AJNS_NotificationDismisserInterfaces, AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED },
-    { "*",                                  AJNS_NotificationInterfaces,          AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED },
+    { "!",                                  AJNS_NotificationInterfaces,          AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED },
     { AJNS_NotificationProducerObjectPath,  AJNS_NotificationProducerInterfaces,  AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED },
-    { "*",                                  AJNS_NotificationDismisserInterfaces, AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED },
+    { "!",                                  AJNS_NotificationDismisserInterfaces, AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED },
     { AJNS_NotificationObjectPathEmergency, AJNS_NotificationInterfaces,          AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED },
     { AJNS_NotificationObjectPathWarning,   AJNS_NotificationInterfaces,          AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED },
     { AJNS_NotificationObjectPathInfo,      AJNS_NotificationInterfaces,          AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED },
