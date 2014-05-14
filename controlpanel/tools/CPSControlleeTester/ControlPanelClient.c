@@ -51,9 +51,8 @@ const char* deviceProductName = "GENERIC BOARD";
 static const char DEFAULT_LANGUAGE[] = "en";
 static const char* DEFAULT_LANGUAGES[] = { DEFAULT_LANGUAGE };
 static const char SUPPORTED_LANG2[] = "de-AT";
-static const char* SUPPORTED_LANGUAGES[] = { DEFAULT_LANGUAGE, SUPPORTED_LANG2 };
-const char** propertyStoreDefaultLanguages = SUPPORTED_LANGUAGES;
-const uint8_t AJSVC_PROPERTY_STORE_NUMBER_OF_LANGUAGES = sizeof(SUPPORTED_LANGUAGES) / sizeof(char*);
+static const char* SUPPORTED_LANGUAGES[] = { DEFAULT_LANGUAGE, SUPPORTED_LANG2, NULL };
+const char* const* propertyStoreDefaultLanguages = SUPPORTED_LANGUAGES;
 
 /**
  * property array of structure with defaults
