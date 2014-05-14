@@ -74,6 +74,13 @@ const PropertyStoreEntry propertyStoreProperties[AJSVC_PROPERTY_STORE_NUMBER_OF_
 
 static const char* defaultLanguagesKeyName = { "SupportedLanguages" };
 
+static uint8_t numberOfLanguages = 0;
+
+uint8_t AJSVC_PropertyStore_GetNumberOfLanguages()
+{
+    return numberOfLanguages;
+}
+
 uint8_t AJSVC_PropertyStore_GetMaxValueLength(AJSVC_PropertyStoreFieldIndices fieldIndex)
 {
     switch (fieldIndex) {
@@ -310,6 +317,11 @@ static AJ_Status AboutPropGetter(AJ_Message* msg, const char* language)
 AJ_Status PropertyStore_Init()
 {
     AJ_Status status = AJ_OK;
+    const char* const* supportedLanguage = propertyStoreDefaultLanguages;
+    numberOfLanguages = 0;
+    while (*(supportedLanguage++) != NULL) {
+        numberOfLanguages++;
+    }
 #ifdef CONFIG_SERVICE
     status = AJSVC_PropertyStore_LoadAll();
 #endif

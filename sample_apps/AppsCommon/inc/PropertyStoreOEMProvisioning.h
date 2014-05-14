@@ -44,8 +44,12 @@ extern const char* deviceProductName;
 #define DEVICE_NAME_VALUE_LENGTH 32
 #define PASSWORD_VALUE_LENGTH (AJ_ADHOC_LEN * 2)
 
-extern const uint8_t AJSVC_PROPERTY_STORE_NUMBER_OF_LANGUAGES;
-extern const char** propertyStoreDefaultLanguages;
+extern const char* const* propertyStoreDefaultLanguages;   // A NULL termminated list of language strings
+
+/**
+ * A convenience macro for the number of languages
+ */
+#define AJSVC_PROPERTY_STORE_NUMBER_OF_LANGUAGES (AJSVC_PropertyStore_GetNumberOfLanguages()) // The number of language strings calculated upon PropertyStore initialization
 
 /**
  * property structure
@@ -78,7 +82,7 @@ extern const char** propertyStoreDefaultValues[AJSVC_PROPERTY_STORE_NUMBER_OF_KE
  * properties container for runtime values
  */
 typedef struct _PropertyStoreRuntimeEntry {
-    char** value;  // An array of size 1 or AJSVC_PROPERTY_STORE_NUMBER_OF_LANGUAGES mutable buffers depending on whether the property is multilingual
+    char** value; // An array of size 1 or AJSVC_PROPERTY_STORE_NUMBER_OF_LANGUAGES mutable buffers depending on whether the property is multilingual
     uint8_t size; // The size of the value buffer(s)
 } PropertyStoreConfigEntry;
 

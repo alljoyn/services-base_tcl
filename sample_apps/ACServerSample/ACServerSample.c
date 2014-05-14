@@ -101,23 +101,23 @@ static uint32_t PasswordCallback(uint8_t* buffer, uint32_t bufLen)
 const char* deviceManufactureName = "QCA";
 const char* deviceProductName = "AC";
 
-static const char* DEFAULT_LANGUAGE = "en";
-
-const char** propertyStoreDefaultLanguages = { &DEFAULT_LANGUAGE };
-const uint8_t AJSVC_PROPERTY_STORE_NUMBER_OF_LANGUAGES = 1;
+static const char DEFAULT_LANGUAGE[] = "en";
+static const char* DEFAULT_LANGUAGES[] = { DEFAULT_LANGUAGE };
+static const char* SUPPORTED_LANGUAGES[] = { DEFAULT_LANGUAGE, NULL };
+const char* const* propertyStoreDefaultLanguages = SUPPORTED_LANGUAGES;
 
 /**
  * property array of default values
  */
-static const char* DEFAULT_PASSCODE[] = { "303030303030" }; // HEX encoded { '0', '0', '0', '0', '0', '0' }
-static const char* DEFAULT_APP_NAME[] = { "Controllee" };
-static const char* DEFAULT_DESCRIPTION[] = { "AC IOE device" };
-static const char* DEFAULT_MANUFACTURER[] = { "Company A(EN)" };
-static const char* DEFAULT_DEVICE_MODEL[] = { "0.0.1" };
-static const char* DEFAULT_DATE_OF_MANUFACTURE[] = { "2014-05-01" };
-static const char* DEFAULT_SOFTWARE_VERSION[] = { "0.0.1" };
-static const char* DEFAULT_HARDWARE_VERSION[] = { "0.0.1" };
-static const char* DEFAULT_SUPPORT_URL[] = { "www.company_a.com" };
+static const char* DEFAULT_PASSCODES[] = { "303030303030" }; // HEX encoded { '0', '0', '0', '0', '0', '0' }
+static const char* DEFAULT_APP_NAMES[] = { "Controllee" };
+static const char* DEFAULT_DESCRIPTIONS[] = { "AC IOE device" };
+static const char* DEFAULT_MANUFACTURERS[] = { "Company A(EN)" };
+static const char* DEFAULT_DEVICE_MODELS[] = { "0.0.1" };
+static const char* DEFAULT_DATE_OF_MANUFACTURES[] = { "2014-05-01" };
+static const char* DEFAULT_SOFTWARE_VERSIONS[] = { "0.0.1" };
+static const char* DEFAULT_HARDWARE_VERSIONS[] = { "0.0.1" };
+static const char* DEFAULT_SUPPORT_URLS[] = { "www.company_a.com" };
 
 const char** propertyStoreDefaultValues[AJSVC_PROPERTY_STORE_NUMBER_OF_KEYS] =
 {
@@ -125,21 +125,21 @@ const char** propertyStoreDefaultValues[AJSVC_PROPERTY_STORE_NUMBER_OF_KEYS] =
     NULL,                           /*DeviceId*/
     NULL,                           /*AppId*/
     NULL,                           /*DeviceName*/
-    &DEFAULT_LANGUAGE,              /*DefaultLanguage*/
-    DEFAULT_PASSCODE,               /*Passcode*/
+    DEFAULT_LANGUAGES,              /*DefaultLanguage*/
+    DEFAULT_PASSCODES,              /*Passcode*/
     NULL,                           /*RealmName*/
 // Add other runtime or configurable keys above this line
-    DEFAULT_APP_NAME,               /*AppName*/
-    DEFAULT_DESCRIPTION,            /*Description*/
-    DEFAULT_MANUFACTURER,           /*Manufacturer*/
-    DEFAULT_DEVICE_MODEL,           /*ModelNumber*/
-    DEFAULT_DATE_OF_MANUFACTURE,    /*DateOfManufacture*/
-    DEFAULT_SOFTWARE_VERSION,       /*SoftwareVersion*/
+    DEFAULT_APP_NAMES,              /*AppName*/
+    DEFAULT_DESCRIPTIONS,           /*Description*/
+    DEFAULT_MANUFACTURERS,          /*Manufacturer*/
+    DEFAULT_DEVICE_MODELS,          /*ModelNumber*/
+    DEFAULT_DATE_OF_MANUFACTURES,   /*DateOfManufacture*/
+    DEFAULT_SOFTWARE_VERSIONS,      /*SoftwareVersion*/
     NULL,                           /*AJSoftwareVersion*/
     NULL,                           /*MaxLength*/
 // Add other mandatory about keys above this line
-    DEFAULT_HARDWARE_VERSION,       /*HardwareVersion*/
-    DEFAULT_SUPPORT_URL,            /*SupportUrl*/
+    DEFAULT_HARDWARE_VERSIONS,      /*HardwareVersion*/
+    DEFAULT_SUPPORT_URLS,           /*SupportUrl*/
 // Add other optional about keys above this line
 };
 

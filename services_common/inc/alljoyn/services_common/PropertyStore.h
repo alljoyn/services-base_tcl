@@ -186,6 +186,12 @@ const char* AJSVC_PropertyStore_GetLanguageName(int8_t langIndex);
 int8_t AJSVC_PropertyStore_GetLanguageIndex(const char* const language);
 
 /**
+ * The number of supported languages
+ * @return numberOfLanguages
+ */
+uint8_t AJSVC_PropertyStore_GetNumberOfLanguages();
+
+/**
  * Load all persisted values.
  * @return aj_status
  */
