@@ -682,10 +682,21 @@ AJ_Status AJNS_Producer_DismissRequestHandler(AJ_BusAttachment* busAttachment, A
     AJ_Status status;
     int32_t notificationId;
     const char* appId;
+    AJ_Message reply;
 
     status = AJ_UnmarshalArgs(msg, "i", &notificationId);
     if (status != AJ_OK) {
         AJ_ErrPrintf(("Could not unmarshal message\n"));
+        return status;
+    }
+
+    status = AJ_MarshalReplyMsg(msg, &reply);
+    if (status != AJ_OK) {
+        return status;
+    }
+
+    status = AJ_DeliverMsg(&reply);
+    if (status != AJ_OK) {
         return status;
     }
 
