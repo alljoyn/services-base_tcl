@@ -182,17 +182,18 @@ ErrorExit:
 AJSVC_ServiceStatus AJApp_MessageProcessor(AJ_BusAttachment* busAttachment, AJ_Message* msg, AJ_Status* status)
 {
     AJSVC_ServiceStatus serviceStatus = AJSVC_SERVICE_STATUS_HANDLED;
+    uint16_t port;
+    char* joiner;
+    uint32_t sessionId = 0;
+    uint8_t session_accepted = FALSE;
 
     if (msg->msgId == AJ_METHOD_ACCEPT_SESSION) {    // Process all incoming request to join a session and pass request for acceptance by all services
-        uint16_t port;
-        char* joiner;
-        uint32_t sessionId = 0;
-        AJ_UnmarshalArgs(msg, "qus", &port, &sessionId, &joiner);
-        uint8_t session_accepted = FALSE;
-
+        *status = AJ_UnmarshalArgs(msg, "qus", &port, &sessionId, &joiner);
+        if (*status != AJ_OK) {
+            return serviceStatus;
+        }
         session_accepted |= (port == servicePort);
         session_accepted |= AJSVC_CheckSessionAccepted(port, sessionId, joiner);
-
         *status = AJ_BusReplyAcceptSession(msg, session_accepted);
         AJ_AlwaysPrintf(("%s session session_id=%u joiner=%s for port %u\n", (session_accepted ? "Accepted" : "Rejected"), sessionId, joiner, port));
     } else {

@@ -177,10 +177,13 @@ static AJSVC_ServiceStatus AJApp_MessageProcessor(AJ_BusAttachment* busAttachmen
     uint16_t port;
     char* joiner;
     uint32_t sessionId = 0;
-    AJ_UnmarshalArgs(msg, "qus", &port, &sessionId, &joiner);
     uint8_t session_accepted = FALSE;
 
     if (msg->msgId == AJ_METHOD_ACCEPT_SESSION) {    // Process all incoming request to join a session and pass request for acceptance by all services
+        *status = AJ_UnmarshalArgs(msg, "qus", &port, &sessionId, &joiner);
+        if (*status != AJ_OK) {
+            return serviceStatus;
+        }
         session_accepted |= (port == AJ_ABOUT_SERVICE_PORT);
         session_accepted |= AJSVC_CheckSessionAccepted(port, sessionId, joiner);
         *status = AJ_BusReplyAcceptSession(msg, session_accepted);
