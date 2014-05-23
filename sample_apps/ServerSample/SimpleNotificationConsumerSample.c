@@ -166,11 +166,7 @@ static void Consumer_DoAction(AJ_BusAttachment* busAttachment)
     if (inputMode) {
         Consumer_GetActionFromUser(&nextAction);
         AJ_AlwaysPrintf(("Action received is %u\n", nextAction));
-    } else if (dismissTimer != NULL && AJ_GetElapsedTime(dismissTimer, TRUE) > DISMISS_DELAY_PERIOD) { // Delay timer expired
-        nextAction = CONSUMER_ACTION_DISMISS; // Dismiss last saved notification
-        dismissTimer = NULL;                  // Disable/delete timer
     }
-
     switch (nextAction) {
     case CONSUMER_ACTION_DISMISS:
         processingAction = TRUE;
@@ -189,7 +185,15 @@ static void Consumer_DoAction(AJ_BusAttachment* busAttachment)
 void NotificationConsumer_DoWork(AJ_BusAttachment* busAttachment)
 {
     if (savedNotification.version > 0 && !processingAction) {
-        Consumer_DoAction(busAttachment);
+        if (dismissTimer != NULL) { // Dismiss timer is set
+            if (AJ_GetElapsedTime(dismissTimer, TRUE) > DISMISS_DELAY_PERIOD) { // Delay timer expired
+                dismissTimer = NULL;                  // Disable/delete timer
+                nextAction = CONSUMER_ACTION_DISMISS; // Dismiss last saved notification
+                Consumer_DoAction(busAttachment);
+            }
+        } else { // Saved notidication awaits action
+            Consumer_DoAction(busAttachment);
+        }
     }
     return;
 }
