@@ -86,7 +86,7 @@ static const char* const INTERVAL_TYPES[] = { "Fixed", "Random" };
 #define FIXED_MESSAGE_TYPE AJNS_NOTIFICATION_MESSAGE_TYPE_INFO
 static const char* const PRIORITIES[AJNS_NUM_MESSAGE_TYPES] = { "Emergency", "Warning", "Info" };
 
-#define FIXED_TTL 20000
+#define FIXED_TTL 20
 
 /**
  * Initial the Notifications that will be used during this sample app

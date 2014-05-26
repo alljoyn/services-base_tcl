@@ -385,7 +385,7 @@ AJ_Status NotificationProducer_Init()
 static void SendNotification(AJ_BusAttachment* busAttachment)
 {
     uint16_t messageType = AJNS_NOTIFICATION_MESSAGE_TYPE_INFO;
-    uint32_t ttl = 20000;
+    uint32_t ttl = 20;
     uint32_t serialNum;
 
     AJNS_Producer_SendNotification(busAttachment, &notificationContent, messageType, ttl, &serialNum);
