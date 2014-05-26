@@ -30,7 +30,6 @@
 #ifdef ONBOARDING_SERVICE
     #include <alljoyn/onboarding/OnboardingManager.h>
 #endif
-#include <aj_sasl.h>
 #include <aj_guid.h>
 #include <aj_nvram.h>
 #include <aj_creds.h>
