@@ -106,6 +106,7 @@ void onTurnFanOff(ExecuteActionContext* context, uint8_t accepted);
 
 //void simulateTemperatureChange();
 uint8_t checkForUpdatesToSend();
+uint8_t checkForEventsToSend();
 
 #endif /* CONTROLPANELPROVIDED_H_ */
 

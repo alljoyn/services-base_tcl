@@ -13,14 +13,9 @@
 #    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 # sample usage:
-# scons ALL=1 TARG=linux WS=off VARIANT=debug 
-# scons PRODUCER=1 CONSUMER=1 CONFIG=1 CPS=1 TARG=linux WS=off VARIANT=debug 
+# scons EVENTS_AND_ACTIONS=0 TARG=linux WS=off VARIANT=debug 
 # defaults:
-# ALL=0
-# CONFIG=1
-# PRODUCER=0
-# CONSUMER=0
-# CPS=0
+# EVENTS_AND_ACTIONS=1
 
 import os
 
@@ -36,6 +31,11 @@ if sersamp_env['VARIANT'] == 'debug':
     sersamp_env.Append(CPPDEFINES = ['ER_DEBUG_AJSVCAPP=1'])
     sersamp_env.Append(CPPDEFINES = ['ER_DEBUG_AJSVCALL=1'])
     sersamp_env.Append(CPPDEFINES = ['AJ_DEBUG_RESTRICT=AJ_DEBUG_INFO'])
+
+# build the service sample, based on command-line args
+build_eventsandactions_default      = 1 # do    build by default
+
+build_eventsandactions = ARGUMENTS.get('EVENTS_AND_ACTIONS', build_eventsandactions_default)
 
 sersamp_env.Append(CPPPATH = [Dir('../')])
 sersamp_env.Append(CPPPATH = [Dir('../../AppsCommon/inc')])
@@ -59,6 +59,10 @@ objs.extend(SConscript('../../../notification/src/NotificationCommon/SConscript'
 
 srcs.extend(['ControlPanelGenerated.c', 'ControlPanelProvided.c', 'ControlPanelSample.c'])
 objs.extend(SConscript('../../../controlpanel/SConscript', {'cps_env': sersamp_env}))
+
+if int(build_eventsandactions):
+    sersamp_env.Append(CPPDEFINES = ['EVENTS_AND_ACTIONS'])
+    srcs.extend(['EventsAndActionsSample.c'])
 
 objs.extend(sersamp_env.Object(srcs))
 

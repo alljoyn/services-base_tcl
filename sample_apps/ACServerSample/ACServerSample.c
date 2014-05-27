@@ -31,6 +31,9 @@
 #include <alljoyn/services_common/PropertyStore.h>
 #include <alljoyn/services_common/ServicesCommon.h>
 #include "AppHandlers.h"
+#ifdef EVENTS_AND_ACTIONS
+#include "EventsAndActionsSample.h"
+#endif
 
 #ifndef NDEBUG
 #ifndef ER_DEBUG_AJSVCAPP
@@ -199,11 +202,17 @@ int AJ_Main(void)
         goto Exit;
     }
 
+#ifdef EVENTS_AND_ACTIONS
+    status = EventsAndActions_Init(propertyStoreDefaultLanguages);
+    if (status != AJ_OK) {
+        goto Exit;
+    }
+#endif
+
     status = AJServices_Init(AJ_ABOUT_SERVICE_PORT, deviceManufactureName, deviceProductName);
     if (status != AJ_OK) {
         goto Exit;
     }
-
     SetBusAuthPwdCallback(MyBusAuthPwdCB);
 
     while (TRUE) {
@@ -229,12 +238,20 @@ int AJ_Main(void)
                 if (AJ_ERR_LINK_TIMEOUT == AJ_BusLinkStateProc(&busAttachment)) {
                     status = AJ_ERR_READ;             // something's not right. force disconnect
                 } else {                              // nothing on bus, do our own thing
+#ifdef EVENTS_AND_ACTIONS
+                    EventsAndActions_DoWork(&busAttachment);
+#endif
                     AJApp_DoWork(&busAttachment);
                     continue;
                 }
             }
 
             if (isUnmarshalingSuccessful) {
+#ifdef EVENTS_AND_ACTIONS
+                if (serviceStatus == AJSVC_SERVICE_STATUS_NOT_HANDLED) {
+                    serviceStatus = EventsAndActionsMessageProcessor(&busAttachment, &msg, &status);
+                }
+#endif
                 if (serviceStatus == AJSVC_SERVICE_STATUS_NOT_HANDLED) {
                     serviceStatus = AJApp_MessageProcessor(&busAttachment, &msg, &status);
                 }

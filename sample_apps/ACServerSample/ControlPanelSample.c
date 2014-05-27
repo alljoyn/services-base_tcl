@@ -27,6 +27,7 @@
 #include "ControlPanelGenerated.h"
 #include "ControlPanelSample.h"
 #include <aj_link_timeout.h>
+#include <alljoyn/services_common/PropertyStore.h>
 
 #ifndef NDEBUG
 extern AJ_EXPORT uint8_t dbgAJSVCAPP;

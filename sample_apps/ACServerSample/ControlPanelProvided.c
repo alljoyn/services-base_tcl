@@ -61,6 +61,7 @@ static const char* notificationActionObjPath = NULL;
 static AJ_Time fanTime;
 static AJ_Time* fanTimer = NULL;
 #define FAN_ON_TIME 15000
+static uint8_t eventsToSend = 0;
 
 void disableFan()
 {
@@ -209,6 +210,22 @@ void setFanSpeedSelectorFieldUpdate() {
 
 void setACModeSelectorFieldUpdate() {
     signalsToSend |= 1 << 4;
+}
+
+void set80FReachedEvent() {
+    eventsToSend |= 1 << 0;
+}
+
+void set60FReachedEvent() {
+    eventsToSend |= 1 << 1;
+}
+
+void setTurnedOffEvent() {
+    eventsToSend |= 1 << 2;
+}
+
+void setTurnedOnEvent() {
+    eventsToSend |= 1 << 3;
 }
 
 static void addDismissSignal(ExecuteActionContext* context, int32_t dismissSignal)
@@ -506,5 +523,29 @@ uint8_t checkForUpdatesToSend()
     }
 
     return signalsToSend;
+}
+
+uint8_t checkForEventsToSend()
+{
+    eventsToSend = 0;
+    // 0x01 == need to send event 80F reached
+    // 0x02 == need to send event 60F reached
+    // 0x04 == need to send event mode turned off
+
+    if (targetTemp >= currentTemperature && currentTemperature == 80) {
+        set80FReachedEvent();
+    }
+    if (targetTemp <= currentTemperature && currentTemperature == 60) {
+        set60FReachedEvent();
+    }
+    if (currentMode != previousMode) {
+        if (currentMode == 4) {
+            setTurnedOffEvent();
+        } else if (previousMode == 4) {
+            setTurnedOnEvent();
+        }
+    }
+
+    return eventsToSend;
 }
 
