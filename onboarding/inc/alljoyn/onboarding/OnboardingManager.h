@@ -162,31 +162,31 @@ typedef struct _AJOBS_Settings {
     /**
      * Wait time for clients to connect to SoftAP station (ms)
      */
-    const uint32_t AJOBS_WAIT_FOR_SOFTAP_CONNECTION; // 600000
+    uint32_t AJOBS_WAIT_FOR_SOFTAP_CONNECTION; // 600000
     /**
      * Number of retry attempts after failed attempt to connect to an already validated configuration.
      */
-    const uint8_t AJOBS_MAX_RETRIES; // 2
+    uint8_t AJOBS_MAX_RETRIES; // 2
     /**
      * Wait time between retries (ms)
      */
-    const uint32_t AJOBS_WAIT_BETWEEN_RETRIES; // 180000
+    uint32_t AJOBS_WAIT_BETWEEN_RETRIES; // 180000
     /**
      * SoftAP SSID name.
      **/
-    const char AJOBS_SoftAPSSID[AJOBS_SSID_MAX_LENGTH + 1];
+    char AJOBS_SoftAPSSID[AJOBS_SSID_MAX_LENGTH + 1]; // AJ_...
     /**
      * Whether the SoftAP SSID is hidden
      */
-    const uint8_t AJOBS_SoftAPIsHidden; // FALSE
+    uint8_t AJOBS_SoftAPIsHidden; // FALSE
     /**
      * SoftAP passpharse. If NULL means OPEN network otherwise assumes WPA2 8 to 63 characters long.
      */
-    const char* AJOBS_SoftAPPassphrase; // NULL
+    char* AJOBS_SoftAPPassphrase; // NULL
     /**
      * Whether to reset the Wi-Fi chip when switching to Idle mode
      */
-    const uint8_t AJOBS_RESET_WIFI_ON_IDLE; // TRUE;
+    uint8_t AJOBS_RESET_WIFI_ON_IDLE; // TRUE;
 } AJOBS_Settings;
 
 #define AJOBS_DEFAULT_SETTINGS { 600000, 2, 180000, { 0 }, FALSE, NULL, TRUE };             /**< default settings */

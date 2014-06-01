@@ -36,7 +36,7 @@ extern AJ_EXPORT uint8_t dbgAJSVCAPP;
 static const char* appDeviceManufactureName = NULL;
 static const char* appDeviceProductName = NULL;
 
-static const char* GenerateSoftAPSSID(char* obSoftAPssid)
+static char* GenerateSoftAPSSID(char* obSoftAPssid)
 {
     const char* deviceId;
     size_t deviceIdLen;

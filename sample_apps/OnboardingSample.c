@@ -338,7 +338,7 @@ static const char* aboutIconUrl = { "https://www.alljoyn.org/sites/all/themes/at
  * Onboarding Provisioning
  */
 
-static const char* GenerateSoftAPSSID(char* obSoftAPssid)
+static char* GenerateSoftAPSSID(char* obSoftAPssid)
 {
     const char* deviceId;
     size_t deviceIdLen;
