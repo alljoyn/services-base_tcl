@@ -56,7 +56,7 @@ static const AJ_InterfaceDescription AJSVC_OnboardingInterfaces[] = {
 
 AJ_Object AJOBS_ObjectList[] = {
     { "/Onboarding",           AJSVC_OnboardingInterfaces, AJ_OBJ_FLAG_ANNOUNCED },
-    NULL
+    { NULL }
 };
 
 /*

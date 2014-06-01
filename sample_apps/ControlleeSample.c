@@ -336,7 +336,7 @@ static const char* aboutIconUrl = { "https://www.alljoyn.org/sites/all/themes/at
 
 static AJ_Object controlleeObjectList[] = {
     AJCPS_CONTROLLEE_GENERATED_OBJECTS
-    NULL
+    { NULL }
 };
 
 static AJ_Status Controlee_Init()

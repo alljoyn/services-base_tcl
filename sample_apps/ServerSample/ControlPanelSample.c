@@ -35,7 +35,7 @@ extern AJ_EXPORT uint8_t dbgAJSVCAPP;
 
 static AJ_Object controlleeObjectList[] = {
     AJCPS_CONTROLLEE_GENERATED_OBJECTS
-    NULL
+    { NULL }
 };
 
 AJ_Status Controlee_Init()
