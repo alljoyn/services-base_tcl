@@ -38,12 +38,12 @@ typedef struct {
 
 /**
  * Marshal ConstraintList into given reply message
- * @param widget
- * @param constraints
- * @param reply
- * @param numConstraints
- * @param signature
- * @param language
+ * @param widget - pointer to the widget structure
+ * @param constraints - the constraints array
+ * @param reply - the message to marshal into
+ * @param numConstraints - the number of constraints
+ * @param signature - signature of value
+ * @param language - language requested
  */
 AJ_Status marshalConstraintList(BaseWidget* widget, ConstraintList* constraints, AJ_Message* reply, uint16_t numConstraints,
                                 const char* signature, uint16_t language);

@@ -46,9 +46,9 @@ void setBaseEnabled(BaseWidget* widget, uint8_t enabled)
     }
 }
 
-void setBaseWritable(BaseWidget* widget, uint8_t writeable)
+void setBaseWritable(BaseWidget* widget, uint8_t writable)
 {
-    if (writeable) {
+    if (writable) {
         widget->states = widget->states | BASE_WRITABLE;
     } else {
         widget->states = widget->states & ~BASE_WRITABLE;

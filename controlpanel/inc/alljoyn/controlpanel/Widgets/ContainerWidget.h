@@ -27,15 +27,15 @@
 /////////////////////////*     ContainerWidget     *//////////////////////////////////////
 
 /**
- * ContainerWidget structure
+ * ContainerWidget structure - widget to represent a Container containing other widgets
  */
 typedef struct {
     BaseWidget base; //!< Internal BaseWidget
 } ContainerWidget;
 
 /**
- * Initialize ContainerWidget
- * @param widget - assumed to be a ContainerWidget
+ * Initialize the ContainerWidget structure
+ * @param widget - pointer to ContainerWidget structure
  */
 void initializeContainerWidget(ContainerWidget* widget);
 

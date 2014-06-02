@@ -28,15 +28,15 @@
 /////////////////////////*     ActionWidget     *//////////////////////////////////////
 
 /**
- * ActionWidget structure
+ * ActionWidget structure - widget to represent an Action(Button)
  */
 typedef struct ActionWidget {
     BaseWidget base; //!< Internal BaseWidget
 } ActionWidget;
 
 /**
- * Initialize ActionWidget
- * @param widget - assumed to be an ActionWidget
+ * Initialize the ActionWidget structure
+ * @param widget - pointer to actionWidget structure
  */
 void initializeActionWidget(ActionWidget* widget);
 

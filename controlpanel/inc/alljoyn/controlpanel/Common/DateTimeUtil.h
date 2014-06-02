@@ -45,33 +45,33 @@ typedef struct {
 
 /**
  * Marshal DatePropertyValue into given reply message
- * @param datePropertyValue
- * @param reply
- * @return aj_status
+ * @param datePropertyValue - value to marshal
+ * @param reply - message to marshal into
+ * @return aj_status - success/failure
  */
 AJ_Status marshalDatePropertyValue(DatePropertyValue* datePropertyValue, AJ_Message* reply);
 
 /**
  * Marshal TimePropertyValue into given reply message
- * @param timePropertyValue
- * @param reply
- * @return aj_status
+ * @param timePropertyValue - value to marshal
+ * @param reply - message to marshal into
+ * @return aj_status - success/failure
  */
 AJ_Status marshalTimePropertyValue(TimePropertyValue* timePropertyValue, AJ_Message* reply);
 
 /**
  * Unmarshal DatePropertyValue from given message
- * @param datePropertyValue
- * @param message
- * @return aj_status
+ * @param datePropertyValue - value to fill with unmarshalled content
+ * @param message - message to unmarshal
+ * @return aj_status - success/failure
  */
 AJ_Status unmarshalDatePropertyValue(DatePropertyValue* datePropertyValue, AJ_Message* message);
 
 /**
  * Unmarshal TimePropertyValue from given message
- * @param timePropertyValue
- * @param message
- * @return aj_status
+ * @param timePropertyValue - value to fill with unmarshalled content
+ * @param message - message to unmarshal
+ * @return aj_status - success/failure
  */
 AJ_Status unmarshalTimePropertyValue(TimePropertyValue* timePropertyValue, AJ_Message* message);
 

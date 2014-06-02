@@ -28,86 +28,86 @@
 
 /**
  * StartOptionalParams - Start Marshaling the Optional Parameters' container array.
- * @param reply
- * @param arg
- * @return aj_status
+ * @param reply - message to marshal into
+ * @param arg - arg to hold the container
+ * @return aj_status - success/failure
  */
 #define StartOptionalParams(reply, arg) AJ_MarshalContainer(reply, arg, AJ_ARG_ARRAY)
 
 /**
  * Add a layout Hint. Can be used for all kinds of MetaData (Property, Action etc)
- * @param reply
- * @param hints
- * @param numHints
- * @return aj_status
+ * @param reply - message to marshal into
+ * @param hints - hints to marshal
+ * @param numHints - number of hints to marshal
+ * @return aj_status - success/failure
  */
 AJ_Status AddHints(AJ_Message* reply, const uint16_t hints[], uint16_t numHints);
 
 /**
  * Add Constraint Value
- * @param reply
- * @param sig
- * @param value
- * @param displayValue
- * @return aj_status
+ * @param reply - message to marshal into
+ * @param sig - signature of value
+ * @param value - value to marshal
+ * @param displayValue - displayValue to marshal
+ * @return aj_status - success/failure
  */
 AJ_Status AddConstraintValue(AJ_Message* reply, const char* sig, const void* value, const char* displayValue);
 
 /**
  * Add ConstraintRange component
- * @param reply
- * @param valueSig
- * @param min
- * @param max
- * @param increment
- * @return aj_status
+ * @param reply - message to marshal into
+ * @param valueSig - signature of value
+ * @param min - min Value
+ * @param max - max Value
+ * @param increment - increment Value
+ * @return aj_status - success/failure
  */
 AJ_Status AddConstraintRange(AJ_Message* reply, const char* valueSig, const void* min, const void* max, const void* increment);
 
 /**
  * Start a Complex OptionalParam component
- * @param reply
- * @param arg
- * @param key
- * @param sig
- * @return aj_status
+ * @param reply - message to marshal into
+ * @param arg - arg to hold value
+ * @param key - key in dictionary
+ * @param sig - signature of value
+ * @return aj_status - success/failure
  */
 AJ_Status StartComplexOptionalParam(AJ_Message* reply, AJ_Arg* arg, uint16_t key, const char* sig);
 
 /**
  * Add a basic type Optional Param
- * @param reply
- * @param key
- * @param sig
- * @param value
- * @return aj_status
+ * @param reply - message to marshal into
+ * @param key - key in dictionary
+ * @param sig - signature of value
+ * @param value - value to marshal
+ * @return aj_status - success/failure
  */
 AJ_Status AddBasicOptionalParam(AJ_Message* reply, uint16_t key, const char* sig, const void* value);
 
 /**
  * Add a property for GetAll response
- * @param reply
- * @param key
- * @param sig
- * @param widget
- * @param language
- * @param functionPtr
- * @return aj_status
+ * @param reply - message to marshal into
+ * @param key - key in dictionary
+ * @param sig - signature of value
+ * @param widget - widget being marshalled
+ * @param language - language requested
+ * @param functionPtr - function Pointer to marshal the value
+ * @return aj_status - success/failure
  */
 AJ_Status AddPropertyForGetAll(AJ_Message* reply, char* key, const char* sig,
                                BaseWidget* widget, uint16_t language, MarshalWidgetFptr functionPtr);
 
 /**
  * MarshalAllRootProperties - includes only version
- * @param reply
- * @return aj_status
+ * @param reply - message to marshal into
+ * @return aj_status - success/failure
  */
 AJ_Status MarshalAllRootProperties(AJ_Message* reply);
 
 /**
  * Marshal Version Property for root interfaces
- * @param reply
- * @return aj_status
+ * @param reply - message to marshal into
+ * @return aj_status - success/failure
  */
 AJ_Status MarshalVersionRootProperties(AJ_Message* reply);
 

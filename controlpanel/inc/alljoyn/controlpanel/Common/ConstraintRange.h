@@ -37,16 +37,16 @@ typedef struct {
 } ConstraintRange;
 
 /**
- * Initialize ConstraintRange
- * @param constraints
+ * Initialize the ConstraintRange structure
+ * @param constraints - pointer to ConstraintRange structure
  */
 void initializeConstraintRange(ConstraintRange* constraints);
 
 /**
  * Marshal ConstraintRange into given reply message
- * @param constraints
- * @param reply
- * @return aj_status
+ * @param constraints - constraints to marshal
+ * @param reply - message to marshal it into
+ * @return aj_status - success/failure
  */
 AJ_Status marshalConstraintRange(ConstraintRange* constraints, AJ_Message* reply);
 

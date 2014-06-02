@@ -34,23 +34,23 @@ struct BaseWidget;
 /////////////////////////* BaseWidget OptParams *//////////////////////////////////////
 
 /**
- * BaseOptParams structure
+ * Structure that contains optional paramaters for widgets
  */
 typedef struct {
-    const char* const* label;                                         //!< The url of the Http control
-    const char* (*getLabel)(struct BaseWidget* thisWidget, uint16_t); //!< The url of the Http control
+    const char* const* label;                                         //!< The labels of the Widget. Array of labels - one per language
+    const char* (*getLabel)(struct BaseWidget* thisWidget, uint16_t); //!< The GetLabel function pointer. Receives a language index and should return the label for that language
 
-    uint32_t bgColor;                                                 //!< The url of the Http control
-    uint32_t (*getBgColor)(struct BaseWidget* thisWidget);            //!< The url of the Http control
+    uint32_t bgColor;                                                 //!< The background color of the Widget
+    uint32_t (*getBgColor)(struct BaseWidget* thisWidget);            //!< The GetBgColor function pointer. Should return the background color of the widget
 
-    uint16_t numHints;                                                //!< The url of the Http control
-    const uint16_t* hints;                                            //!< The url of the Http control
+    uint16_t numHints;                                                //!< The number of hints defined for this widget
+    const uint16_t* hints;                                            //!< The array containing the hints for the widget
 
 } BaseOptParams;
 
 /**
- * Initialize BaseOptParam
- * @param optParam
+ * Initialize the BaseOptParam structure
+ * @param optParam - pointer to optParam structure
  */
 void initializeBaseOptParam(BaseOptParams* optParam);
 
@@ -58,8 +58,12 @@ void initializeBaseOptParam(BaseOptParams* optParam);
 
 /**
  * Funtion pointer for marshaling a given widget structure
+ * @param widget - widget to marshal
+ * @param msg - message to marshal into
+ * @param language - language requested
+ * @return status - success/failure
  */
-typedef AJ_Status (*MarshalWidgetFptr)(struct BaseWidget*, AJ_Message*, uint16_t language);
+typedef AJ_Status (*MarshalWidgetFptr)(struct BaseWidget* widget, AJ_Message* msg, uint16_t language);
 
 /**
  * BaseWidget structure
@@ -81,76 +85,76 @@ typedef struct BaseWidget {
 } BaseWidget;
 
 /**
- * Initialize BaseWidget
- * @param widget
+ * Initialize the BaseWidget structure
+ * @param widget - pointer to structure
  */
 void initializeBaseWidget(BaseWidget* widget);
 
 /**
  * Set Enabled state of widget
- * @param widget
- * @param enabled
+ * @param widget - pointer to widget
+ * @param enabled - enabled boolean
  */
 void setBaseEnabled(BaseWidget* widget, uint8_t enabled);
 
 /**
  * Set Writable state of widget
- * @param widget
- * @param writeable
+ * @param widget - pointer to widget
+ * @param writable - writable boolean
  */
-void setBaseWritable(BaseWidget* widget, uint8_t writeable);
+void setBaseWritable(BaseWidget* widget, uint8_t writable);
 
 /**
  * Marshal BaseVersion into given reply message
- * @param widget
- * @param reply
- * @param language
- * @return aj_status
+ * @param widget - pointer to widget
+ * @param reply - message to marshal into
+ * @param language - language requested
+ * @return aj_status - success/failure
  */
 AJ_Status marshalBaseVersion(BaseWidget* widget, AJ_Message* reply, uint16_t language);
 
 /**
  * Marshal BaseStates into given reply message
- * @param widget
- * @param reply
- * @param language
- * @return aj_status
+ * @param widget - pointer to widget
+ * @param reply - message to marshal into
+ * @param language - language requested
+ * @return aj_status - success/failure
  */
 AJ_Status marshalBaseStates(BaseWidget* widget, AJ_Message* reply, uint16_t language);
 
 /**
  * Marshal Only the BaseOptParam of the given widget into given reply message
- * @param widget
- * @param reply
- * @param language
- * @return aj_status
+ * @param widget - pointer to widget
+ * @param reply - message to marshal into
+ * @param language - language requested
+ * @return aj_status - success/failure
  */
 AJ_Status marshalOnlyBaseOptParam(BaseWidget* widget, AJ_Message* reply, uint16_t language);
 
 /**
  * Marshal BaseOptParam into given reply message
- * @param widget
- * @param reply
- * @param language
- * @return aj_status
+ * @param widget - pointer to widget
+ * @param reply - message to marshal into
+ * @param language - language requested
+ * @return aj_status - success/failure
  */
 AJ_Status marshalBaseOptParam(BaseWidget* widget, AJ_Message* reply, uint16_t language);
 
 /**
  * Marshal All BaseProperties of given widget into given reply message
- * @param widget
- * @param reply
- * @param language
- * @return aj_status
+ * @param widget - pointer to widget
+ * @param reply - message to marshal into
+ * @param language - language requested
+ * @return aj_status - success/failure
  */
 AJ_Status marshalAllBaseProperties(BaseWidget* widget, AJ_Message* reply, uint16_t language);
 
 /**
- * Marshal All the BaseProperties of a given widget into given reply message
- * @param widget
- * @param reply
- * @param language
- * @return aj_status
+ * Marshal Only All of the BaseProperties of a given widget into given reply message
+ * @param widget - pointer to widget
+ * @param reply - message to marshal into
+ * @param language - language requested
+ * @return aj_status - success/failure
  */
 AJ_Status marshalAllOnlyBaseProperties(BaseWidget* widget, AJ_Message* reply, uint16_t language);
 

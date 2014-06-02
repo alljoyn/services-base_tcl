@@ -49,7 +49,7 @@ typedef struct {
 
     /**
      * Optional function that provides an alternative way to lookup constraint information. If this function pointer is non-NULL this
-     * function is called to obtain contraint information and the contstraintList is ignored
+     * function is called to obtain constraint information and the contstraintList is ignored
      *
      * @param thisWidget Identifies the property widget that has constraints.
      * @param index      The index of the constraint value requested
@@ -68,7 +68,8 @@ typedef struct {
 } PropertyOptParams;
 
 /**
- * Initialize PropertyOptParam
+ * Initialize the PropertyOptParams structure
+ * @param widget - pointer to PropertyOptParams structure
  */
 void initializePropertyOptParam(PropertyOptParams* widget);
 
@@ -89,45 +90,45 @@ typedef struct PropertyWidget {
 } PropertyWidget;
 
 /**
- * Initialize PropertyWidget
- * @param widget - assumed to be a PropertyWidget
+ * Initialize the PropertyWidget structure
+ * @param widget - pointer to PropertyWidget structure
  */
 void initializePropertyWidget(PropertyWidget* widget);
 
 /**
  * Marshal PropertyValue into given reply message
- * @param widget - assumed to be a PropertyWidget
- * @param reply
- * @param language
- * @return aj_status
+ * @param widget - pointer to widget
+ * @param reply - message to marshal into
+ * @param language - language requested
+ * @return aj_status - success/failure
  */
 AJ_Status marshalPropertyValue(PropertyWidget* widget, AJ_Message* reply, uint16_t language);
 
 /**
  * Unmarshal PropertyValue from given message
  * @param widget - assumed to be a PropertyWidget
- * @param message
- * @param newValue
- * @param lockerId
- * @return aj_status
+ * @param message - message to unmarshal
+ * @param newValue - the variable to fill with the unmarshaled value
+ * @param lockerId - the id of the user locking this property - OBSOLETE
+ * @return aj_status - success/failure
  */
 AJ_Status unmarshalPropertyValue(PropertyWidget* widget, AJ_Message* message, void* newValue, const char* lockerId);
 
 /**
  * Marshal PropertyOptParam into given reply message
- * @param widget
- * @param reply
- * @param language
- * @return aj_status
+ * @param widget - pointer to widget
+ * @param reply - message to marshal into
+ * @param language - language requested
+ * @return aj_status - success/failure
  */
 AJ_Status marshalPropertyOptParam(BaseWidget* widget, AJ_Message* reply, uint16_t language);
 
 /**
  * Marshal All Property Properties from given widget into given reply message
- * @param widget
- * @param reply
- * @param language
- * @return aj_status
+ * @param widget - pointer to widget
+ * @param reply - message to marshal into
+ * @param language - language requested
+ * @return aj_status - success/failure
  */
 AJ_Status marshalAllPropertyProperties(BaseWidget* widget, AJ_Message* reply, uint16_t language);
 

@@ -43,8 +43,8 @@ typedef struct DialogOptParams {
 } DialogOptParams;
 
 /**
- * Initialize DialogOptParam
- * @param optParam
+ * Initialize the DialogOptParams structure
+ * @param widget - pointer to DialogOptParams structure
  */
 void initializeDialogOptParam(DialogOptParams* optParam);
 
@@ -65,44 +65,44 @@ typedef struct DialogWidget {
 } DialogWidget;
 
 /**
- * Initialize DialogWidget
- * @param widget - assumed to be a DialogWidget
+ * Initialize the DialogWidget structure
+ * @param widget - pointer to DialogWidget structure
  */
 void initializeDialogWidget(DialogWidget* widget);
 
 /**
  * Marshal DialogMessage of given widget into given reply message
- * @param widget - assumed to be a DialogWidget
- * @param reply
- * @param language
- * @return aj_status
+ * @param widget - pointer to widget
+ * @param reply - message to marshal into
+ * @param language - language requested
+ * @return aj_status - success/failure
  */
 AJ_Status marshalDialogMessage(DialogWidget* widget, AJ_Message* reply, uint16_t language);
 
 /**
  * Marshal DialogNumActions of given widget into given reply message
- * @param widget - assumed to be a DialogWidget
- * @param reply
- * @param language
- * @return aj_status
+ * @param widget - pointer to widget
+ * @param reply - message to marshal into
+ * @param language - language requested
+ * @return aj_status - success/failure
  */
 AJ_Status marshalDialogNumActions(DialogWidget* widget, AJ_Message* reply, uint16_t language);
 
 /**
  * Marshal DialogOptParam of given widget into given reply message
- * @param widget
- * @param reply
- * @param language
- * @return aj_status
+ * @param widget - pointer to widget
+ * @param reply - message to marshal into
+ * @param language - language requested
+ * @return aj_status - success/failure
  */
 AJ_Status marshalDialogOptParam(BaseWidget* widget, AJ_Message* reply, uint16_t language);
 
 /**
  * Marshal All DialogProperties of given widget into given reply message
- * @param widget
- * @param reply
- * @param language
- * @return aj_status
+ * @param widget - pointer to widget
+ * @param reply - message to marshal into
+ * @param language - language requested
+ * @return aj_status - success/failure
  */
 AJ_Status marshalAllDialogProperties(BaseWidget* widget, AJ_Message* reply, uint16_t language);
 
