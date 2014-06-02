@@ -30,7 +30,9 @@
 #ifdef __linux
 #include <NotificationProducerSampleUtil.h>
 #else
+#ifndef MESSAGES_INTERVAL
 #define MESSAGES_INTERVAL 60000
+#endif
 #define Producer_GetNotificationFromUser(...) do { } while (0)
 #define Producer_SetupEnv(...) do { } while (0)
 #define Producer_GetShouldDeleteNotificationFromUser(...) do { } while (0)
@@ -71,8 +73,10 @@ typedef enum _PriorityType {
     PRIORITY_TYPE_FIXED = 0,
     PRIORITY_TYPE_RANDOM = 1,
 } PriorityType;
-
-static PriorityType priorityType = PRIORITY_TYPE_FIXED;
+#ifndef MESSAGES_PRIORITY_TYPE
+#define MESSAGES_PRIORITY_TYPE PRIORITY_TYPE_FIXED
+#endif
+static PriorityType priorityType = MESSAGES_PRIORITY_TYPE;
 static const char* const PRIORITY_TYPES[] = { "Fixed", "Random" };
 
 typedef enum _IntervalType {
@@ -80,13 +84,20 @@ typedef enum _IntervalType {
     INTERVAL_TYPE_RANDOM = 1,
 } IntervalType;
 
-static IntervalType intervalType = INTERVAL_TYPE_RANDOM;
+#ifndef MESSAGES_INTERVAL_TYPE
+#define MESSAGES_INTERVAL_TYPE INTERVAL_TYPE_RANDOM
+#endif
+static IntervalType intervalType = MESSAGES_INTERVAL_TYPE;
 static const char* const INTERVAL_TYPES[] = { "Fixed", "Random" };
 
+#ifndef FIXED_MESSAGE_TYPE
 #define FIXED_MESSAGE_TYPE AJNS_NOTIFICATION_MESSAGE_TYPE_INFO
+#endif
 static const char* const PRIORITIES[AJNS_NUM_MESSAGE_TYPES] = { "Emergency", "Warning", "Info" };
 
+#ifndef FIXED_TTL
 #define FIXED_TTL AJNS_NOTIFICATION_TTL_MIN // Note needs to be in the range AJNS_NOTIFICATION_TTL_MIN..AJNS_NOTIFICATION_TTL_MAX
+#endif
 
 /**
  * Initial the Notifications that will be used during this sample app
@@ -127,12 +138,10 @@ static void InitNotification()
 AJ_Status NotificationProducer_Init()
 {
     AJ_Status status = AJ_OK;
+    uint32_t random;
 
     Producer_SetupEnv(&inputMode);
     InitNotification();
-    AJ_InitTimer(&isMessageTime);
-    isMessageTime.seconds -= nextMessageTime / 1000; // Expire next message timer
-    isMessageTime.milliseconds -= nextMessageTime % 1000; // Expire next message timer
     status = AJNS_Producer_Start();
 
     AJ_AlwaysPrintf(("\n---------------------\nNotification Producer started!\n"));
@@ -140,8 +149,19 @@ AJ_Status NotificationProducer_Init()
     AJ_AlwaysPrintf(("IntervalType: %s (%u)\n", INTERVAL_TYPES[intervalType], intervalType));
     AJ_AlwaysPrintf(("Priority      %s (%u)\n", PRIORITIES[FIXED_MESSAGE_TYPE], FIXED_MESSAGE_TYPE));
     AJ_AlwaysPrintf(("PriorityType: %s (%u)\n", PRIORITY_TYPES[priorityType], priorityType));
-    AJ_AlwaysPrintf(("TTL:          %u ms\n", FIXED_TTL));
+    AJ_AlwaysPrintf(("TTL:          %u s\n", FIXED_TTL));
     AJ_AlwaysPrintf(("---------------------\n\n"));
+    if (!inputMode) {
+        if (intervalType == INTERVAL_TYPE_RANDOM) { // Randomize next message time if interval type is RANDOM
+            AJ_RandBytes((uint8_t*)&random, sizeof(random));
+            nextMessageTime = random % MESSAGES_INTERVAL;
+        }
+        AJ_AlwaysPrintf(("Next message will be sent in %u ms\n", nextMessageTime));
+    } else {
+        isMessageTime.seconds -= nextMessageTime / 1000; // Expire next message timer
+        isMessageTime.milliseconds -= nextMessageTime % 1000; // Expire next message timer
+    }
+    AJ_InitTimer(&isMessageTime);
 
     return status;
 }
@@ -154,37 +174,39 @@ AJ_Status NotificationProducer_Init()
  */
 static void PossiblySendNotification(AJ_BusAttachment* busAttachment)
 {
+    static uint32_t offset = 0;
     AJ_Status status;
     uint16_t messageType = FIXED_MESSAGE_TYPE;
     uint32_t ttl = FIXED_TTL;
     uint32_t serialNum;
     uint32_t random;
     uint32_t elapsed = AJ_GetElapsedTime(&isMessageTime, TRUE);
-    static uint32_t offset = 0;
 
     if (elapsed >= nextMessageTime) {
         if (!inputMode) {
             notificationContent.controlPanelServiceObjectPath = ((notificationContent.controlPanelServiceObjectPath == NULL) ? controlPanelServiceObjectPath : NULL); // Toggle notification with action ON/OFF
             if (priorityType == PRIORITY_TYPE_RANDOM) { // Randomize message type if priority type is RANDOM
                 AJ_RandBytes((uint8_t*)&random, sizeof(random));
-                messageType = (uint16_t)(((random & 0xFF) * AJNS_NUM_MESSAGE_TYPES) / 0xFF);
-            }
-            if (intervalType == INTERVAL_TYPE_RANDOM) { // Randomize next message time if interval type is RANDOM
-                AJ_RandBytes((uint8_t*)&random, sizeof(random));
-                if (elapsed < MESSAGES_INTERVAL) {
-                    offset += MESSAGES_INTERVAL - elapsed;
-                } else {
-                    offset = 0;
-                }
-                nextMessageTime = (((random & 0xFFFF) * MESSAGES_INTERVAL) / 0xFFFF) + offset;
+                messageType = (uint16_t)(random % AJNS_NUM_MESSAGE_TYPES);
             }
         } else {
             Producer_GetNotificationFromUser(&notificationContent, &messageType, &ttl, &nextMessageTime);
         }
         status = AJNS_Producer_SendNotification(busAttachment, &notificationContent, messageType, ttl, &serialNum);
-        AJ_AlwaysPrintf(("Send Message Type: %u with TTL: %u ms returned: '%s'\n", messageType, ttl, AJ_StatusText(status)));
+        AJ_AlwaysPrintf(("Send Message Type: %u with TTL: %u secs returned: '%s'\n", messageType, ttl, AJ_StatusText(status)));
         if (inputMode) {
             Producer_FreeNotification(&notificationContent);
+        }
+        if (!inputMode) {
+            if (intervalType == INTERVAL_TYPE_RANDOM) { // Randomize next message time if interval type is RANDOM
+                AJ_RandBytes((uint8_t*)&random, sizeof(random));
+                if (elapsed < (MESSAGES_INTERVAL + offset)) {
+                    offset += MESSAGES_INTERVAL - elapsed;
+                } else {
+                    offset = 0; // If we stalled too much simply randomize from now and cleared carried over offset
+                }
+                nextMessageTime = offset + (random % MESSAGES_INTERVAL); // randomize within the next time window of MESSAGES_INTERVAL
+            }
         }
         AJ_AlwaysPrintf(("Next message will be sent in %u ms\n", nextMessageTime));
         AJ_InitTimer(&isMessageTime);

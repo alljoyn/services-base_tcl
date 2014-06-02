@@ -43,7 +43,9 @@ AJ_EXPORT uint8_t dbgAJSVCAPP = ER_DEBUG_AJSVCAPP;
  * Application wide globals
  */
 
+#ifndef ROUTING_NODE_NAME
 #define ROUTING_NODE_NAME "org.alljoyn.BusNode"
+#endif
 static uint8_t isBusConnected = FALSE;
 
 /*
@@ -102,8 +104,14 @@ static uint32_t PasswordCallback(uint8_t* buffer, uint32_t bufLen)
  * Services Provisioning
  */
 
-const char* deviceManufactureName = "COMPANY";
-const char* deviceProductName = "GENERIC BOARD";
+#ifndef DEVICE_MANUFACTURER
+#define DEVICE_MANUFACTURER "COMPANY"
+#endif
+#ifndef DEVICE_PRODUCT_NAME
+#define DEVICE_PRODUCT_NAME "GENERIC BOARD"
+#endif
+const char* deviceManufactureName = DEVICE_MANUFACTURER;
+const char* deviceProductName = DEVICE_PRODUCT_NAME;
 
 static const char DEFAULT_LANGUAGE[] = "en";
 static const char* DEFAULT_LANGUAGES[] = { DEFAULT_LANGUAGE };
