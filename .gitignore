@@ -1,6 +1,10 @@
+dist/
+build/
 *.o
 *.os
 .sconsign.dblite
+.sconf_temp/
+config.log
 *.a
 *.so
 *.obj
@@ -9,3 +13,5 @@
 *.DS_Store
 .cproject
 .project
+*.pyc
+.whitespace.db
