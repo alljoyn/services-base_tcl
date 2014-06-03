@@ -1,3 +1,7 @@
+dist/
+build/
+bin/
+lib/
 *.o
 *.os
 .sconsign.dblite
@@ -9,3 +13,5 @@
 *.DS_Store
 .cproject
 .project
+*.pyc
+.whitespace.db
