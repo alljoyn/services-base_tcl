@@ -164,9 +164,7 @@ AJ_Status AJSVC_RoutingNodeConnect(AJ_BusAttachment* busAttachment, const char* 
 
     while (TRUE) {
 #ifdef ONBOARDING_SERVICE
-//      if (!AJOBS_IsWiFiConnected()) { // Check if there is already Wi-Fi connectivity and if not establish it
         status = AJOBS_EstablishWiFi();
-//      }
         if (status != AJ_OK) {
             AJ_AlwaysPrintf(("Failed to establish WiFi connectivity with status=%s\n", AJ_StatusText(status)));
             AJ_Sleep(connectPause);
