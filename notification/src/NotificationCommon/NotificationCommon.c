@@ -31,7 +31,7 @@
  */
 
 static const char AJNS_NotificationInterfaceName[]   = "org.alljoyn.Notification";
-const char AJNS_NotificationSignalName[]      = "!notify >q >i >q >s >s >ay >s >a{iv} >a{ss} >a(ss)";
+const char AJNS_NotificationSignalName[]      = "!&notify >q >i >q >s >s >ay >s >a{iv} >a{ss} >a(ss)";
 const char AJNS_NotificationPropertyVersion[] = "@Version>q";
 
 static const char AJNS_NotificationObjectPathEmergency[]   = "/emergency";
@@ -69,7 +69,7 @@ static char AJNS_NotificationDismisserObjectPath[NOTIFICATION_DISMISSER_OBJECT_P
 
 static const char* const AJNS_NotificationDismisserInterface[] = {
     "org.alljoyn.Notification.Dismisser",
-    "!Dismiss >i >ay",
+    "!&Dismiss >i >ay",
     "@Version>q",
     NULL
 };
