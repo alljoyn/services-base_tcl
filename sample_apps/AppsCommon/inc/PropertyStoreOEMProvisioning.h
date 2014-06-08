@@ -23,7 +23,6 @@
  */
 
 #include <alljoyn.h>
-#include <aj_auth.h>
 #include <aj_config.h>
 #include <alljoyn/services_common/ServicesCommon.h>
 #include <alljoyn/services_common/PropertyStore.h>
