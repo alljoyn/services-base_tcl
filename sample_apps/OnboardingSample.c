@@ -406,6 +406,10 @@ static AJ_Status FactoryReset()
         return status;
     }
     AJ_ClearCredentials();
+    status = AJOBS_ClearInfo();
+    if (status != AJ_OK) {
+        return status;
+    }
     return AJ_ERR_RESTART_APP;     // Force disconnect of AJ and services and reconnection of WiFi on restart of app
 }
 
