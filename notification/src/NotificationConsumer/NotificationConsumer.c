@@ -17,8 +17,7 @@
 /**
  * Per-module definition of the current module for debug logging.  Must be defined
  * prior to first inclusion of aj_debug.h.
- * The corresponding flag dbgAJNS is defined in ServicesCommon.h and implemented
- * in ServicesCommon.c.
+ * The corresponding flag dbgAJNS is defined in NotificationCommon.h and implemented in NotificationCommon.c.
  */
 #define AJ_MODULE AJNS
 #include <aj_debug.h>

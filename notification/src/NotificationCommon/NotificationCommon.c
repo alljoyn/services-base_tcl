@@ -17,14 +17,27 @@
 /**
  * Per-module definition of the current module for debug logging.  Must be defined
  * prior to first inclusion of aj_debug.h.
- * The corresponding flag dbgAJNS is defined in ServicesCommon.h and implemented
- * in ServicesCommon.c.
+ * The corresponding flag dbgAJNS is defined in NotificationCommon.h and implemented below.
  */
 #define AJ_MODULE AJNS
 #include <aj_debug.h>
 
 #include <alljoyn/notification/NotificationCommon.h>
 #include <alljoyn/services_common/ServicesCommon.h>
+
+/**
+ * Turn on per-module debug printing by setting this variable to non-zero value
+ * (usually in debugger).
+ */
+#ifndef NDEBUG
+#ifndef ER_DEBUG_AJSVCALL
+#define ER_DEBUG_AJSVCALL 0
+#endif
+#ifndef ER_DEBUG_AJNS
+#define ER_DEBUG_AJNS 0
+#endif
+uint8_t dbgAJNS = ER_DEBUG_AJNS || ER_DEBUG_AJSVCALL;
+#endif
 
 /**
  * Static constants.

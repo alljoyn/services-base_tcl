@@ -30,6 +30,7 @@
 
 #include <alljoyn/services_common/PropertyStore.h>
 #include <alljoyn/services_common/ServicesCommon.h>
+#include <alljoyn/services_common/ServicesHandlers.h>
 #include "AppHandlers.h"
 
 #ifndef NDEBUG

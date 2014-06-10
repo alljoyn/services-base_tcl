@@ -17,11 +17,11 @@
 /**
  * Per-module definition of the current module for debug logging.  Must be defined
  * prior to first inclusion of aj_debug.h.
- * The corresponding flag dbgAJOBS is defined in ServicesCommon.h and implemented
- * in ServicesCommon.c.
+ * The corresponding flag dbgAJOBS is defined in OnboardingService.h and implemented in OnboardingService.c.
  */
 #define AJ_MODULE AJOBS
 #include <aj_debug.h>
+
 #include <alljoyn.h>
 #include <alljoyn/services_common/PropertyStore.h>
 #include <alljoyn/services_common/ServicesCommon.h>

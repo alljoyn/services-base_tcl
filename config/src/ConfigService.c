@@ -17,8 +17,7 @@
 /**
  * Per-module definition of the current module for debug logging.  Must be defined
  * prior to first inclusion of aj_debug.h.
- * The corresponding flag dbgAJCFG is defined in ServicesCommon.h and implemented
- * in ServicesCommon.c.
+ * The corresponding flag dbgAJCFG is declared below.
  */
 #define AJ_MODULE AJCFG
 #include <aj_debug.h>
@@ -27,6 +26,20 @@
 #include <alljoyn/config/ConfigService.h>
 #include <alljoyn/services_common/ServicesCommon.h>
 #include <alljoyn/services_common/PropertyStore.h>
+
+/**
+ * Turn on per-module debug printing by setting this variable to non-zero value
+ * (usually in debugger).
+ */
+#ifndef NDEBUG
+#ifndef ER_DEBUG_AJSVCALL
+#define ER_DEBUG_AJSVCALL 0
+#endif
+#ifndef ER_DEBUG_AJCFG
+#define ER_DEBUG_AJCFG 0
+#endif
+uint8_t dbgAJCFG = ER_DEBUG_AJCFG || ER_DEBUG_AJSVCALL;
+#endif
 
 /**
  * Published Config BusObjects and Interfaces.

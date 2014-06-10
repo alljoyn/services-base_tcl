@@ -24,18 +24,6 @@
  * (usually in debugger).
  */
 #ifndef NDEBUG
-#ifdef CONFIG_SERVICE
-extern uint8_t dbgAJCFG;
-#endif
-#ifdef ONBOARDING_SERVICE
-extern uint8_t dbgAJOBS;
-#endif
-#if defined(NOTIFICATION_SERVICE_CONSUMER) || defined(NOTIFICATION_SERVICE_PRODUCER)
-extern uint8_t dbgAJNS;
-#endif
-#ifdef CONTROLPANEL_SERVICE
-extern uint8_t dbgAJCPS;
-#endif
 extern uint8_t dbgAJSVC;
 #endif
 
@@ -141,29 +129,6 @@ AJ_Status AJSVC_UnmarshalAppIdFromVariant(AJ_Message* msg, char* buf, size_t buf
  */
 AJ_Status AJSVC_UnmarshalAppId(AJ_Message* msg, char* buf, size_t bufLen);
 
-/**
- * Establish connection to named Routing Node
- * @param busAttachment
- * @param routingNodeName
- * @param connectTimeout
- * @param connectPause
- * @param busLinkTimeout
- * @param isConnected - state of connection to Routing Node after connect is performed
- * @return ajStatus - status of last request to Routing Node
- */
-AJ_Status AJSVC_RoutingNodeConnect(AJ_BusAttachment* busAttachment, const char* routingNodeName, uint32_t connectTimeout, uint32_t connectPause, uint32_t busLinkTimeout, uint8_t* isConnected);
-
-/**
- * Disconnect from Routing Node
- * @param busAttachment
- * @param disconnectWiFi
- * @param preDisconnectPause - a small pause before disconnect to allow for outgoing message to be dispatched
- * @param postDisconnectPause - a small pause after disconnect to allow for system to stablize
- * @param isConnected - state of connection to Rounting Node after disconnect is performed
- * @return ajStatus - status of last request to Routing Node
- */
-AJ_Status AJSVC_RoutingNodeDisconnect(AJ_BusAttachment* busAttachment, uint8_t disconnectWiFi, uint32_t preDisconnectPause, uint32_t postDisconnectPause, uint8_t* isConnected);
-
 // The following is the static registration of all services' bus objects
 
 /*
@@ -178,33 +143,25 @@ AJ_Status AJSVC_RoutingNodeDisconnect(AJ_BusAttachment* busAttachment, uint8_t d
 /*
  * ObjectsList definitions for ALL the services
  */
-#ifdef CONFIG_SERVICE
 /*
  * ObjectsList index for Config Service objects
  */
 #define AJCFG_OBJECT_LIST_INDEX            3
-#endif
 
-#ifdef ONBOARDING_SERVICE
 /*
  * ObjectsList index for Onboarding Service objects
  */
 #define AJOBS_OBJECT_LIST_INDEX            4
-#endif
 
-#if defined(NOTIFICATION_SERVICE_PRODUCER) || defined(NOTIFICATION_SERVICE_CONSUMER)
 /*
  * ObjectsList index for Notification Service objects
  */
 #define AJNS_OBJECT_LIST_INDEX             5
-#endif
 
-#ifdef CONTROLPANEL_SERVICE
 /*
  * ObjectsList index for ControlPanel Service objects
  */
 #define AJCPS_OBJECT_LIST_INDEX            6
-#endif
 
 /*
  * ObjectsList index for Application objects
@@ -220,11 +177,9 @@ AJ_Status AJSVC_RoutingNodeDisconnect(AJ_BusAttachment* busAttachment, uint8_t d
  */
 #define AJ_PROPERTIES_NV_ID_MAX            (AJ_NVRAM_ID_CREDS_MAX + 1000)
 
-#ifdef ONBOARDING_SERVICE
 /**
  * The NVRAM starting id for the Onboarding Service
  */
 #define AJ_OBS_NV_ID_BEGIN                 (AJ_PROPERTIES_NV_ID_MAX + 1)
-#endif
 
 #endif /* _SERVICES_COMMON_H_ */
