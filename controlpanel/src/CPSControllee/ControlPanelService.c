@@ -17,8 +17,7 @@
 /**
  * Per-module definition of the current module for debug logging.  Must be defined
  * prior to first inclusion of aj_debug.h.
- * The corresponding flag dbgAJCPS is defined in ServicesCommon.h and implemented
- * in ServicesCommon.c.
+ * The corresponding flag dbgAJCPS is declared below.
  */
 #define AJ_MODULE AJCPS
 #include <aj_debug.h>
@@ -31,6 +30,20 @@
 #include <alljoyn/controlpanel/Common/HttpControl.h>
 #include <alljoyn/controlpanel/Common/ControlMarshalUtil.h>
 #include <aj_config.h>
+
+/**
+ * Turn on per-module debug printing by setting this variable to non-zero value
+ * (usually in debugger).
+ */
+#ifndef NDEBUG
+#ifndef ER_DEBUG_AJSVCALL
+#define ER_DEBUG_AJSVCALL 0
+#endif
+#ifndef ER_DEBUG_AJCPS
+#define ER_DEBUG_AJCPS 0
+#endif
+uint8_t dbgAJCPS = ER_DEBUG_AJCPS || ER_DEBUG_AJSVCALL;
+#endif
 
 const uint16_t AJCPS_Port = 1000;
 uint32_t currentSessionId = 0;

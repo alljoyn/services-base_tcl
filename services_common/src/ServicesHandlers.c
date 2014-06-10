@@ -48,6 +48,56 @@
 #include <aj_config.h>
 #include <aj_link_timeout.h>
 
+AJ_Status AJSVC_RoutingNodeConnect(AJ_BusAttachment* busAttachment, const char* routingNodeName, uint32_t connectTimeout, uint32_t connectPause, uint32_t busLinkTimeout, uint8_t* isConnected)
+{
+    AJ_Status status = AJ_OK;
+    const char* busUniqueName;
+
+    while (TRUE) {
+#ifdef ONBOARDING_SERVICE
+        status = AJOBS_EstablishWiFi();
+        if (status != AJ_OK) {
+            AJ_AlwaysPrintf(("Failed to establish WiFi connectivity with status=%s\n", AJ_StatusText(status)));
+            AJ_Sleep(connectPause);
+            if (isConnected != NULL) {
+                *isConnected = FALSE;
+            }
+            return status;
+        }
+#endif
+        AJ_AlwaysPrintf(("Attempting to connect to bus '%s'\n", routingNodeName));
+        status = AJ_FindBusAndConnect(busAttachment, routingNodeName, connectTimeout);
+        if (status != AJ_OK) {
+            AJ_AlwaysPrintf(("Failed attempt to connect to bus, sleeping for %d seconds\n", connectPause / 1000));
+            AJ_Sleep(connectPause);
+#ifdef ONBOARDING_SERVICE
+            if (status == AJ_ERR_DHCP || status == AJ_ERR_TIMEOUT) {
+                status = AJOBS_SwitchToRetry();
+                if (status != AJ_OK) {
+                    AJ_AlwaysPrintf(("Failed to switch to Retry mode status=%s\n", AJ_StatusText(status)));
+                }
+            }
+#endif
+            continue;
+        }
+        busUniqueName = AJ_GetUniqueName(busAttachment);
+        if (busUniqueName == NULL) {
+            AJ_AlwaysPrintf(("Failed to GetUniqueName() from newly connected bus, retrying\n"));
+            continue;
+        }
+        AJ_AlwaysPrintf(("Connected to Routing Node with BusUniqueName=%s\n", busUniqueName));
+        break;
+    }
+
+    /* Configure timeout for the link to the Routing Node bus */
+    AJ_SetBusLinkTimeout(busAttachment, busLinkTimeout);
+
+    if (isConnected != NULL) {
+        *isConnected = TRUE;
+    }
+    return status;
+}
+
 AJ_Status AJSVC_ConnectedHandler(AJ_BusAttachment* busAttachment)
 {
     AJ_Status status = AJ_OK;
@@ -225,7 +275,6 @@ AJSVC_ServiceStatus AJSVC_MessageProcessorAndDispatcher(AJ_BusAttachment* busAtt
     return serviceStatus;
 }
 
-
 AJ_Status AJSVC_DisconnectHandler(AJ_BusAttachment* busAttachment)
 {
     AJ_Status status = AJ_OK;
@@ -246,5 +295,25 @@ AJ_Status AJSVC_DisconnectHandler(AJ_BusAttachment* busAttachment)
     AJCPS_DisconnectHandler(busAttachment);
 #endif
 
+    return status;
+}
+
+AJ_Status AJSVC_RoutingNodeDisconnect(AJ_BusAttachment* busAttachment, uint8_t disconnectWiFi, uint32_t preDisconnectPause, uint32_t postDisconnectPause, uint8_t* isConnected)
+{
+    AJ_Status status = AJ_OK;
+
+    AJ_AlwaysPrintf(("AllJoyn disconnect\n"));
+    AJ_Sleep(preDisconnectPause); // Sleep a little to let any pending requests to Routing Node to be sent
+    AJ_Disconnect(busAttachment);
+#ifdef ONBOARDING_SERVICE
+    if (disconnectWiFi) {
+        status = AJOBS_DisconnectWiFi();
+    }
+#endif
+    AJ_Sleep(postDisconnectPause); // Sleep a little while before trying to reconnect
+
+    if (isConnected != NULL) {
+        *isConnected = FALSE;
+    }
     return status;
 }

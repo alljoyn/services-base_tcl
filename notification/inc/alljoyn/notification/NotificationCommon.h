@@ -19,6 +19,14 @@
 
 #include <alljoyn.h>
 
+/**
+ * Turn on per-module debug printing by setting this variable to non-zero value
+ * (usually in debugger).
+ */
+#ifndef NDEBUG
+extern uint8_t dbgAJNS;
+#endif
+
 /** @defgroup NotificationCommon Notification Common
  * details Functions and variables that assist in writing Notification Producers
  *  @{

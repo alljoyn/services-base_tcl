@@ -17,8 +17,7 @@
 /**
  * Per-module definition of the current module for debug logging.  Must be defined
  * prior to first inclusion of aj_debug.h.
- * The corresponding flag dbgAJOBS is defined in ServicesCommon.h and implemented
- * in ServicesCommon.c.
+ * The corresponding flag dbgAJOBS is defined in OnboardinService.h and implemented below.
  */
 #define AJ_MODULE AJOBS
 #include <aj_debug.h>
@@ -28,6 +27,20 @@
 #include <aj_nvram.h>
 #include <aj_link_timeout.h>
 #include <aj_wifi_ctrl.h>
+
+/**
+ * Turn on per-module debug printing by setting this variable to non-zero value
+ * (usually in debugger).
+ */
+#ifndef NDEBUG
+#ifndef ER_DEBUG_AJSVCALL
+#define ER_DEBUG_AJSVCALL 0
+#endif
+#ifndef ER_DEBUG_AJOBS
+#define ER_DEBUG_AJOBS 0
+#endif
+AJ_EXPORT uint8_t dbgAJOBS = ER_DEBUG_AJOBS || ER_DEBUG_AJSVCALL;
+#endif
 
 /**
  * Published Onboarding BusObjects and Interfaces.

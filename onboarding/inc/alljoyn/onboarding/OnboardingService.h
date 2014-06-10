@@ -26,6 +26,14 @@
 #include <alljoyn/services_common/ServicesCommon.h>
 
 /**
+ * Turn on per-module debug printing by setting this variable to non-zero value
+ * (usually in debugger).
+ */
+#ifndef NDEBUG
+extern uint8_t dbgAJOBS;
+#endif
+
+/**
  * Published Onboarding BusObjects.
  */
 

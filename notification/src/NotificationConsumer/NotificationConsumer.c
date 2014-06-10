@@ -17,8 +17,7 @@
 /**
  * Per-module definition of the current module for debug logging.  Must be defined
  * prior to first inclusion of aj_debug.h.
- * The corresponding flag dbgAJNS is defined in ServicesCommon.h and implemented
- * in ServicesCommon.c.
+ * The corresponding flag dbgAJNS is defined in NotificationCommon.h and implemented in NotificationCommon.c.
  */
 #define AJ_MODULE AJNS
 #include <aj_debug.h>
@@ -36,10 +35,10 @@
 #define INTERFACE_GET_PROPERTY_PROXY                          AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_PROXYOBJECT_INDEX, 0, AJ_PROP_GET)
 #define INTERFACE_SET_PROPERTY_PROXY                          AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_PROXYOBJECT_INDEX, 0, AJ_PROP_SET)
 
-#define NOTIFICATION_SIGNAL                                   AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_PROXYOBJECT_INDEX, 1, 0)
+#define NOTIFICATION_SIGNAL_RECEIVED                          AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_PROXYOBJECT_INDEX, 1, 0)
 #define GET_NOTIFICATION_VERSION_PROPERTY_PROXY               AJ_ENCODE_PROPERTY_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_PROXYOBJECT_INDEX, 1, 1)
 
-#define SUPERAGENT_SIGNAL                                     AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_PROXYOBJECT_INDEX, 2, 0)
+#define SUPERAGENT_SIGNAL_RECEIVED                            AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_PROXYOBJECT_INDEX, 2, 0)
 #define GET_SUPERAGENT_VERSION_PROPERTY_PROXY                 AJ_ENCODE_PROPERTY_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_PROXYOBJECT_INDEX, 2, 1)
 
 /* Producer ProxyObject bus registration */
@@ -57,19 +56,6 @@
 
 #define NOTIFICATION_DISMISSER_DISMISS_RECEIVED               AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_DISMISSER_PROXYOBJECT_INDEX, 1, 0)
 #define GET_NOTIFICATION_DISMISSER_VERSION_PROPERTY_PROXY     AJ_ENCODE_PROPERTY_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_PRODUCER_PROXYOBJECT_INDEX, 1, 1)
-
-#ifndef NOTIFICATION_SERVICE_PRODUCER
-   #define NOTIFICATION_SIGNAL_RECEIVED                       NOTIFICATION_SIGNAL
-#else
-   #define NOTIFICATION_SIGNAL_PROD1                          AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_OBJECT_INDEX + AJNS_NOTIFICATION_MESSAGE_TYPE_EMERGENCY, 1, 0)
-   #define NOTIFICATION_SIGNAL_PROD2                          AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_OBJECT_INDEX + AJNS_NOTIFICATION_MESSAGE_TYPE_WARNING, 1, 0)
-   #define NOTIFICATION_SIGNAL_PROD3                          AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_OBJECT_INDEX + AJNS_NOTIFICATION_MESSAGE_TYPE_INFO, 1, 0)
-
-   #define NOTIFICATION_SIGNAL_RECEIVED NOTIFICATION_SIGNAL : \
-case NOTIFICATION_SIGNAL_PROD1 : \
-case NOTIFICATION_SIGNAL_PROD2 : \
-case NOTIFICATION_SIGNAL_PROD3
-#endif
 
 /**
  * Static constants.
@@ -750,8 +736,8 @@ AJSVC_ServiceStatus AJNS_Consumer_MessageProcessor(AJ_BusAttachment* busAttachme
         *msgStatus = AJNS_Consumer_NotifySignalHandler(msg);
         break;
 
-    case SUPERAGENT_SIGNAL:
-        AJ_InfoPrintf(("Received Superagent Signal.\n"));
+    case SUPERAGENT_SIGNAL_RECEIVED:
+        AJ_InfoPrintf(("Received Superagent signal.\n"));
         *msgStatus = AJNS_Consumer_SetSignalRules(busAttachment, appSuperAgentMode, msg->sender);
         if (AJ_OK == *msgStatus && AJNS_ObjectList != NULL) {
             AJNS_ObjectList[NOTIFICATION_PROXYOBJECT_INDEX] = SuperAgentProxyObject;
