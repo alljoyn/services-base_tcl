@@ -20,52 +20,84 @@
 AJ_Status marshalDatePropertyValue(DatePropertyValue* datePropertyValue, AJ_Message* reply)
 {
     AJ_Status status;
+    AJ_Arg structArg;
 
-    status = AJ_MarshalArgs(reply, "v", DATE_PROPERTY_SIG, DATE_PROPERTY, datePropertyValue->mDay, datePropertyValue->month, datePropertyValue->fullYear);
+    status = AJ_MarshalVariant(reply, DATE_PROPERTY_SIG);
+    if (status != AJ_OK) {
+        return status;
+    }
+    status = AJ_MarshalContainer(reply, &structArg, AJ_ARG_STRUCT);
+    if (status != AJ_OK) {
+        return status;
+    }
+    status = AJ_MarshalArgs(reply, "q(qqq)", DATE_PROPERTY, datePropertyValue->mDay, datePropertyValue->month, datePropertyValue->fullYear);
+    if (status != AJ_OK) {
+        return status;
+    }
 
-    return status;
+    return AJ_MarshalCloseContainer(reply, &structArg);
 }
 
 AJ_Status marshalTimePropertyValue(TimePropertyValue* timePropertyValue, AJ_Message* reply)
 {
     AJ_Status status;
+    AJ_Arg structArg;
 
-    status = AJ_MarshalArgs(reply, "v", TIME_PROPERTY_SIG, TIME_PROPERTY, timePropertyValue->hour, timePropertyValue->minute, timePropertyValue->second);
+    status = AJ_MarshalVariant(reply, TIME_PROPERTY_SIG);
+    if (status != AJ_OK) {
+        return status;
+    }
+    status = AJ_MarshalContainer(reply, &structArg, AJ_ARG_STRUCT);
+    if (status != AJ_OK) {
+        return status;
+    }
+    status = AJ_MarshalArgs(reply, "q(qqq)", TIME_PROPERTY, timePropertyValue->hour, timePropertyValue->minute, timePropertyValue->second);
+    if (status != AJ_OK) {
+        return status;
+    }
 
-    return status;
+    return AJ_MarshalCloseContainer(reply, &structArg);
 }
 
 AJ_Status unmarshalDatePropertyValue(DatePropertyValue* datePropertyValue, AJ_Message* message)
 {
     AJ_Status status;
+    AJ_Arg structArg;
     uint16_t widgetType;
 
-    status = AJ_UnmarshalArgs(message, DATE_PROPERTY_SIG, &widgetType, &datePropertyValue->mDay, &datePropertyValue->month, &datePropertyValue->fullYear);
+    status = AJ_UnmarshalContainer(message, &structArg, AJ_ARG_STRUCT);
     if (status != AJ_OK) {
         return status;
     }
-
+    status = AJ_UnmarshalArgs(message, "q(qqq)", &widgetType, &datePropertyValue->mDay, &datePropertyValue->month, &datePropertyValue->fullYear);
+    if (status != AJ_OK) {
+        return status;
+    }
     if (widgetType != DATE_PROPERTY) {
         return AJ_ERR_UNEXPECTED;
     }
 
-    return status;
+    return AJ_UnmarshalCloseContainer(message, &structArg);
 }
 
 AJ_Status unmarshalTimePropertyValue(TimePropertyValue* timePropertyValue, AJ_Message* message)
 {
     AJ_Status status;
+    AJ_Arg structArg;
     uint16_t widgetType;
 
-    status = AJ_UnmarshalArgs(message, TIME_PROPERTY_SIG, &widgetType, &timePropertyValue->hour, &timePropertyValue->minute, &timePropertyValue->second);
+    status = AJ_UnmarshalContainer(message, &structArg, AJ_ARG_STRUCT);
     if (status != AJ_OK) {
         return status;
     }
-
+    status = AJ_UnmarshalArgs(message, "q(qqq)", &widgetType, &timePropertyValue->hour, &timePropertyValue->minute, &timePropertyValue->second);
+    if (status != AJ_OK) {
+        return status;
+    }
     if (widgetType != TIME_PROPERTY) {
         return AJ_ERR_UNEXPECTED;
     }
 
-    return status;
+    return AJ_UnmarshalCloseContainer(message, &structArg);
 }
 
