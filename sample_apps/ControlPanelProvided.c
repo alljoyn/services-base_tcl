@@ -49,7 +49,9 @@ static double doubleVar = 0;
 static char initialString[100] = "75 F";
 static char* stringVar = initialString;
 
-static const char* sampleString = "This is a test";
+static const char* sampleLabel = "This is a test";
+static const char* sampleDialogMessage = "Dialog message";
+static const char* sampleUnitOfMeasure = "ms";
 static const char* sampleUrlString = "www.ControlPanelTest.com";
 
 static DatePropertyValue date = { .fullYear = 2006, .month = 6, .mDay = 13 };
@@ -67,7 +69,7 @@ const char* getUrlString()
     return sampleUrlString;
 }
 
-void* getDateProperty()
+void* getDateProperty(PropertyWidget* thisWidget)
 {
     return &date;
 }
@@ -79,10 +81,11 @@ void setDateProperty(DatePropertyValue* datePropertyValue)
     date.mDay = datePropertyValue->mDay;
 }
 
-void* getTimeProperty()
+void* getTimeProperty(PropertyWidget* thisWidget)
 {
     return &time;
 }
+
 void setTimeProperty(TimePropertyValue* timePropertyValue)
 {
     time.hour = timePropertyValue->hour;
@@ -94,17 +97,28 @@ uint8_t getEnabledFunc()
 {
     return TRUE;
 }
+
 uint8_t getWriteableFunc()
 {
     return TRUE;
 }
 
-const char* getTestString(uint16_t language)
+const char* getTestLabel(BaseWidget* thisWidget, uint16_t language)
 {
-    return sampleString;
+    return sampleLabel;
 }
 
-void* getuint16Var()
+const char* getTestDialogMessage(DialogWidget* theWidget, uint16_t language)
+{
+    return sampleDialogMessage;
+}
+
+const char* getTestUnitOfMeasure(PropertyWidget* theWidget, uint16_t language)
+{
+    return sampleUnitOfMeasure;
+}
+
+void* getuint16Var(PropertyWidget* thisWidget)
 {
     return &uint16Var;
 }
@@ -114,7 +128,7 @@ void setuint16Var(uint16_t newuint16Var)
     uint16Var = newuint16Var;
 }
 
-void* getint16Var()
+void* getint16Var(PropertyWidget* thisWidget)
 {
     return &int16Var;
 }
@@ -124,7 +138,7 @@ void setint16Var(int16_t newint16Var)
     int16Var = newint16Var;
 }
 
-void* getuint32Var()
+void* getuint32Var(PropertyWidget* thisWidget)
 {
     return &uint32Var;
 }
@@ -134,7 +148,7 @@ void setuint32Var(uint32_t newuint32Var)
     uint32Var = newuint32Var;
 }
 
-void* getint32Var()
+void* getint32Var(PropertyWidget* thisWidget)
 {
     return &int32Var;
 }
@@ -144,7 +158,7 @@ void setint32Var(int32_t newint32Var)
     int32Var = newint32Var;
 }
 
-void* getuint64Var()
+void* getuint64Var(PropertyWidget* thisWidget)
 {
     return &uint64Var;
 }
@@ -154,7 +168,7 @@ void setuint64Var(uint64_t newuint64Var)
     uint64Var = newuint64Var;
 }
 
-void* getint64Var()
+void* getint64Var(PropertyWidget* thisWidget)
 {
     return &int64Var;
 }
@@ -164,7 +178,7 @@ void setint64Var(int64_t newint64Var)
     int64Var = newint64Var;
 }
 
-void* getdoubleVar()
+void* getdoubleVar(PropertyWidget* thisWidget)
 {
     return &doubleVar;
 }
@@ -174,7 +188,7 @@ void setdoubleVar(double newdoubleVar)
     doubleVar = newdoubleVar;
 }
 
-void* getStringVar()
+void* getStringVar(PropertyWidget* thisWidget)
 {
     return &stringVar;
 }
@@ -193,15 +207,15 @@ static const char* programString = "Program";
 
 void startOven()
 {
-    AJ_InfoPrintf(("**************** Starting the Oven ****************\n"));
+    AJ_AlwaysPrintf(("**************** Starting the Oven ****************\n"));
 }
 
 void stopOven()
 {
-    AJ_InfoPrintf(("**************** Stopping the Oven ****************\n"));
+    AJ_AlwaysPrintf(("**************** Stopping the Oven ****************\n"));
 }
 
-void*getTemperature()
+void* getTemperature(PropertyWidget* thisWidget)
 {
     return &temperature;
 }
@@ -211,7 +225,7 @@ void setTemperature(uint16_t t)
     temperature = t;
 }
 
-void*getProgram()
+void* getProgram(PropertyWidget* thisWidget)
 {
     return &program;
 }

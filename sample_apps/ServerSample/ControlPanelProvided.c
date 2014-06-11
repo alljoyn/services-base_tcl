@@ -49,7 +49,9 @@ static double doubleVar = 0;
 static char initialString[100] = "75 F";
 static char* stringVar = initialString;
 
-static const char* sampleString = "This is a test";
+static const char* sampleLabel = "This is a test";
+static const char* sampleDialogMessage = "Dialog message";
+static const char* sampleUnitOfMeasure = "ms";
 static const char* sampleUrlString = "www.ControlPanelTest.com";
 
 static DatePropertyValue date = { .fullYear = 2006, .month = 6, .mDay = 13 };
@@ -83,6 +85,7 @@ void* getTimeProperty(PropertyWidget* thisWidget)
 {
     return &time;
 }
+
 void setTimeProperty(TimePropertyValue* timePropertyValue)
 {
     time.hour = timePropertyValue->hour;
@@ -94,14 +97,25 @@ uint8_t getEnabledFunc()
 {
     return TRUE;
 }
+
 uint8_t getWriteableFunc()
 {
     return TRUE;
 }
 
-const char* getTestString(uint16_t language)
+const char* getTestLabel(BaseWidget* thisWidget, uint16_t language)
 {
-    return sampleString;
+    return sampleLabel;
+}
+
+const char* getTestDialogMessage(DialogWidget* theWidget, uint16_t language)
+{
+    return sampleDialogMessage;
+}
+
+const char* getTestUnitOfMeasure(PropertyWidget* theWidget, uint16_t language)
+{
+    return sampleUnitOfMeasure;
 }
 
 void* getuint16Var(PropertyWidget* thisWidget)

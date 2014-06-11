@@ -28,7 +28,9 @@ void addDismissSignal(ExecuteActionContext* context, int32_t dismissSignal);
 
 uint8_t getEnabledFunc();
 uint8_t getWriteableFunc();
-const char* getTestString(uint16_t language);
+const char* getTestLabel(BaseWidget* thisWidget, uint16_t language);
+const char* getTestDialogMessage(DialogWidget* theWidget, uint16_t language);
+const char* getTestUnitOfMeasure(PropertyWidget* theWidget, uint16_t language);
 const char* getUrlString();
 
 void* getDateProperty(PropertyWidget* thisWidget);
