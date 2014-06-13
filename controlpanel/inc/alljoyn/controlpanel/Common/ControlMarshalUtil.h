@@ -98,6 +98,15 @@ AJ_Status AddPropertyForGetAll(AJ_Message* reply, char* key, const char* sig,
                                BaseWidget* widget, uint16_t language, MarshalWidgetFptr functionPtr);
 
 /**
+ * Helper functions. Receives sig value and void* and does the marshalling
+ * @param reply - message to marshal into
+ * @param sig - signature of value
+ * @param value - value as void*
+ * @return aj_status - success/failure
+ */
+AJ_Status MarshalVariant(AJ_Message* reply, const char* sig, const void* value);
+
+/**
  * MarshalAllRootProperties - includes only version
  * @param reply - message to marshal into
  * @return aj_status - success/failure
