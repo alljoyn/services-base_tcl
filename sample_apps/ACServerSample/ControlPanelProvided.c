@@ -40,6 +40,7 @@ static uint16_t currentHumidity = 40;
 static char humidityBuff[11] = "40 %%";
 static char* humidityString = humidityBuff;
 static uint16_t currentTemperature = 72;
+static uint16_t previousTemperature = 72;
 static char temperatureBuff[11] = "72 F";
 static char* temperatureString = temperatureBuff;
 static uint16_t targetTemp = 68;
@@ -343,6 +344,7 @@ uint8_t checkForUpdatesToSend()
         AJ_AlwaysPrintf(("##### currentMode (%d) != previousMode (%d) \n", currentMode, previousMode));
         modeOrTargetTempChanged = 1;
 
+        previousMode = currentMode;
         setACModeSelectorFieldUpdate();
         setStatusFieldUpdate();
 
@@ -443,7 +445,6 @@ uint8_t checkForUpdatesToSend()
             setTempSelectorFieldUpdate();
             setFanSpeedSelectorFieldUpdate();
         }
-        previousMode = currentMode;
     }
 
     if (currentMode == 3) {
@@ -452,8 +453,9 @@ uint8_t checkForUpdatesToSend()
         //1==medium
         //2==high
         if (fanSpeed != previousFanSpeed) {
-            setStatusFieldUpdate();
+            AJ_AlwaysPrintf(("##### fanSpeed (%d) != previousFanSpeed (%d) \n", fanSpeed, previousFanSpeed));
             previousFanSpeed = fanSpeed;
+            setStatusFieldUpdate();
             if (fanSpeed == 0) {
                 statusText[snprintf(statusString, sizeof(statusText), "Fan on low")] = '\0';
                 notificationText[snprintf(notificationString, sizeof(notificationText), "Fan on low")] = '\0';
@@ -476,10 +478,11 @@ uint8_t checkForUpdatesToSend()
         }
     }
 
+    previousTemperature = currentTemperature;
+
     // check if we need to simulate changing the temperature
     if (targetTemp != currentTemperature) {
         AJ_AlwaysPrintf(("##### target temp (%d) != current temp (%d) \n", targetTemp, currentTemperature));
-
         if (modeOrTargetTempChanged == 1) {
             modeOrTargetTempChanged = 0;
         } else {
@@ -487,13 +490,11 @@ uint8_t checkForUpdatesToSend()
                 // auto mode
                 if (targetTemp > currentTemperature) {
                     //heating
-//          previousTemperature = currentTemperature;
                     currentTemperature++;
                     setTemperatureFieldUpdate();
                     checkTargetTempReached();
                 } else if (targetTemp < currentTemperature) {
                     //cooling
-//          previousTemperature = currentTemperature;
                     currentTemperature--;
                     setTemperatureFieldUpdate();
                     checkTargetTempReached();
@@ -501,7 +502,6 @@ uint8_t checkForUpdatesToSend()
             } else if (currentMode == 1) {
                 if (targetTemp < currentTemperature) {
                     //cooling
-//          previousTemperature = currentTemperature;
                     currentTemperature--;
                     setTemperatureFieldUpdate();
                     checkTargetTempReached();
@@ -509,7 +509,6 @@ uint8_t checkForUpdatesToSend()
             } else if (currentMode == 2) {
                 if (targetTemp > currentTemperature) {
                     //heating
-//          previousTemperature = currentTemperature;
                     currentTemperature++;
                     setTemperatureFieldUpdate();
                     checkTargetTempReached();
@@ -531,11 +530,12 @@ uint8_t checkForEventsToSend()
     // 0x01 == need to send event 80F reached
     // 0x02 == need to send event 60F reached
     // 0x04 == need to send event mode turned off
+    // 0x08 == need to send event mode turned on i.e. one of { auto, heat, cool, fan }
 
-    if (targetTemp >= currentTemperature && currentTemperature == 80) {
+    if (currentTemperature > previousTemperature && currentTemperature == 80) {
         set80FReachedEvent();
     }
-    if (targetTemp <= currentTemperature && currentTemperature == 60) {
+    if (currentTemperature < previousTemperature && currentTemperature == 60) {
         set60FReachedEvent();
     }
     if (currentMode != previousMode) {
