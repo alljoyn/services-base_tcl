@@ -130,7 +130,16 @@ AJ_Status AJOBS_Start(const AJOBS_Settings* settings)
 
 uint8_t AJOBS_IsWiFiConnected()
 {
-    return (AJOBS_ControllerAPI_IsWiFiClient() || AJOBS_ControllerAPI_IsWiFiSoftAP());
+    AJ_WiFiConnectState state = AJ_GetWifiConnectState();
+
+    switch (state) {
+    case AJ_WIFI_STATION_OK:
+    case AJ_WIFI_CONNECT_OK:
+        return TRUE;
+
+    default:
+        return FALSE;
+    }
 }
 
 /**
@@ -574,17 +583,17 @@ AJ_Status AJOBS_ControllerAPI_StartSoftAPIfNeededOrConnect(AJOBS_Info* obInfo)
 {
     AJ_Status status = AJ_OK;
 
-    // Check if just started
+    // Check if just started and force immediate validation for previous retry
     if (bFirstStart) {
-        // Check if already Onboarded or in SoftAP mode
-        if (AJOBS_ControllerAPI_IsWiFiClient() || AJOBS_ControllerAPI_IsWiFiSoftAP()) {
-            AJ_InfoPrintf(("CONFIGURE_WIFI_UPON_START was set\n"));
-            return status;
-        }
         bFirstStart = FALSE;
         if (obInfo->state == AJOBS_STATE_CONFIGURED_RETRY) {
             obInfo->state = AJOBS_STATE_CONFIGURED_VALIDATED;
         }
+    }
+    // Check if there is Wi-Fi connectivity and return if established already
+    if (AJOBS_IsWiFiConnected()) {
+        AJ_InfoPrintf(("Already connected with ConnectionState=%u, no need to establish connection!\n", (uint8_t)AJ_GetWifiConnectState()));
+        return status;
     }
     while (1) {
         status = AJOBS_ControllerAPI_GotoIdleWiFi(obSettings->AJOBS_RESET_WIFI_ON_IDLE); // Go into IDLE mode, reset Wi-Fi
@@ -690,6 +699,11 @@ AJ_Status AJOBS_SwitchToRetry()
     if (status != AJ_OK) {
         goto ErrorExit;
     }
+    status = AJOBS_DisconnectWiFi();
+    if (status != AJ_OK) {
+        goto ErrorExit;
+    }
+
     AJ_InfoPrintf(("SwitchToRetry status: %s\n", AJ_StatusText(status)));
     return status;
 
