@@ -30,9 +30,6 @@
 #ifdef __linux
 #include <NotificationProducerSampleUtil.h>
 #else
-#ifndef MESSAGES_INTERVAL
-#define MESSAGES_INTERVAL 60000
-#endif
 #define Producer_GetNotificationFromUser(...) do { } while (0)
 #define Producer_SetupEnv(...) do { } while (0)
 #define Producer_GetShouldDeleteNotificationFromUser(...) do { } while (0)
@@ -43,12 +40,8 @@
 extern AJ_EXPORT uint8_t dbgAJSVCAPP;
 #endif
 
-#define NUM_CUSTOMS 2
-#define NUM_TEXTS   2
-#define NUM_RICH_AUDIO 2
-
 /**
- * Static non consts - sample application specific
+ * Static consts - sample application specific
  */
 const static char* lang1  = "en";
 const static char* lang2 = "de-AT";
@@ -64,10 +57,23 @@ const static char* Icon1URL = "http://www.getIcon1.org";
 const static char* controlPanelServiceObjectPath = "/ControlPanel/MyDevice/areYouSure";
 const static char* richIconObjectPath = "/icon/MyDevice";
 const static char* richAudioObjectPath = "/audio/MyDevice";
+
+#define NUM_TEXTS   2
+static AJNS_DictionaryEntry textToSend[NUM_TEXTS];
+
+#define NUM_CUSTOMS 2
+static AJNS_DictionaryEntry customAttributesToSend[NUM_CUSTOMS];
+
+#define NUM_RICH_AUDIO 2
+static AJNS_DictionaryEntry richAudioUrls[NUM_RICH_AUDIO];
+
 static uint8_t inputMode = 0;
 static AJ_Time isMessageTime;
+
+#ifndef MESSAGES_INTERVAL
+#define MESSAGES_INTERVAL 60000
+#endif
 static uint32_t nextMessageTime = MESSAGES_INTERVAL;
-AJNS_DictionaryEntry textToSend[NUM_TEXTS], customAttributesToSend[NUM_CUSTOMS], richAudioUrls[NUM_RICH_AUDIO];
 
 typedef enum _PriorityType {
     PRIORITY_TYPE_FIXED = 0,
@@ -100,7 +106,7 @@ static const char* const PRIORITIES[AJNS_NUM_MESSAGE_TYPES] = { "Emergency", "Wa
 #endif
 
 /**
- * Initial the Notifications that will be used during this sample app
+ * Initialize the Notifications that will be sent during this sample app
  */
 static AJNS_NotificationContent notificationContent;
 static void InitNotification()

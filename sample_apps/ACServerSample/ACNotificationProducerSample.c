@@ -32,16 +32,17 @@
 extern AJ_EXPORT uint8_t dbgAJSVCAPP;
 #endif
 
-#define NUM_CUSTOMS 0
-#define NUM_TEXTS   1
-#define NUM_RICH_AUDIO 0
-
 /**
- * Static non consts - sample application specirfic
+ * Static consts - sample application specific
  */
 const static char* langEng  = "en";
 const static char* helloEng = "Hello AJL World";
+
+#define NUM_TEXTS   1
 static AJNS_DictionaryEntry textToSend[NUM_TEXTS];
+
+#define NUM_CUSTOMS 0
+#define NUM_RICH_AUDIO 0
 static AJNS_NotificationContent notificationContent;
 
 /**
