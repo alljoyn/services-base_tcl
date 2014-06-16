@@ -117,14 +117,24 @@ static const char* DescriptionLookup(uint32_t descId, const char* lang)
 {
     const char* actualLanguage;
     int8_t langIndex = AJSVC_PropertyStore_GetLanguageIndex(lang);
-    char deviceName[DEVICE_NAME_VALUE_LENGTH];
+    char deviceName[DEVICE_NAME_VALUE_LENGTH] = { '\0' };
     uint8_t i;
+    const char* deviceNamePerLanguage;
 
     AJ_InfoPrintf(("Looking up description for o:%u i:%u m:%u a:%u", (descId >> 24) & 0xFF, (descId >> 16) & 0xFF, (descId >> 8) & 0xFF, (descId >> 0) & 0xFF));
     if (langIndex != AJSVC_PROPERTY_STORE_ERROR_LANGUAGE_INDEX) {
         actualLanguage = AJSVC_PropertyStore_GetLanguageName(langIndex);
         AJ_InfoPrintf((" language=%s\n", actualLanguage));
-        strncpy(deviceName, AJSVC_PropertyStore_GetValueForLang(AJSVC_PROPERTY_STORE_DEVICE_NAME, langIndex), DEVICE_NAME_VALUE_LENGTH);
+        deviceNamePerLanguage = AJSVC_PropertyStore_GetValueForLang(AJSVC_PROPERTY_STORE_DEVICE_NAME, langIndex);
+        if (deviceNamePerLanguage == NULL) {
+            deviceNamePerLanguage = AJSVC_PropertyStore_GetValueForLang(AJSVC_PROPERTY_STORE_DEVICE_NAME, AJSVC_PropertyStore_GetCurrentDefaultLanguageIndex());
+            if (deviceNamePerLanguage == NULL) {
+                AJ_ErrPrintf(("DeviceName for language=%s does not exist!\n", actualLanguage));
+            }
+        }
+        if (deviceNamePerLanguage != NULL) {
+            strncpy(deviceName, deviceNamePerLanguage, DEVICE_NAME_VALUE_LENGTH);
+        }
         for (i = 0; i < DEVICE_NAME_VALUE_LENGTH; i++) { // Replace any illegal/escaped XML characters with '_'
             if (deviceName[i] == '>' || deviceName[i] == '<' || deviceName[i] == '"' || deviceName[i] == '\'' || deviceName[i] == '&') {
                 deviceName[i] = '_';
