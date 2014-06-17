@@ -157,6 +157,7 @@ AJ_Status NotificationProducer_Init()
     AJ_AlwaysPrintf(("PriorityType: %s (%u)\n", PRIORITY_TYPES[priorityType], priorityType));
     AJ_AlwaysPrintf(("TTL:          %u s\n", FIXED_TTL));
     AJ_AlwaysPrintf(("---------------------\n\n"));
+    AJ_InitTimer(&isMessageTime);
     if (!inputMode) {
         if (intervalType == INTERVAL_TYPE_RANDOM) { // Randomize next message time if interval type is RANDOM
             AJ_RandBytes((uint8_t*)&random, sizeof(random));
@@ -167,7 +168,6 @@ AJ_Status NotificationProducer_Init()
         isMessageTime.seconds -= nextMessageTime / 1000; // Expire next message timer
         isMessageTime.milliseconds -= nextMessageTime % 1000; // Expire next message timer
     }
-    AJ_InitTimer(&isMessageTime);
 
     return status;
 }
