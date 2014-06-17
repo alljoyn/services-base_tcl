@@ -314,12 +314,8 @@ static const char* aboutIconUrl = { "https://www.alljoyn.org/sites/all/themes/at
  * Notification Producer Provisioning
  */
 
-#define NUM_CUSTOMS 2
-#define NUM_TEXTS   2
-#define NUM_RICH_AUDIO 2
-
 /**
- * Static non consts - sample application specific
+ * Notification content
  */
 const static char* lang1  = "en";
 const static char* lang2 = "de-AT";
@@ -335,10 +331,17 @@ const static char* Icon1URL = "http://www.getIcon1.org";
 const static char* richIconObjectPath = "/icon/MyDevice";
 const static char* richAudioObjectPath = "/audio/MyDevice";
 
-AJNS_DictionaryEntry textToSend[NUM_TEXTS], customAttributesToSend[NUM_CUSTOMS], richAudioUrls[NUM_RICH_AUDIO];
+#define NUM_TEXTS   2
+static AJNS_DictionaryEntry textToSend[NUM_TEXTS];
+
+#define NUM_CUSTOMS 2
+static AJNS_DictionaryEntry customAttributesToSend[NUM_CUSTOMS];
+
+#define NUM_RICH_AUDIO 2
+static AJNS_DictionaryEntry richAudioUrls[NUM_RICH_AUDIO];
 
 /**
- * Initial the Notifications that will be used during this sample app
+ * Initialize the Notifications that will be sent during this sample app
  */
 static AJNS_NotificationContent notificationContent;
 static void InitNotificationContent()
