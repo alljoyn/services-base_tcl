@@ -62,7 +62,7 @@ void Producer_GetNotificationFromUser(AJNS_NotificationContent* notificationCont
     uint8_t defaultNumCustomAttributes = notificationContent->numCustomAttributes = 0;
     char key[BUF_SIZE];
     char val[BUF_SIZE];
-    uint16_t defaultTtl = *ttl;
+    uint32_t defaultTtl = *ttl;
     char url[BUF_SIZE];
     uint32_t defaultNextMessageTime = *nextMessageTime;
 
@@ -153,8 +153,8 @@ void Producer_GetNotificationFromUser(AJNS_NotificationContent* notificationCont
     AJ_AlwaysPrintf(("Please enter the ttl in the range %u - %u seconds.\n", AJNS_NOTIFICATION_TTL_MIN, AJNS_NOTIFICATION_TTL_MAX));
     AJ_AlwaysPrintf(("Empty string input will default to %u\n", defaultTtl));
     if (GetCmdLine(buf, BUF_SIZE)) {
-        *ttl = (uint8_t)atoi(buf);
-        char stringType[10];
+        *ttl = (uint32_t)atoi(buf);
+        char stringType[11]; // Maximum decimal value for uint32_t is 4294967295 which is 10 characters long
         sprintf(stringType, "%u", *ttl);
         if (!(strcmp(buf, stringType) == 0)) {             //they do not match, it is not int
             AJ_AlwaysPrintf(("Ttl is not an integer value. Defaulting to %u\n", defaultTtl));
@@ -236,8 +236,8 @@ void Producer_GetNotificationFromUser(AJNS_NotificationContent* notificationCont
     AJ_AlwaysPrintf(("Please enter the interval for the next message. Default %u.\n", *nextMessageTime));
     AJ_AlwaysPrintf(("Empty string will keep default value\n"));
     if (GetCmdLine(buf, BUF_SIZE)) {
-        *nextMessageTime = (uint8_t)atoi(buf);
-        char stringType[10];
+        *nextMessageTime = (uint32_t)atoi(buf);
+        char stringType[11]; // Maximum decimal value for uint32_t is 4294967295 which is 10 characters long
         sprintf(stringType, "%u", *nextMessageTime);
         if (!(strcmp(buf, stringType) == 0)) {             //they do not match, it is not int
             AJ_AlwaysPrintf(("Next message interval is not an integer value. Defaulting to %u\n", defaultNextMessageTime));
