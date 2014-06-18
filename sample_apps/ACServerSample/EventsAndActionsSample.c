@@ -246,6 +246,7 @@ static AJ_Status EventsAndActionsPropSetHandler(AJ_Message* replyMsg, uint32_t p
 
 AJSVC_ServiceStatus EventsAndActionsMessageProcessor(AJ_BusAttachment* busAttachment, AJ_Message* msg, AJ_Status* msgStatus)
 {
+    AJ_Message reply;
     AJSVC_ServiceStatus serviceStatus = AJSVC_SERVICE_STATUS_HANDLED;
 
     switch (msg->msgId) {
@@ -262,8 +263,9 @@ AJSVC_ServiceStatus EventsAndActionsMessageProcessor(AJ_BusAttachment* busAttach
     case ACTIONS_SETMODETOHEAT:
     case ACTIONS_SETMODETOFAN:
     case ACTIONS_SETMODETOOFF:
+        AJ_MarshalReplyMsg(msg, &reply);
         setCurrentMode((msg->msgId & 0xFF) - (ACTIONS_SETMODETOAUTO & 0xFF));
-        *msgStatus = AJ_OK;
+        *msgStatus = AJ_DeliverMsg(&reply);
         break;
 
     default:
