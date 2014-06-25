@@ -763,7 +763,10 @@ AJ_Status AJNS_Producer_ConnectedHandler(AJ_BusAttachment* busAttachment)
     while (!serviceStarted && (status == AJ_OK)) {
 
         status = AJ_UnmarshalMsg(busAttachment, &msg, AJ_UNMARSHAL_TIMEOUT);
-        if (status != AJ_OK) {
+        if (status == AJ_ERR_NO_MATCH) {
+            status = AJ_OK;
+            continue;
+        } else if (status != AJ_OK) {
             break;
         }
 
