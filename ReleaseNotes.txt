@@ -60,7 +60,7 @@ ASACORE-545 - Sessionless signal is unmarshaled with member name containing '&' 
 
 Known Issues
 ------------
-Can not onboard when the Wifi credentials are set to type WEP with security ASCII and the client uses ANY
+ASABASE-249 - Can not onboard when the Wifi credentials are set to type WEP with security ASCII and the client uses ANY
 
 
 Compatibility
