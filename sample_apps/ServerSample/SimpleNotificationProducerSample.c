@@ -173,6 +173,25 @@ AJ_Status NotificationProducer_Init()
 }
 
 /**
+ * Allow the user the possibility to delete sent Notifications when DoWork is called.
+ * Give the user an option to delete a notification after one was sent.
+ */
+static void PossiblyDeleteNotification(AJ_BusAttachment* busAttachment)
+{
+    AJ_Status status;
+    uint8_t delMsg = FALSE;
+    uint16_t delMsgType = AJNS_NOTIFICATION_MESSAGE_TYPE_INFO;
+
+    if (inputMode) {
+        Producer_GetShouldDeleteNotificationFromUser(busAttachment, &delMsg, &delMsgType);
+        if (delMsg) {
+            status = AJNS_Producer_DeleteLastNotification(busAttachment, delMsgType);
+            AJ_AlwaysPrintf(("Delete Last Message Type: %d returned: '%s'\n", delMsgType, AJ_StatusText(status)));
+        }
+    }
+}
+
+/**
  * Meant to simulate scenario where sometimes Notifications are sent when
  * DoWork is called and sometimes not and also toggle between a regular
  * notification and a notication with action.
@@ -202,6 +221,7 @@ static void PossiblySendNotification(AJ_BusAttachment* busAttachment)
         AJ_AlwaysPrintf(("Send Message Type: %u with TTL: %u secs returned: '%s'\n", messageType, ttl, AJ_StatusText(status)));
         if (inputMode) {
             Producer_FreeNotification(&notificationContent);
+            PossiblyDeleteNotification(busAttachment);
         }
         if (!inputMode) {
             if (intervalType == INTERVAL_TYPE_RANDOM) { // Randomize next message time if interval type is RANDOM
@@ -219,31 +239,9 @@ static void PossiblySendNotification(AJ_BusAttachment* busAttachment)
     }
 }
 
-/**
- * Allow the user the possibility to delete sent Notifications when DoWork is called.
- * Give the user an option to delete a notification a second after one was sent.
- */
-static void PossiblyDeleteNotification(AJ_BusAttachment* busAttachment)
-{
-    AJ_Status status;
-    uint8_t delMsg = FALSE;
-    uint16_t delMsgType = AJNS_NOTIFICATION_MESSAGE_TYPE_INFO;
-
-    if (inputMode) {
-        if (AJ_GetElapsedTime(&isMessageTime, FALSE) >= 1000) {
-            Producer_GetShouldDeleteNotificationFromUser(busAttachment, &delMsg, &delMsgType);
-            if (delMsg) {
-                status = AJNS_Producer_DeleteLastNotification(busAttachment, delMsgType);
-                AJ_AlwaysPrintf(("Delete Last Message Type: %d returned: '%s'\n", delMsgType, AJ_StatusText(status)));
-            }
-        }
-    }
-}
-
 void NotificationProducer_DoWork(AJ_BusAttachment* busAttachment)
 {
     PossiblySendNotification(busAttachment);
-    PossiblyDeleteNotification(busAttachment);
 }
 
 AJ_Status NotificationProducer_Finish()
