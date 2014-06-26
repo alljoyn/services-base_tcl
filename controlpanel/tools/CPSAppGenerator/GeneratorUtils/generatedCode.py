@@ -94,28 +94,36 @@ class Generator:
     def addControlPanel(self, rootElement) :
         name = self.unitId + rootElement.name[:1].upper() + rootElement.name[1:]
         capName = self.unitId.upper() + "_" + "ROOT_CONTROLPANEL_" + rootElement.name.upper()
+        capName2 = self.unitId.upper() + "_" + "NOTIFICATION_ACTION_" + rootElement.name.upper()
         objectPathVar = "{0}ObjectPath".format(name)
         myObjectPath = self.ObjectPathPrefix + rootElement.name
         self.objectPathsDecl += "extern const char {0}[];\n".format(objectPathVar)
         self.objectPathsDef += "const char {0}[] = \"{1}\";\n".format(objectPathVar, myObjectPath)
-        self.appObjects += "    {0}  {1}, ControlPanelInterfaces, AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED/*AJCPS_OBJ_FLAG*/  {2}, \\\n".format("{", objectPathVar, "}")
+        if rootElement._has("dismissable") and rootElement.dismissable :
+            self.appObjects += "    {0}  {1}, DismissableControlPanelInterfaces, AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED/*AJCPS_OBJ_FLAG*/  {2}, \\\n".format("{", objectPathVar, "}")
+        else :
+            self.appObjects += "    {0}  {1}, ControlPanelInterfaces, AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED/*AJCPS_OBJ_FLAG*/  {2}, \\\n".format("{", objectPathVar, "}")
 
         self.defines += """#define {0}_GET_VALUE                  AJ_ENCODE_MESSAGE_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 0, AJ_PROP_GET)
 #define {0}_SET_VALUE                  AJ_ENCODE_MESSAGE_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 0, AJ_PROP_SET)
 #define {0}_GET_ALL_VALUES             AJ_ENCODE_MESSAGE_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 0, AJ_PROP_GET_ALL)
 #define {0}_VERSION_PROPERTY           AJ_ENCODE_PROPERTY_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 1, 0)\n""".format(capName, self.definesIndx)
+        if rootElement._has("dismissable") and rootElement.dismissable :
+            self.defines += """#define {0}_VERSION_PROPERTY         AJ_ENCODE_PROPERTY_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 2, 0)
+#define {0}_SIGNAL_DISMISS           AJ_ENCODE_MESSAGE_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 2, 1)\n""".format(capName2, self.definesIndx)
+
         self.defines += "\n"
-        self.definesIndx += 1	
+        self.definesIndx += 1
 
         self.getRootValuesCases += "case {0}_GET_VALUE: \\\n".format(capName)
         self.getAllRootCases += "case {0}_GET_ALL_VALUES: \\\n".format(capName)
         self.setValuesCases += "case {0}_SET_VALUE: \\\n".format(capName)
         self.identifyRoot += """    case {0}_VERSION_PROPERTY:
-    case {0}_GET_ALL_VALUES:
-        return TRUE;\n\n""".format(capName)
-
+    case {0}_GET_ALL_VALUES:\n""".format(capName)
         if rootElement._has("dismissable") and rootElement.dismissable :
-            addNotificationAction(rootElement, 1)
+            self.identifyRoot += """    case {0}_VERSION_PROPERTY:
+    case {0}_SIGNAL_DISMISS:\n""".format(capName2)
+        self.identifyRoot += """        return TRUE;\n\n"""
 
     def addNotificationAction(self, rootElement, fromControlPanel = 0) :
         name = self.unitId + rootElement.name[:1].upper() + rootElement.name[1:]
@@ -134,7 +142,7 @@ class Generator:
 #define {0}_VERSION_PROPERTY           AJ_ENCODE_PROPERTY_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 1, 0)
 #define {0}_SIGNAL_DISMISS             AJ_ENCODE_MESSAGE_ID(AJCPS_OBJECT_LIST_INDEX, {1}, 1, 1)\n""".format(capName, self.definesIndx)
         self.defines += "\n"
-        self.definesIndx += 1	
+        self.definesIndx += 1
 
         self.getRootValuesCases += "case {0}_GET_VALUE: \\\n".format(capName)
         self.getAllRootCases += "case {0}_GET_ALL_VALUES: \\\n".format(capName)
@@ -143,7 +151,6 @@ class Generator:
     case {0}_GET_ALL_VALUES:
     case {0}_SIGNAL_DISMISS:
         return TRUE;\n\n""".format(capName)
-
 
     def initializeFiles(self) :
 
