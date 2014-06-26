@@ -65,11 +65,17 @@ ASABASE-249 - Can not onboard when the Wifi credentials are set to type WEP with
 
 Compatibility
 -------------
-
 Thin client app built with 14.06 library will not connect to AllJoyn Routing Node from version 14.02
+CPS - generated code needs to be regenerated.
+CPS - getter function for a property needs now to add the pointer to the widget for example getCurrentTemperatureString() is now getCurrentTemperatureString(PropertyWidget* thisWidget);
+notification - function change: proxyObjects was removed from AJ_Status AJNS_Consumer_Start
+onboarding - function change: readInfo and writeInfo were removed from AJ_Status AJOBS_Start
+helper functions in services handlers were modified
 
 
 Change history
 --------------
+
+14.06 - bug fixes, code improvements, added events and actions, new security mechanism,  and minor features
 
 14.02 - 1st AllSeen Alliance release
