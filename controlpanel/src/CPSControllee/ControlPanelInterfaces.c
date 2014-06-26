@@ -69,6 +69,17 @@ const AJ_InterfaceDescription NotificationActionInterfaces[] =
 };
 
 /**
+ * DismissableControlPanel Interfaces
+ */
+const AJ_InterfaceDescription DismissableControlPanelInterfaces[] =
+{
+    AJ_PropertiesIface,
+    ControlPanelInterface,
+    NotificationActionInterface,
+    NULL
+};
+
+/**
  * HTTPControl Interfaces
  */
 static const char HttpControlInterfaceName[] = "org.alljoyn.ControlPanel.HTTPControl";

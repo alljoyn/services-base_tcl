@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (c) 2013, AllSeen Alliance. All rights reserved.
+ * Copyright (c) 2013 - 2014, AllSeen Alliance. All rights reserved.
  *
  *    Permission to use, copy, modify, and/or distribute this software for any
  *    purpose with or without fee is hereby granted, provided that the above
@@ -20,10 +20,11 @@
 #include <alljoyn.h>
 
 /**
- * The Description of the root Interfaces, ControlPanel and NotificationAction
+ * The Description of the root Interfaces: ControlPanel, NotificationAction and DismissableControlPanel
  */
 extern const AJ_InterfaceDescription ControlPanelInterfaces[];
 extern const AJ_InterfaceDescription NotificationActionInterfaces[];
+extern const AJ_InterfaceDescription DismissableControlPanelInterfaces[];
 
 /**
  * The Description of the PropertyInterface
