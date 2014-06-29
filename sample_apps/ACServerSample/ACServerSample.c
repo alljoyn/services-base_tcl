@@ -120,7 +120,7 @@ static const char* DEFAULT_DEVICE_MODELS[] = { "0.0.1" };
 static const char* DEFAULT_DATE_OF_MANUFACTURES[] = { "2014-05-01" };
 static const char* DEFAULT_SOFTWARE_VERSIONS[] = { "0.0.1" };
 static const char* DEFAULT_HARDWARE_VERSIONS[] = { "0.0.1" };
-static const char* DEFAULT_SUPPORT_URLS[] = { "www.company_a.com" };
+static const char* DEFAULT_SUPPORT_URLS[] = { "http://www.allseenalliance.org" };
 
 const char** propertyStoreDefaultValues[AJSVC_PROPERTY_STORE_NUMBER_OF_KEYS] =
 {
