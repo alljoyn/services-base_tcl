@@ -453,8 +453,15 @@ static AJ_Status DoConnectWifi(AJOBS_Info* connectInfo)
     AJOBS_AuthType fallbackUntil = AJOBS_AUTH_TYPE_OPEN;
     uint8_t retries = 0;
     AJ_WiFiConnectState wifiConnectState;
-    uint8_t raw[(AJOBS_PASSCODE_MAX_LENGTH / 2) + 1];
     char* password = connectInfo->pc;
+    size_t hexLen = strlen(password);
+    uint8_t raw[(AJOBS_PASSCODE_MAX_LENGTH / 2) + 1] = { 0 };
+
+    /* Only decode the password from HEX if authentication type is NOT WEP */
+    if (AJOBS_AUTH_TYPE_WEP != connectInfo->authType) {
+        AJ_HexToRaw(password, hexLen, raw, (AJOBS_PASSCODE_MAX_LENGTH / 2) + 1);
+        raw[hexLen / 2] = 0;
+    }
 
     AJ_InfoPrintf(("Attempting to connect to %s with passcode=%s and auth=%d\n", connectInfo->ssid, connectInfo->pc, connectInfo->authType));
 
@@ -491,15 +498,14 @@ static AJ_Status DoConnectWifi(AJOBS_Info* connectInfo)
     cipherType = GetCipherType(fallback);
     AJ_InfoPrintf(("Trying to connect with auth=%d (secType=%d, cipherType=%d)\n", fallback, secType, cipherType));
 
-    /* Only decode the password from HEX if authentication type is NOT WEP */
-    if (AJOBS_AUTH_TYPE_WEP != connectInfo->authType) {
-        size_t hexLen = strlen(connectInfo->pc);
-        AJ_HexToRaw(connectInfo->pc, hexLen, raw, (AJOBS_PASSCODE_MAX_LENGTH / 2) + 1);
-        password = (char*)raw;
-        password[hexLen / 2] = '\0';
-    }
-
     while (1) {
+        // Setup the password
+        if (AJ_WIFI_SECURITY_WEP == secType && ((hexLen / 2) & 1)) { // Ensure that the HEX encoded password is passed for WEP when raw password is not HEX
+            password = connectInfo->pc;
+        } else {
+            password = (char*)raw;
+        }
+
         if (connectInfo->state == AJOBS_STATE_CONFIGURED_NOT_VALIDATED) {
             connectInfo->state = AJOBS_STATE_CONFIGURED_VALIDATING;
         }
