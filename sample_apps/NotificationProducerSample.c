@@ -238,9 +238,6 @@ static const char* DEFAULT_DEVICE_MODELS[] = { "0.0.1" };
 static const char* DEFAULT_DATE_OF_MANUFACTURES[] = { "2014-05-01" };
 static const char* DEFAULT_SOFTWARE_VERSIONS[] = { "0.0.1" };
 static const char* DEFAULT_HARDWARE_VERSIONS[] = { "0.0.1" };
-static const char DEFAULT_SUPPORT_URL_LANG1[] = "www.company_a.com";
-static const char DEFAULT_SUPPORT_URL_LANG2[] = "www.company_a.com/de-AT";
-static const char* DEFAULT_SUPPORT_URLS[] = { DEFAULT_SUPPORT_URL_LANG1, DEFAULT_SUPPORT_URL_LANG2 };
 
 const char** propertyStoreDefaultValues[AJSVC_PROPERTY_STORE_NUMBER_OF_KEYS] =
 {
@@ -259,7 +256,7 @@ const char** propertyStoreDefaultValues[AJSVC_PROPERTY_STORE_NUMBER_OF_KEYS] =
     NULL,                                           /*AJSoftwareVersion*/
 // Add other mandatory about keys above this line
     DEFAULT_HARDWARE_VERSIONS,                      /*HardwareVersion*/
-    DEFAULT_SUPPORT_URLS,                           /*SupportUrl*/
+    NULL,                                           /*SupportUrl*/
 // Add other optional about keys above this line
 };
 
