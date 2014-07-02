@@ -44,7 +44,7 @@ typedef struct DialogOptParams {
 
 /**
  * Initialize the DialogOptParams structure
- * @param widget - pointer to DialogOptParams structure
+ * @param optParam - pointer to DialogOptParams structure
  */
 void initializeDialogOptParam(DialogOptParams* optParam);
 
