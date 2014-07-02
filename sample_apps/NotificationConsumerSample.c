@@ -214,9 +214,18 @@ static AJ_Status ApplicationHandleNotify(AJNS_Notification* notification)
     return AJ_OK;
 }
 
+static AJ_Status ApplicationHandleDismiss(int32_t notificationId, const char* appId)
+{
+    AJ_AlwaysPrintf(("******************** Begin New Dismiss Received ********************\n"));
+    AJ_AlwaysPrintf(("Notification Id: %d\nApp Id: %s\n", notificationId, appId));
+    AJ_AlwaysPrintf(("******************** End New Dismiss Received ********************\n"));
+
+    return AJ_OK;
+}
+
 static AJ_Status Consumer_Init()
 {
-    AJ_Status status = AJNS_Consumer_Start(1, &ApplicationHandleNotify, NULL);
+    AJ_Status status = AJNS_Consumer_Start(1, &ApplicationHandleNotify, &ApplicationHandleDismiss);
     return status;
 }
 
