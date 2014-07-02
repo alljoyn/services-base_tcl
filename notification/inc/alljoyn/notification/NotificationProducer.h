@@ -24,7 +24,9 @@
  * details Functions and variables that assist in writing Notification Producers
  *  @{
  */
-
+/*!
+   \brief Start index for Notification emitters
+ */
 #define NOTIFICATION_OBJECT_INDEX                NOTIFICATION_PRODUCER_OBJECTS_INDEX
 
 /*!

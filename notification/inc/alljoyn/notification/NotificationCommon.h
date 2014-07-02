@@ -117,7 +117,13 @@ extern const uint16_t AJNS_NOTIFICATION_TTL_MAX;
 /**
  * Notification Common objects range
  */
+/**
+ * Starting index
+ */
 #define NOTIFICATION_COMMON_OBJECTS_INDEX           0
+/**
+ * Count
+ */
 #define NOTIFICATION_COMMON_OBJECTS_COUNT           1
 
 /**
@@ -176,13 +182,25 @@ extern const uint16_t AJNS_NotificationProducerPort;
 /**
  * Notification Consumer objects range
  */
+/**
+ * Starting index
+ */
 #define NOTIFICATION_CONSUMER_OBJECTS_INDEX         NOTIFICATION_COMMON_OBJECTS_INDEX + NOTIFICATION_COMMON_OBJECTS_COUNT
+/**
+ * Count
+ */
 #define NOTIFICATION_CONSUMER_OBJECTS_COUNT         AJNS_NUM_MESSAGE_TYPES
 
 /**
  * Notification Producer objects range
  */
+/**
+ * Starting index
+ */
 #define NOTIFICATION_PRODUCER_OBJECTS_INDEX         NOTIFICATION_CONSUMER_OBJECTS_INDEX + NOTIFICATION_CONSUMER_OBJECTS_COUNT
+/**
+ * Count
+ */
 #define NOTIFICATION_PRODUCER_OBJECTS_COUNT         AJNS_NUM_MESSAGE_TYPES + 1
 
 /**
