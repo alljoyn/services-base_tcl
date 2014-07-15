@@ -60,13 +60,13 @@ void initializeDialogOptParam(DialogOptParams* optParam)
 
 AJ_Status marshalDialogOptParam(BaseWidget* widget, AJ_Message* reply, uint16_t language)
 {
-    if (language >= widget->numLanguages) {
-        return AJ_ERR_UNEXPECTED;
-    }
     DialogOptParams* optParams = &((DialogWidget*)widget)->optParams;
     AJ_Status status;
     AJ_Arg dialogOptParams;
 
+    if (language >= widget->numLanguages) {
+        return AJ_ERR_UNEXPECTED;
+    }
     status = StartOptionalParams(reply, &dialogOptParams);
     if (status != AJ_OK) {
         return status;

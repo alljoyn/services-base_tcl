@@ -42,7 +42,7 @@
 #ifndef ER_DEBUG_AJSVC
 #define ER_DEBUG_AJSVC 0
 #endif
-AJ_EXPORT uint8_t dbgAJSVC = ER_DEBUG_AJSVC || ER_DEBUG_AJSVCALL;
+uint8_t dbgAJSVC = ER_DEBUG_AJSVC || ER_DEBUG_AJSVCALL;
 #endif
 
 uint8_t AJSVC_IsLanguageSupported(AJ_Message* msg, AJ_Message* reply, const char* language, int8_t* langIndex)

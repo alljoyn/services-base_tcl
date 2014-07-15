@@ -578,10 +578,10 @@ AJ_Status AJNS_Producer_SendNotification(AJ_BusAttachment* busAttachment, AJNS_N
 
 AJ_Status AJNS_Producer_DeleteLastNotification(AJ_BusAttachment* busAttachment, uint16_t messageType)
 {
-    AJ_InfoPrintf(("In DeleteLastNotification\n"));
     AJ_Status status;
     uint32_t lastSentSerialNumber;
 
+    AJ_InfoPrintf(("In DeleteLastNotification\n"));
     if (messageType >= AJNS_NUM_MESSAGE_TYPES) {
         AJ_ErrPrintf(("Could not delete Notification - MessageType is not valid\n"));
         return AJ_ERR_DISALLOWED;
@@ -677,12 +677,12 @@ AJ_Status AJNS_Producer_CancelNotification(AJ_BusAttachment* busAttachment, uint
 
 AJ_Status AJNS_Producer_DismissRequestHandler(AJ_BusAttachment* busAttachment, AJ_Message* msg)
 {
-    AJ_InfoPrintf(("In DismissMsg\n"));
     AJ_Status status;
     int32_t notificationId;
     const char* appId;
     AJ_Message reply;
 
+    AJ_InfoPrintf(("In DismissMsg\n"));
     status = AJ_UnmarshalArgs(msg, "i", &notificationId);
     if (status != AJ_OK) {
         AJ_ErrPrintf(("Could not unmarshal message\n"));

@@ -23,12 +23,12 @@ AJ_Status AddHints(AJ_Message* reply, const uint16_t hints[], uint16_t numHints)
 {
     AJ_Status status;
     AJ_Arg arrayArg;
+    uint16_t cnt;
 
     status = AJ_MarshalContainer(reply, &arrayArg, AJ_ARG_ARRAY);
     if (status != AJ_OK) {
         return status;
     }
-    uint16_t cnt;
     for (cnt = 0; cnt < numHints; cnt++)
         status = AJ_MarshalArgs(reply, "q", hints[cnt]);
     if (status != AJ_OK) {

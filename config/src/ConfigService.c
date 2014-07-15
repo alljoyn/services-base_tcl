@@ -159,10 +159,10 @@ AJ_Status AJCFG_GetConfigurationsHandler(AJ_Message* msg)
     AJ_Message reply;
     char* language;
     int8_t langIndex = AJSVC_PROPERTY_STORE_ERROR_LANGUAGE_INDEX;
+    AJSVC_PropertyStoreCategoryFilter filter;
 
     AJ_InfoPrintf(("Handling GetConfigurations request\n"));
 
-    AJSVC_PropertyStoreCategoryFilter filter;
     memset(&filter, 0, sizeof(AJSVC_PropertyStoreCategoryFilter));
     filter.bit1Config = TRUE;
     status = AJ_UnmarshalArgs(msg, "s", &language);

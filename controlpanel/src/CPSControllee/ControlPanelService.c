@@ -116,16 +116,15 @@ static AJ_Status ReturnErrorMessage(AJ_Message* msg, const char* error)
 AJ_Status AJCPS_SendRootUrl(AJ_Message* msg, uint32_t msgId)
 {
     AJ_Message reply;
-    AJ_MarshalReplyMsg(msg, &reply);
-
     uint16_t widgetType = 0;
     uint16_t propType = 0;
     uint16_t language = 0;
-
     HttpControl* control = (appIdentifyMsgOrPropId)(msgId, &widgetType, &propType, &language);
+
     if (control == 0) {
         return ReturnErrorMessage(msg, AJ_ErrServiceUnknown);
     }
+    AJ_MarshalReplyMsg(msg, &reply);
     if (marshalHttpControlUrl(control, &reply, language)) {
         return ReturnErrorMessage(msg, AJ_ErrServiceUnknown);
     }
@@ -194,13 +193,12 @@ AJ_Status AJCPS_GetAllRootProperties(AJ_Message* msg, uint32_t msgId)
 {
     AJ_Message reply;
     AJ_Status status = AJ_ERR_UNEXPECTED;
-
-    AJ_MarshalReplyMsg(msg, &reply);
-
     uint8_t found = (appIdentifyRootMsgOrPropId)(msgId);
+
     if (!found) {
         return ReturnErrorMessage(msg, AJ_ErrServiceUnknown);
     }
+    AJ_MarshalReplyMsg(msg, &reply);
     status = MarshalAllRootProperties(&reply);
     if (status != AJ_OK) {
         return ReturnErrorMessage(msg, AJ_ErrServiceUnknown);
@@ -213,8 +211,6 @@ AJ_Status AJCPS_GetAllWidgetProperties(AJ_Message* msg, uint32_t msgId)
     AJ_Message reply;
     AJ_Status status = AJ_ERR_UNEXPECTED;
 
-    AJ_MarshalReplyMsg(msg, &reply);
-
     uint16_t widgetType = 0;
     uint16_t propType = 0;
     uint16_t language = 0;
@@ -223,6 +219,7 @@ AJ_Status AJCPS_GetAllWidgetProperties(AJ_Message* msg, uint32_t msgId)
     if (widget == 0) {
         return ReturnErrorMessage(msg, AJ_ErrServiceUnknown);
     }
+    AJ_MarshalReplyMsg(msg, &reply);
     status = widget->marshalAllProp(widget, &reply, language);
     if (status != AJ_OK) {
         return ReturnErrorMessage(msg, AJ_ErrServiceUnknown);
@@ -234,12 +231,11 @@ AJ_Status AJCPS_SendPropertyChangedSignal(AJ_BusAttachment* busAttachment, uint3
 {
     AJ_Status status;
     AJ_Message msg;
+    uint8_t isProperty = FALSE;
+    void* widget = (appIdentifyMsgOrPropIdForSignal)(propSignal, &isProperty);
 
     AJ_InfoPrintf(("Sending Property Changed Signal.\n"));
 
-    uint8_t isProperty = FALSE;
-
-    void* widget = (appIdentifyMsgOrPropIdForSignal)(propSignal, &isProperty);
     if (widget == 0) {
         return AJ_ERR_UNEXPECTED;
     }
@@ -263,10 +259,10 @@ AJ_Status AJCPS_SendDismissSignal(AJ_BusAttachment* busAttachment, uint32_t prop
 {
     AJ_Status status;
     AJ_Message msg;
+    uint8_t found = (appIdentifyRootMsgOrPropId)(propSignal);
 
     AJ_InfoPrintf(("Sending Dismiss Signal.\n"));
 
-    uint8_t found = (appIdentifyRootMsgOrPropId)(propSignal);
     if (!found) {
         return AJ_ERR_UNEXPECTED;
     }
@@ -288,13 +284,13 @@ AJ_Status AJCPS_ConnectedHandler(AJ_BusAttachment* busAttachment)
         TRUE
     };
     AJ_Status status;
+    uint8_t serviceStarted = FALSE;
 
     status = AJ_BusBindSessionPort(busAttachment, AJCPS_Port, &sessionOpts, 0);
     if (status != AJ_OK) {
         AJ_ErrPrintf(("Failed to send bind session port message\n"));
     }
 
-    uint8_t serviceStarted = FALSE;
     while (!serviceStarted && (status == AJ_OK)) {
         AJ_Message msg;
 
