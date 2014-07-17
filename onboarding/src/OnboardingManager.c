@@ -328,7 +328,7 @@ static AJOBS_AuthType GetAuthType(AJ_WiFiSecurityType secType, AJ_WiFiCipherType
 
 static AJ_WiFiSecurityType GetSecType(AJOBS_AuthType authType)
 {
-    A_UINT32 secType = AJ_WIFI_SECURITY_NONE;
+    AJ_WiFiSecurityType secType = AJ_WIFI_SECURITY_NONE;
 
     switch (authType) {
     case AJOBS_AUTH_TYPE_OPEN:
@@ -359,7 +359,7 @@ static AJ_WiFiSecurityType GetSecType(AJOBS_AuthType authType)
 
 static AJ_WiFiCipherType GetCipherType(AJOBS_AuthType authType)
 {
-    A_UINT32 cipherType = AJ_WIFI_CIPHER_NONE;
+    AJ_WiFiCipherType cipherType = AJ_WIFI_CIPHER_NONE;
 
     switch (authType) {
     case AJOBS_AUTH_TYPE_OPEN:
