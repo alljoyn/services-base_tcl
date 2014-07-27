@@ -121,14 +121,14 @@ AJ_Status AJCPS_SendRootUrl(AJ_Message* msg, uint32_t msgId)
 
 AJ_Status AJCPS_GetWidgetProperty(AJ_Message* replyMsg, uint32_t propId, void* context)
 {
-    AJ_Status status = AJ_ERR_UNEXPECTED;
+    AJ_Status status = AJ_ERR_NO_MATCH;
 
     uint16_t widgetType = 0;
     uint16_t propType = 0;
     uint16_t language = 0;
 
     BaseWidget* widget = (appIdentifyMsgOrPropId)(propId, &widgetType, &propType, &language);
-    if (widget == 0) {
+    if (widget == NULL) {
         return status;
     }
 
