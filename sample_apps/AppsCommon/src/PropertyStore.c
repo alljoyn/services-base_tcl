@@ -343,7 +343,7 @@ static AJ_Status PropertyStore_ReadConfig(uint16_t index, void* ptr, uint16_t si
         sizeRead = AJ_NVRAM_Read(ptr, size, nvramHandle);
         status = AJ_NVRAM_Close(nvramHandle);
         if (sizeRead != sizeRead) {
-            status = AJ_ERR_WRITE;
+            status = AJ_ERR_NVRAM_WRITE;
         }
     }
 
@@ -360,7 +360,7 @@ static AJ_Status PropertyStore_WriteConfig(uint16_t index, void* ptr, uint16_t s
         sizeWritten = AJ_NVRAM_Write(ptr, size, nvramHandle);
         status = AJ_NVRAM_Close(nvramHandle);
         if (sizeWritten != size) {
-            status = AJ_ERR_WRITE;
+            status = AJ_ERR_NVRAM_WRITE;
         }
     }
 

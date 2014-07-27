@@ -74,7 +74,7 @@ static AJ_Status OnboardingReadInfo(AJOBS_Info* info)
         sizeRead = AJ_NVRAM_Read(info, size, nvramHandle);
         status = AJ_NVRAM_Close(nvramHandle);
         if (sizeRead != sizeRead) {
-            status = AJ_ERR_READ;
+            status = AJ_ERR_NVRAM_READ;
         } else {
             AJ_AlwaysPrintf(("Read Info values: state=%d, ssid=%s authType=%d pc=%s\n", info->state, info->ssid, info->authType, info->pc));
         }
@@ -101,7 +101,7 @@ static AJ_Status OnboardingWriteInfo(AJOBS_Info* info)
         sizeWritten = AJ_NVRAM_Write(info, size, nvramHandle);
         status = AJ_NVRAM_Close(nvramHandle);
         if (sizeWritten != size) {
-            status = AJ_ERR_WRITE;
+            status = AJ_ERR_NVRAM_WRITE;
         }
     }
 
