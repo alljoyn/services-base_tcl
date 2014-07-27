@@ -544,6 +544,18 @@ void* IdentifyMsgOrPropId(uint32_t identifier, uint16_t* widgetType, uint16_t* p
         *language = MYDEVICE_MYLANGUAGES_EN;
         return &MyDeviceTurnFanOn;
 
+    case EN_MYDEVICE_TURNFANON_MESSAGE_PROPERTY:
+        *widgetType = WIDGET_TYPE_DIALOG;
+        *propType = PROPERTY_TYPE_MESSAGE;
+        *language = MYDEVICE_MYLANGUAGES_EN;
+        return &MyDeviceTurnFanOn;
+
+    case EN_MYDEVICE_TURNFANON_NUM_ACTIONS_PROPERTY:
+        *widgetType = WIDGET_TYPE_DIALOG;
+        *propType = PROPERTY_TYPE_NUM_ACTIONS;
+        *language = MYDEVICE_MYLANGUAGES_EN;
+        return &MyDeviceTurnFanOn;
+
     case EN_MYDEVICE_TURNFANOFF_GET_ALL_VALUES:
         *widgetType = WIDGET_TYPE_DIALOG;
         *language = MYDEVICE_MYLANGUAGES_EN;
@@ -564,6 +576,18 @@ void* IdentifyMsgOrPropId(uint32_t identifier, uint16_t* widgetType, uint16_t* p
     case EN_MYDEVICE_TURNFANOFF_OPTPARAMS_PROPERTY:
         *widgetType = WIDGET_TYPE_DIALOG;
         *propType = PROPERTY_TYPE_OPTPARAMS;
+        *language = MYDEVICE_MYLANGUAGES_EN;
+        return &MyDeviceTurnFanOff;
+
+    case EN_MYDEVICE_TURNFANOFF_MESSAGE_PROPERTY:
+        *widgetType = WIDGET_TYPE_DIALOG;
+        *propType = PROPERTY_TYPE_MESSAGE;
+        *language = MYDEVICE_MYLANGUAGES_EN;
+        return &MyDeviceTurnFanOff;
+
+    case EN_MYDEVICE_TURNFANOFF_NUM_ACTIONS_PROPERTY:
+        *widgetType = WIDGET_TYPE_DIALOG;
+        *propType = PROPERTY_TYPE_NUM_ACTIONS;
         *language = MYDEVICE_MYLANGUAGES_EN;
         return &MyDeviceTurnFanOff;
 

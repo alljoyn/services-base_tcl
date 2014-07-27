@@ -456,6 +456,18 @@ void* IdentifyMsgOrPropId(uint32_t identifier, uint16_t* widgetType, uint16_t* p
         *language = MYDEVICE_MYLANGUAGES_EN;
         return &MyDeviceLightConfirm;
 
+    case EN_MYDEVICE_LIGHTCONFIRM_MESSAGE_PROPERTY:
+        *widgetType = WIDGET_TYPE_DIALOG;
+        *propType = PROPERTY_TYPE_MESSAGE;
+        *language = MYDEVICE_MYLANGUAGES_EN;
+        return &MyDeviceLightConfirm;
+
+    case EN_MYDEVICE_LIGHTCONFIRM_NUM_ACTIONS_PROPERTY:
+        *widgetType = WIDGET_TYPE_DIALOG;
+        *propType = PROPERTY_TYPE_NUM_ACTIONS;
+        *language = MYDEVICE_MYLANGUAGES_EN;
+        return &MyDeviceLightConfirm;
+
     case DE_AT_MYDEVICE_LIGHTCONFIRM_GET_ALL_VALUES:
         *widgetType = WIDGET_TYPE_DIALOG;
         *language = MYDEVICE_MYLANGUAGES_DE_AT;
@@ -476,6 +488,18 @@ void* IdentifyMsgOrPropId(uint32_t identifier, uint16_t* widgetType, uint16_t* p
     case DE_AT_MYDEVICE_LIGHTCONFIRM_OPTPARAMS_PROPERTY:
         *widgetType = WIDGET_TYPE_DIALOG;
         *propType = PROPERTY_TYPE_OPTPARAMS;
+        *language = MYDEVICE_MYLANGUAGES_DE_AT;
+        return &MyDeviceLightConfirm;
+
+    case DE_AT_MYDEVICE_LIGHTCONFIRM_MESSAGE_PROPERTY:
+        *widgetType = WIDGET_TYPE_DIALOG;
+        *propType = PROPERTY_TYPE_MESSAGE;
+        *language = MYDEVICE_MYLANGUAGES_DE_AT;
+        return &MyDeviceLightConfirm;
+
+    case DE_AT_MYDEVICE_LIGHTCONFIRM_NUM_ACTIONS_PROPERTY:
+        *widgetType = WIDGET_TYPE_DIALOG;
+        *propType = PROPERTY_TYPE_NUM_ACTIONS;
         *language = MYDEVICE_MYLANGUAGES_DE_AT;
         return &MyDeviceLightConfirm;
 
@@ -502,6 +526,18 @@ void* IdentifyMsgOrPropId(uint32_t identifier, uint16_t* widgetType, uint16_t* p
         *language = MYDEVICE_MYLANGUAGES_EN;
         return &MyDeviceAreYouSure;
 
+    case EN_MYDEVICE_AREYOUSURE_MESSAGE_PROPERTY:
+        *widgetType = WIDGET_TYPE_DIALOG;
+        *propType = PROPERTY_TYPE_MESSAGE;
+        *language = MYDEVICE_MYLANGUAGES_EN;
+        return &MyDeviceAreYouSure;
+
+    case EN_MYDEVICE_AREYOUSURE_NUM_ACTIONS_PROPERTY:
+        *widgetType = WIDGET_TYPE_DIALOG;
+        *propType = PROPERTY_TYPE_NUM_ACTIONS;
+        *language = MYDEVICE_MYLANGUAGES_EN;
+        return &MyDeviceAreYouSure;
+
     case DE_AT_MYDEVICE_AREYOUSURE_GET_ALL_VALUES:
         *widgetType = WIDGET_TYPE_DIALOG;
         *language = MYDEVICE_MYLANGUAGES_DE_AT;
@@ -522,6 +558,18 @@ void* IdentifyMsgOrPropId(uint32_t identifier, uint16_t* widgetType, uint16_t* p
     case DE_AT_MYDEVICE_AREYOUSURE_OPTPARAMS_PROPERTY:
         *widgetType = WIDGET_TYPE_DIALOG;
         *propType = PROPERTY_TYPE_OPTPARAMS;
+        *language = MYDEVICE_MYLANGUAGES_DE_AT;
+        return &MyDeviceAreYouSure;
+
+    case DE_AT_MYDEVICE_AREYOUSURE_MESSAGE_PROPERTY:
+        *widgetType = WIDGET_TYPE_DIALOG;
+        *propType = PROPERTY_TYPE_MESSAGE;
+        *language = MYDEVICE_MYLANGUAGES_DE_AT;
+        return &MyDeviceAreYouSure;
+
+    case DE_AT_MYDEVICE_AREYOUSURE_NUM_ACTIONS_PROPERTY:
+        *widgetType = WIDGET_TYPE_DIALOG;
+        *propType = PROPERTY_TYPE_NUM_ACTIONS;
         *language = MYDEVICE_MYLANGUAGES_DE_AT;
         return &MyDeviceAreYouSure;
 

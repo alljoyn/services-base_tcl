@@ -46,6 +46,19 @@ class Dialog (common.Widget):
 
         self.executeCases += "    case {0}_EXEC_ACTION{1}:\n".format(capName, '{0}') 
 
+    def generateIdentify(self, capName, language) :
+        common.Widget.generateIdentify(self, capName, language)
+        self.generated.identify += """    case {0}_MESSAGE_PROPERTY:
+        *widgetType = WIDGET_TYPE_DIALOG;
+        *propType = PROPERTY_TYPE_MESSAGE;
+        *language = {2};
+        return &{1};\n\n""".format(capName, self.name, language)
+        self.generated.identify += """    case {0}_NUM_ACTIONS_PROPERTY:
+        *widgetType = WIDGET_TYPE_DIALOG;
+        *propType = PROPERTY_TYPE_NUM_ACTIONS;
+        *language = {2};
+        return &{1};\n\n""".format(capName, self.name, language)
+
     def generateTests(self, capName) : 
         common.Widget.generateTests(self, capName) 
         self.generated.initTests += """    testsToRun[{1}].msgId = {0}_EXEC_ACTION1;
