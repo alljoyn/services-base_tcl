@@ -49,6 +49,8 @@ static AJNS_Consumer_NotificationReference savedNotification;
 
 static AJ_Status ApplicationHandleNotify(AJNS_Notification* notification)
 {
+    int8_t indx;
+
     AJ_AlwaysPrintf(("******************** Begin New Message Received ********************\n"));
 
     if (notification == 0) {
@@ -58,7 +60,6 @@ static AJ_Status ApplicationHandleNotify(AJNS_Notification* notification)
 
     AJ_AlwaysPrintf(("Message Id: %d\nVersion: %u\nDevice Id: %s\nDevice Name: %s\nApp Id: %s\nApp Name: %s\nMessage Type: %d\n",
                      notification->notificationId, notification->version, notification->deviceId, notification->deviceName, notification->appId, notification->appName, notification->messageType));
-    int8_t indx;
 
     if (notification->originalSenderName != 0 && strlen(notification->originalSenderName) > 0) {
         AJ_AlwaysPrintf(("OriginalSender bus unique name: %s\n", notification->originalSenderName));

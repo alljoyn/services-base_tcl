@@ -26,6 +26,10 @@
 #include "ControlPanelGenerated.h"
 #include "alljoyn/controlpanel/Common/BaseWidget.h"
 
+#ifdef _WIN32
+#define snprintf _snprintf
+#endif
+
 #ifndef snprintf
 #include <stdio.h>
 #endif

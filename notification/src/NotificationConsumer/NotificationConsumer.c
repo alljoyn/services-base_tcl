@@ -698,8 +698,9 @@ AJSVC_ServiceStatus AJNS_Consumer_SessionLostHandler(AJ_BusAttachment* busAttach
 
 AJ_Status AJNS_Consumer_DismissNotification(AJ_BusAttachment* busAttachment, uint16_t version, int32_t notificationId, const char* appId, const char* senderName, AJSVC_MethodCallCompleted completedCallback)
 {
-    AJ_InfoPrintf(("Inside DismissNotification()\n"));
     AJ_Status status = AJ_OK;
+
+    AJ_InfoPrintf(("Inside DismissNotification()\n"));
 
     if ((version < 2) || (senderName == NULL) || (senderName[0] == '\0')) { // Producer does not support dismissal but other consumers might so send Dismiss signal
         status = AJNS_SendDismissSignal(busAttachment, notificationId, appId);
