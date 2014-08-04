@@ -47,7 +47,7 @@ build_producer_default    = 0 # do NOT build by default
 build_consumer_default    = 0 # do NOT build by default
 build_cps_default         = 0 # do NOT build by default
 
-build_all = ARGUMENTS.get('ALL', 0)
+build_all = ARGUMENTS.get('ALL', 1)
 if int(build_all):
     build_config    = 1
     build_producer  = 1
