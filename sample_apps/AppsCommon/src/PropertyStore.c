@@ -342,8 +342,8 @@ static AJ_Status PropertyStore_ReadConfig(uint16_t index, void* ptr, uint16_t si
     if (nvramHandle != NULL) {
         sizeRead = AJ_NVRAM_Read(ptr, size, nvramHandle);
         status = AJ_NVRAM_Close(nvramHandle);
-        if (sizeRead != sizeRead) {
-            status = AJ_ERR_NVRAM_WRITE;
+        if (sizeRead != size) {
+            status = AJ_ERR_NVRAM_READ;
         }
     }
 
