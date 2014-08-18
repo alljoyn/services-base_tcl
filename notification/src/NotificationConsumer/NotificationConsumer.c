@@ -769,8 +769,8 @@ AJSVC_ServiceStatus AJNS_Consumer_MessageProcessor(AJ_BusAttachment* busAttachme
             if (AJ_OK != *msgStatus) {
                 AJ_InfoPrintf(("Failed to leave session %u\n", producerSessionId));
             }
-            *msgStatus = AJNS_Consumer_SessionLostHandler(busAttachment, producerSessionId, 0); // Don't wait for SessionLost handle it immediately
             producerSessionId = 0;
+            return AJNS_Consumer_SessionLostHandler(busAttachment, producerSessionId, 0); // Don't wait for SessionLost handle it immediately
         }
         break;
 
