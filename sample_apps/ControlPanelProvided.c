@@ -54,8 +54,8 @@ static const char* sampleDialogMessage = "Dialog message";
 static const char* sampleUnitOfMeasure = "ms";
 static const char* sampleUrlString = "www.ControlPanelTest.com";
 
-static DatePropertyValue date = { .fullYear = 2006, .month = 6, .mDay = 13 };
-static TimePropertyValue time = { .hour = 18, .minute = 0, .second = 0 };
+static DatePropertyValue date = { 13, 6, 2006 }; // = { .fullYear = 2006, .month = 6, .mDay = 13 }
+static TimePropertyValue time = { 18, 0, 0 }; // = { .hour = 18, .minute = 0, .second = 0 }
 
 void addDismissSignal(ExecuteActionContext* context, int32_t dismissSignal)
 {
