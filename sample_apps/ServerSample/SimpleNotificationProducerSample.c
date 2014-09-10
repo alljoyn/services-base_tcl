@@ -27,7 +27,7 @@
 #include <alljoyn/notification/NotificationCommon.h>
 #include <alljoyn/notification/NotificationProducer.h>
 
-#ifdef __linux
+#if (defined(__linux) || defined(_WIN32) || defined(__MACH__))
 #include <NotificationProducerSampleUtil.h>
 #else
 #define Producer_GetNotificationFromUser(...) do { } while (0)

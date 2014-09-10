@@ -26,7 +26,7 @@
 #include <NotificationConsumerSample.h>
 #include <alljoyn/notification/NotificationConsumer.h>
 
-#ifdef __linux
+#if (defined(__linux) || defined(_WIN32) || defined(__MACH__))
 #include <NotificationConsumerSampleUtil.h>
 #else
 #define Consumer_SetupEnv(x, y) do { } while (0)
