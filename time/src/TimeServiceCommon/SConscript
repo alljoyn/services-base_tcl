@@ -1,3 +1,4 @@
+#*****************************************************************************
 # Copyright (c) 2013 - 2014, AllSeen Alliance. All rights reserved.
 #
 #    Permission to use, copy, modify, and/or distribute this software for any
@@ -11,13 +12,24 @@
 #    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 #    ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 #    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+#*****************************************************************************
 
-import os.path
-ajtcl_root_default = '../../../../core/ajtcl'
-ajtcl_root = ARGUMENTS.get('AJ_TCL_ROOT', ajtcl_root_default)
-if not os.path.isfile(ajtcl_root + '/SConscript'):
-    print "SConscript in 'AJ_TCL_ROOT=" + ajtcl_root + "' not found; aborting.\n"
-    exit(1)
-env = SConscript(ajtcl_root + '/SConscript')
-env.Append(CPPDEFINES = ['AJ_NUM_REPLY_CONTEXTS=2', 'AJ_MAX_OBJECT_LISTS=9'])
-env.SConscript('SConscript', variant_dir = 'obj', duplicate = 0)
+import os
+
+Import('time_env')
+
+time_env.Append(CPPDEFINES = ['TIME_SERVICE_COMMON'])
+
+srcs = [Glob('*.c')]
+
+time_env.Append(CPPPATH = [
+                             Dir('../../../inc'),
+                            ])
+
+Export('time_env')
+
+objs = time_env.Object(srcs)
+
+Return('objs')
+
+
