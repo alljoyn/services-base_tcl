@@ -152,6 +152,7 @@ AJ_Status AJOBS_ConfigureWiFiHandler(AJ_Message* msg)
 
     // Set provided network configuration
     AJ_InfoPrintf(("Handling ConfigureWiFi request\n"));
+    memset(&newInfo, 0, sizeof(newInfo));
 
     status = AJ_UnmarshalArgs(msg, "ssn", &ssid, &pc, &newInfo.authType);
     if (status != AJ_OK) {
