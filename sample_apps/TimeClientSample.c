@@ -68,10 +68,9 @@ static AJ_BusAttachment g_busAttachment;
 
 static uint8_t g_reportTime = FALSE;
 
-
 typedef struct _PeerData {
     char peerName[16];
-    char appId[33];
+    char appId[UUID_LENGTH * 2 + 1];
     RequestContext clockContext;
     RequestContext clockAuthorityContext;
     RequestContext alarm1Context;
@@ -109,7 +108,6 @@ static uint32_t PasswordCallback(uint8_t* buffer, uint32_t bufLen)
 
     return len;
 }
-
 
 /**
  * Application handlers
@@ -158,293 +156,6 @@ ErrorExit:
     return status;
 }
 
-#define ABOUT_AJ_OBJECT_INDEX   5
-
-#define ABOUT_ANNOUNCEMENT_SIGNAL AJ_ENCODE_MESSAGE_ID(0, ABOUT_AJ_OBJECT_INDEX, 1, 3)
-
-#define MAX_NUM_OF_OBJ_DESC   32
-#define MAX_NUM_OF_INTERFACES 16
-
-typedef struct _ObjectDescription {
-    const char* path;
-    const char* arrayOfInterfaces[MAX_NUM_OF_INTERFACES];
-    uint8_t interfacesCount;
-} ObjectDescription;
-
-/**
- * It is assumed that the AJ_Message *msg supplied to this function is in memory while using objDescs. objDescs is merely pointing to entries in the messgae buffer in msg.
- */
-static AJ_Status UnmarshalObjectDescriptions(AJ_Message* msg, ObjectDescription* objDescs, uint16_t* objDescsCount)
-{
-    AJ_Status status = AJ_OK;
-    AJ_Arg objList;
-
-
-    status = AJ_UnmarshalContainer(msg, &objList, AJ_ARG_ARRAY);
-    if (status != AJ_OK) {
-        goto ErrorExit;
-    }
-    /*
-     * Announce object that a flagged for announcement and not hidden
-     */
-    while (status == AJ_OK) {
-        AJ_Arg structure;
-        AJ_Arg ifcList;
-        uint16_t count = 0;
-
-        //status = AJ_UnmarshalArgs(msg, "(oas)", &path, &array_of_ifaces, &count );
-
-        status = AJ_UnmarshalContainer(msg, &structure, AJ_ARG_STRUCT);
-        if (status != AJ_OK) {
-            break;
-        }
-
-        status = AJ_UnmarshalArgs(msg, "o", &objDescs[*objDescsCount].path);
-        if (status != AJ_OK) {
-            goto ErrorExit;
-        }
-        //        AJ_InfoPrintf(("Announcing object %s\n", path));
-
-        status = AJ_UnmarshalContainer(msg, &ifcList, AJ_ARG_ARRAY);
-        if (status != AJ_OK) {
-            goto ErrorExit;
-        }
-        /*
-         * Add the AllSeenIntrospectableInterface if this object is flagged as being described
-         */
-
-        while (status == AJ_OK) {
-            status = AJ_UnmarshalArgs(msg, "s", &objDescs[*objDescsCount].arrayOfInterfaces[count]);
-
-            count++;
-            if (count >= MAX_NUM_OF_INTERFACES) {
-                AJ_InfoPrintf(("Maximum Predefined number of interfaces (%d) exceeded\n", MAX_NUM_OF_INTERFACES));
-                status = AJ_ERR_RESOURCES;
-                goto ErrorExit;
-            }
-        }
-
-        if ((status != AJ_ERR_NO_MORE) && (status != AJ_OK)) {
-            goto ErrorExit;
-        }
-
-        objDescs[*objDescsCount].interfacesCount = count - 1;
-
-        status = AJ_UnmarshalCloseContainer(msg, &ifcList);
-        if (status != AJ_OK) {
-            goto ErrorExit;
-        }
-
-        status = AJ_UnmarshalCloseContainer(msg, &structure);
-
-        (*objDescsCount)++;
-
-        if (*objDescsCount >= MAX_NUM_OF_OBJ_DESC) {
-            AJ_InfoPrintf(("Maximum Predefined number of object descriptions (%d) exceeded\n", MAX_NUM_OF_OBJ_DESC));
-            status = AJ_ERR_RESOURCES;
-            goto ErrorExit;
-        }
-
-    }
-
-    if (status == AJ_ERR_NO_MORE) {
-        return AJ_UnmarshalCloseContainer(msg, &objList);
-    }
-
-ErrorExit:
-    return status;
-}
-
-
-
-static AJ_Status UnmarshalDefaultProps(AJ_Message* msg, char*appId, char*deviceName, char*deviceId, char*appName)
-{
-    AJ_Status status = AJ_OK;
-    AJ_Arg array;
-    AJ_Arg dict;
-    char*key;
-
-    appId[0] = '\0';
-
-    status = AJ_UnmarshalContainer(msg, &array, AJ_ARG_ARRAY);
-
-    while (status == AJ_OK) {
-
-        status = AJ_UnmarshalContainer(msg, &dict, AJ_ARG_DICT_ENTRY);
-
-        if (status != AJ_OK) {
-            break;
-        }
-
-        status = AJ_UnmarshalArgs(msg, "s", &key);
-        if (status != AJ_OK) {
-            break;
-        }
-
-        if (!strcmp(key, "DeviceId")) {
-            status = AJ_UnmarshalArgs(msg, "v", "s", &deviceId);
-        } else if (!strcmp(key, "DeviceName")) {
-            status = AJ_UnmarshalArgs(msg, "v", "s", &deviceName);
-        } else if (!strcmp(key, "AppName")) {
-            status = AJ_UnmarshalArgs(msg, "v", "s", &appName);
-        } else if (!strcmp(key, "AppId")) {
-            status = AJSVC_UnmarshalAppIdFromVariant(msg, appId, 33);
-        } else {
-            status = AJ_SkipArg(msg);
-        }
-
-        if (status != AJ_OK) {
-            break;
-        }
-
-        status = AJ_UnmarshalCloseContainer(msg, &dict);
-    }
-
-    if (status == AJ_ERR_NO_MORE) {
-        AJ_AlwaysPrintf(("About Data:\nAppId:'%s'\nDeviceId:'%s'\nDeviceName:'%s'\nAppName:'%s'\n", (appId ? appId : "N/A"), (deviceId ? deviceId : "N/A"), (deviceName ? deviceName : "N/A"), (appName ? appName : "N/A")));
-
-        return AJ_UnmarshalCloseContainer(msg, &array);
-    }
-    return status;
-}
-
-// Important: functions which implement this prototype MUST copy the input strings (e.g. peerName,appId, etc.) if they need to use it later
-typedef void (*FoundNewTimeServicePeer)(const char*peerName, const char*objPath, const char*appId, const char*deviceName, const char*deviceId, const char*appName);
-
-
-static void OnAnnouncementHandler(AJ_BusAttachment* bus, AJ_Message* announcement, FoundNewTimeServicePeer foundNewClock, FoundNewTimeServicePeer foundNewTimeAuthorityClock, FoundNewTimeServicePeer foundNewAlarm, FoundNewTimeServicePeer foundNewTimer)
-{
-    AJ_Status status = AJ_OK;
-    uint16_t aboutVersion;
-    uint16_t aboutPort;
-    char peerName[16];
-
-    char appId[33];
-    char*deviceName = NULL;
-    char*deviceId = NULL;
-    char*appName = NULL;
-
-    uint16_t x;
-
-    ObjectDescription objDescs[MAX_NUM_OF_OBJ_DESC];
-    uint16_t objDescsCount = 0;
-
-
-    strncpy(peerName, announcement->sender, sizeof(peerName));
-    peerName[sizeof(peerName) - 1] = '\0';
-
-    status = AJ_UnmarshalArgs(announcement, "q", &aboutVersion);
-    if (status != AJ_OK) {
-        goto ErrorExit;
-    }
-    status = AJ_UnmarshalArgs(announcement, "q", &aboutPort);
-    if (status != AJ_OK) {
-        goto ErrorExit;
-    }
-    status = UnmarshalObjectDescriptions(announcement, objDescs, &objDescsCount);
-    if (status != AJ_OK) {
-        goto ErrorExit;
-    }
-
-    status = UnmarshalDefaultProps(announcement, appId, deviceName, deviceId, appName);
-    if (status != AJ_OK) {
-        goto ErrorExit;
-    }
-
-
-    // go through the object descriptions and
-    for (x = 0; x != objDescsCount; x++) {
-        uint16_t y;
-        ObjectDescription*currObjDesc = &objDescs[x];
-
-        for (y = 0; y != currObjDesc->interfacesCount; y++) {
-            if (!strcmp(currObjDesc->arrayOfInterfaces[y], AJTS_CLOCK_IFACE_NAME)) {
-                if (foundNewClock) {
-                    foundNewClock(peerName, currObjDesc->path, appId, deviceName, deviceId, appName);
-                }
-            } else if (!strcmp(currObjDesc->arrayOfInterfaces[y], AJTS_TIMEAUTHORITY_IFACE_NAME)) {
-                if (foundNewTimeAuthorityClock) {
-                    foundNewTimeAuthorityClock(peerName, currObjDesc->path, appId, deviceName, deviceId, appName);
-                }
-            } else if (!strcmp(currObjDesc->arrayOfInterfaces[y], AJTS_ALARM_IFACE_NAME)) {
-                if (foundNewAlarm) {
-                    foundNewAlarm(peerName, currObjDesc->path, appId, deviceName, deviceId, appName);
-                }
-            } else if (!strcmp(currObjDesc->arrayOfInterfaces[y], AJTS_TIMER_IFACE_NAME)) {
-                if (foundNewTimer) {
-                    foundNewTimer(peerName, currObjDesc->path, appId, deviceName, deviceId, appName);
-                }
-            }
-        }
-    }
-
-ErrorExit:
-    return;
-}
-
-#define SAFE_COPY_STRING(src, dst) { strncpy(dst, src, sizeof(dst)); \
-                                     dst[sizeof(dst) - 1] = '\0'; }
-
-void FoundNewClock(const char*peerName, const char*objPath, const char*appId, const char*deviceName, const char*deviceId, const char*appName)
-{
-    AJ_AlwaysPrintf(("FoundNewClock: %s%s\n", peerName, objPath));
-
-    if (g_peer1.peerName[0] == '\0') {
-        SAFE_COPY_STRING(peerName, g_peer1.peerName)
-
-        SAFE_COPY_STRING(appId, g_peer1.appId)
-    }
-
-    if (!strcmp(peerName, g_peer1.peerName) && g_peer1.clockContext.objPath[0] == '\0') {
-        SAFE_COPY_STRING(objPath, g_peer1.clockContext.objPath)
-    }
-}
-
-void FoundNewTimeAuthorityClock(const char*peerName, const char*objPath, const char*appId, const char*deviceName, const char*deviceId, const char*appName)
-{
-    AJ_AlwaysPrintf(("FoundNewTimeAuthorityClock: %s%s\n", peerName, objPath));
-
-    if (g_peer1.peerName[0] == '\0') {
-        SAFE_COPY_STRING(peerName, g_peer1.peerName)
-
-        SAFE_COPY_STRING(appId, g_peer1.appId)
-    }
-
-    if (!strcmp(peerName, g_peer1.peerName) && g_peer1.clockAuthorityContext.objPath[0] == '\0') {
-        SAFE_COPY_STRING(objPath, g_peer1.clockAuthorityContext.objPath)
-    }
-}
-
-void FoundNewAlarm(const char*peerName, const char*objPath, const char*appId, const char*deviceName, const char*deviceId, const char*appName)
-{
-    AJ_AlwaysPrintf(("FoundNewAlarm: %s%s\n", peerName, objPath));
-
-    if (g_peer1.peerName[0] == '\0') {
-        SAFE_COPY_STRING(peerName, g_peer1.peerName)
-
-        SAFE_COPY_STRING(appId, g_peer1.appId)
-    }
-
-    if (!strcmp(peerName, g_peer1.peerName) && g_peer1.alarm1Context.objPath[0] == '\0') {
-        SAFE_COPY_STRING(objPath, g_peer1.alarm1Context.objPath)
-    }
-}
-
-void FoundNewTimer(const char*peerName, const char*objPath, const char*appId, const char*deviceName, const char*deviceId, const char*appName)
-{
-    AJ_AlwaysPrintf(("FoundNewTimer: %s%s\n", peerName, objPath));
-
-    if (g_peer1.peerName[0] == '\0') {
-        SAFE_COPY_STRING(peerName, g_peer1.peerName)
-
-        SAFE_COPY_STRING(appId, g_peer1.appId)
-    }
-
-    if (!strcmp(peerName, g_peer1.peerName) && g_peer1.timer1Context.objPath[0] == '\0') {
-        SAFE_COPY_STRING(objPath, g_peer1.timer1Context.objPath)
-    }
-}
-
 static AJSVC_ServiceStatus AJApp_MessageProcessor(AJ_BusAttachment* busAttachment, AJ_Message* msg, AJ_Status* status)
 {
     AJSVC_ServiceStatus serviceStatus = AJSVC_SERVICE_STATUS_NOT_HANDLED;
@@ -453,12 +164,6 @@ static AJSVC_ServiceStatus AJApp_MessageProcessor(AJ_BusAttachment* busAttachmen
     case INIT_FINISHED:
         {
             switch (msg->msgId) {
-            case ABOUT_ANNOUNCEMENT_SIGNAL:
-                {
-                    OnAnnouncementHandler(busAttachment, msg, FoundNewClock, FoundNewTimeAuthorityClock, FoundNewAlarm, FoundNewTimer);
-                }
-                break;
-
             default:
                 switch (msg->hdr->msgType) {
                 case AJ_MSG_METHOD_RET:
@@ -616,7 +321,6 @@ AJ_Status GetTimerTitleHandler(const char*peerName, const RequestContext*context
     }
 
     return AJ_OK;
-
 }
 
 AJ_Status GetTimerTimeLeftHandler(const char*peerName, const RequestContext*context, TS_Timer_Period* time, const AJ_Status status)
@@ -630,9 +334,7 @@ AJ_Status GetTimerTimeLeftHandler(const char*peerName, const RequestContext*cont
         AJ_ErrPrintf(("AJTS_Client_GetTimerTitle returned an error %s\n", (AJ_StatusText(localStatus))));
     }
 
-
     return AJ_OK;
-
 }
 
 
@@ -646,7 +348,6 @@ AJ_Status GetTimerRepeatHandler(const char*peerName, const RequestContext*contex
     if (localStatus != AJ_OK) {
         AJ_ErrPrintf(("AJTS_Client_GetTimerRepeat returned an error %s\n", (AJ_StatusText(localStatus))));
     }
-
 
     return AJ_OK;
 }
@@ -677,7 +378,6 @@ AJ_Status GetAlaramEnabledHandler(const char*peerName, const RequestContext*cont
     AJ_AlwaysPrintf(("GetAlaramEnabledHandler:%d\n", isEnabled));
 
     return AJ_OK;
-
 }
 
 AJ_Status GetAlaramScheduleHandler(const char*peerName, const RequestContext*context, TS_Time* time, uint8_t weekdaysBitmap, const AJ_Status status)
@@ -694,36 +394,154 @@ AJ_Status GetAlaramScheduleHandler(const char*peerName, const RequestContext*con
     return AJ_OK;
 }
 
+const char* clockIFaces[] = { AJTS_CLOCK_IFACE_NAME };
+const char* timeAuthorityClockIFaces[] = { AJTS_TIMEAUTHORITY_IFACE_NAME };
+const char* alarmIFaces[] = { AJTS_ALARM_IFACE_NAME };
+const char* timerIFaces[] = { AJTS_TIMER_IFACE_NAME };
+
+#define SAFE_COPY_STRING(src, dst) { strncpy(dst, src, sizeof(dst)); \
+                                     dst[sizeof(dst) - 1] = '\0'; }
+
+static uint8_t handlePeerIsRelevant(const char* peerName)
+{
+    return TRUE;
+}
+
+static void handleObjectDescription(const char* peerName, const AJ_AboutObjectDescription* aboutObjectDescription)
+{
+}
+
+static void handleMandatoryProps(const char* peerName,
+                                 const char* appId,
+                                 const char* appName,
+                                 const char* deviceId,
+                                 const char* deviceName,
+                                 const char* manufacturer,
+                                 const char* modelNumber,
+                                 const char* defaultLanguage) {
+    if (strcmp(g_peer1.peerName, peerName) == 0) {
+        if (strcmp(g_peer1.appId, appId) != 0) {
+            AJ_AlwaysPrintf(("Mandatory Properties for %s\n", peerName));
+            AJ_AlwaysPrintf(("Mandatory property: appId=\"%s\"\n", appId));
+            AJ_AlwaysPrintf(("Mandatory property: deviceName=\"%s\"\n", deviceName));
+            AJ_AlwaysPrintf(("Mandatory property: deviceId=\"%s\"\n", deviceId));
+            AJ_AlwaysPrintf(("Mandatory property: appName=\"%s\"\n", appName));
+            AJ_AlwaysPrintf(("Mandatory property: manufacturer=\"%s\"\n", manufacturer));
+            AJ_AlwaysPrintf(("Mandatory property: modelNumber=\"%s\"\n", modelNumber));
+            AJ_AlwaysPrintf(("Mandatory property: defaultLanguage=\"%s\"\n", defaultLanguage));
+            SAFE_COPY_STRING(appId, g_peer1.appId);
+        }
+    }
+}
+
+static void handleOptionalProperty(const char* peerName, const char* key, const char* sig, const AJ_Arg* value) {
+    if (strcmp(g_peer1.peerName, peerName) == 0) {
+        if (strcmp(sig, "s") == 0) {
+            AJ_AlwaysPrintf(("Optional Prop: %s=\"%s\"\n", key, value->val.v_string));
+        } else {
+            AJ_AlwaysPrintf(("Optional Prop: %s=[Not A String]\n", key));
+        }
+    }
+}
+
+static uint8_t FoundNewClock(uint16_t version, uint16_t port, const char* peerName, const char* objPath);
+static uint8_t FoundNewTimeAuthorityClock(uint16_t version, uint16_t port, const char* peerName, const char* objPath);
+static uint8_t FoundNewAlarm(uint16_t version, uint16_t port, const char* peerName, const char* objPath);
+static uint8_t FoundNewTimer(uint16_t version, uint16_t port, const char* peerName, const char* objPath);
+
+static AJ_AboutPeerDescription timeServerPeers[] = {
+    { clockIFaces, (uint16_t)(sizeof(clockIFaces) / sizeof(*clockIFaces)), FoundNewClock, handlePeerIsRelevant, handleObjectDescription, handleMandatoryProps, handleOptionalProperty },
+    { timeAuthorityClockIFaces, (uint16_t)(sizeof(char*) / sizeof(*timeAuthorityClockIFaces)), FoundNewTimeAuthorityClock, handlePeerIsRelevant, handleObjectDescription, handleMandatoryProps, handleOptionalProperty },
+    { alarmIFaces, (uint16_t)(sizeof(alarmIFaces) / sizeof(*alarmIFaces)), FoundNewAlarm, handlePeerIsRelevant, handleObjectDescription, handleMandatoryProps, handleOptionalProperty },
+    { timerIFaces, (uint16_t)(sizeof(timerIFaces) / sizeof(*timerIFaces)), FoundNewTimer, handlePeerIsRelevant, handleObjectDescription, handleMandatoryProps, handleOptionalProperty },
+};
+
+static uint8_t FoundNewClock(uint16_t version, uint16_t port, const char* peerName, const char* objPath)
+{
+    AJ_AlwaysPrintf(("FoundNewClock: version:%u port:%u name:%s path=%s\n", version, port, peerName, objPath));
+
+    if (g_peer1.peerName[0] == '\0') {
+        SAFE_COPY_STRING(peerName, g_peer1.peerName)
+    }
+
+    if ((strcmp(peerName, g_peer1.peerName) == 0) && (g_peer1.clockContext.objPath[0] == '\0')) {
+        SAFE_COPY_STRING(objPath, g_peer1.clockContext.objPath)
+    }
+
+    return TRUE;
+}
+
+static uint8_t FoundNewTimeAuthorityClock(uint16_t version, uint16_t port, const char* peerName, const char* objPath)
+{
+    AJ_AlwaysPrintf(("FoundNewTimeAuthorityClock: version:%u port:%u name:%s path=%s\n", version, port, peerName, objPath));
+
+    if (g_peer1.peerName[0] == '\0') {
+        SAFE_COPY_STRING(peerName, g_peer1.peerName)
+    }
+
+    if ((strcmp(peerName, g_peer1.peerName) == 0) && (g_peer1.clockAuthorityContext.objPath[0] == '\0')) {
+        SAFE_COPY_STRING(objPath, g_peer1.clockAuthorityContext.objPath)
+    }
+
+    return TRUE;
+}
+
+static uint8_t FoundNewAlarm(uint16_t version, uint16_t port, const char* peerName, const char* objPath)
+{
+    AJ_AlwaysPrintf(("FoundNewAlarm: version:%u port:%u name:%s path=%s\n", version, port, peerName, objPath));
+
+    if (g_peer1.peerName[0] == '\0') {
+        SAFE_COPY_STRING(peerName, g_peer1.peerName)
+    }
+
+    if ((strcmp(peerName, g_peer1.peerName) == 0) && (g_peer1.alarm1Context.objPath[0] == '\0')) {
+        SAFE_COPY_STRING(objPath, g_peer1.alarm1Context.objPath)
+    }
+
+    return TRUE;
+}
+
+static uint8_t FoundNewTimer(uint16_t version, uint16_t port, const char* peerName, const char* objPath)
+{
+    AJ_AlwaysPrintf(("FoundNewTimer: version:%u port:%u name:%s path=%s\n", version, port, peerName, objPath));
+
+    if (g_peer1.peerName[0] == '\0') {
+        SAFE_COPY_STRING(peerName, g_peer1.peerName)
+    }
+
+    if ((strcmp(peerName, g_peer1.peerName) == 0) && (g_peer1.timer1Context.objPath[0] == '\0')) {
+        SAFE_COPY_STRING(objPath, g_peer1.timer1Context.objPath)
+    }
+
+    return TRUE;
+}
+
 static AJ_Status Client_Init()
 {
-    AJ_Status status = AJTS_Client_Start(OnTimeSync, OnAlarmReached, OnTimerEvent, OnTimerRunStateChanged, SetPropReplyHandler,  GetDateTimeHandler,
+    AJ_Status status;
 
-                                         IsSetHandler,
-
-                                         GetAuthorityTypeHandler,
-
-                                         GetAlaramScheduleHandler,
-
-                                         GetAlaramTitleHandler,
-
-                                         GetAlaramEnabledHandler,
-
-                                         TimerResetHandler,
-
-                                         GetTimerIntervalHandler,
-
-                                         GetTimerTimeLeftHandler,
-
-                                         GetTimerIsRunningHandler,
-
-                                         GetTimerRepeatHandler,
-
-                                         GetTimerTitleHandler);
+    AJ_AboutRegisterAnnounceHandlers(timeServerPeers, (uint16_t)(sizeof(timeServerPeers) / sizeof(*timeServerPeers)));
+    status = AJTS_Client_Start(OnTimeSync,
+                               OnAlarmReached,
+                               OnTimerEvent,
+                               OnTimerRunStateChanged,
+                               SetPropReplyHandler,
+                               GetDateTimeHandler,
+                               IsSetHandler,
+                               GetAuthorityTypeHandler,
+                               GetAlaramScheduleHandler,
+                               GetAlaramTitleHandler,
+                               GetAlaramEnabledHandler,
+                               TimerResetHandler,
+                               GetTimerIntervalHandler,
+                               GetTimerTimeLeftHandler,
+                               GetTimerIsRunningHandler,
+                               GetTimerRepeatHandler,
+                               GetTimerTitleHandler
+                               );
 
     return status;
 }
-
-
 
 void AuthCallback(const void* context, AJ_Status status)
 {
@@ -732,7 +550,6 @@ void AuthCallback(const void* context, AJ_Status status)
     if (status != AJ_OK) {
         return;
     }
-
 }
 
 void OnSessionReply(uint32_t sessionId, const char*peerName)
@@ -740,7 +557,6 @@ void OnSessionReply(uint32_t sessionId, const char*peerName)
     AJ_Status authStatus = AJ_ERR_NULL;
 
     authStatus = AJ_BusAuthenticatePeer(&g_busAttachment, peerName, AuthCallback, &authStatus);
-
 
     if (authStatus != AJ_OK) {
         AJ_Disconnect(&g_busAttachment);
@@ -759,10 +575,6 @@ void OnSessionReply(uint32_t sessionId, const char*peerName)
     }
 }
 
-
-
-
-
 void AJTS_DoWork(AJ_BusAttachment* busAttachment)
 {
     AJ_Status status = AJ_OK;
@@ -775,7 +587,6 @@ void AJTS_DoWork(AJ_BusAttachment* busAttachment)
     if (g_peer1.sessionId == 0) {
         return;
     }
-
 
     Client_GetActionFromUser(g_peer1.peerName, &action);
 
@@ -793,7 +604,6 @@ void AJTS_DoWork(AJ_BusAttachment* busAttachment)
                 if (status != AJ_OK) {
                     AJ_ErrPrintf(("AJTS_Client_SetDateTime returned an error %s\n", (AJ_StatusText(status))));
                 }
-
             }
         }
         break;
@@ -813,7 +623,7 @@ void AJTS_DoWork(AJ_BusAttachment* busAttachment)
 
     case 2:
         {
-            TS_Timer_Period interval = { 0, 0, 5, 0 };
+            TS_Timer_Period interval = { 0, 0, 15, 0 };
 
             status = AJTS_Client_SetTimerTitle(busAttachment, &g_peer1.timer1Context, "Thin Library client title");
 
@@ -821,7 +631,7 @@ void AJTS_DoWork(AJ_BusAttachment* busAttachment)
             if (status != AJ_OK) {
                 AJ_ErrPrintf(("AJTS_Client_SetTimerInterval returned an error %s\n", (AJ_StatusText(status))));
             } else {
-                status = AJTS_Client_SetTimerRepeat(busAttachment, &g_peer1.timer1Context, 0xFFFF);
+                status = AJTS_Client_SetTimerRepeat(busAttachment, &g_peer1.timer1Context, 1);
                 if (status != AJ_OK) {
                     AJ_ErrPrintf(("AJTS_Client_SetTimerRepeat returned an error %s\n", (AJ_StatusText(status))));
                 } else {
@@ -831,7 +641,6 @@ void AJTS_DoWork(AJ_BusAttachment* busAttachment)
                     }
                 }
             }
-
         }
         break;
 
@@ -857,7 +666,6 @@ void AJTS_DoWork(AJ_BusAttachment* busAttachment)
                     AJ_ErrPrintf(("AJTS_Client_SetAlaramEnabled returned an error %s\n", (AJ_StatusText(status))));
                 }
             }
-
         }
         break;
 

@@ -750,7 +750,7 @@ static AJ_Status TimeServer_Init()
     return status;
 }
 
-void AJTS_DoWork(AJ_BusAttachment*busAttachment)
+void AJTS_DoWork(AJ_BusAttachment* busAttachment)
 {
     static uint32_t t = 0;
     // printf("tick\n");

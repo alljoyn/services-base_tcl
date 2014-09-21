@@ -131,7 +131,7 @@ AJSVC_ServiceStatus AJTS_Client_MessageProcessor(AJ_BusAttachment* busAttachment
         break;
 
     case TIME_TIMER1_RUNSTATECHANGED_PROXY_SIGNAL:
-        AJ_InfoPrintf(("Received timer state chaned signal.\n"));
+        AJ_InfoPrintf(("Received timer state changed signal.\n"));
         *msgStatus = AJTS_Client_RunStateChangedSignalHandler(msg);
         break;
 
@@ -270,7 +270,7 @@ AJ_Status AJTS_Client_TimeSyncSignalHandler(AJ_Message* msg)
     if (appOnTimeSync) {
         (*appOnTimeSync)(msg->sender, msg->objPath);
     }
-    AJ_CloseMsg(msg);
+    status = AJ_CloseMsg(msg);
 
     return status;
 }
@@ -282,8 +282,7 @@ AJ_Status AJTS_Client_AlarmReachedSignalHandler(AJ_Message* msg)
     if (appOnAlarmReached) {
         (*appOnAlarmReached)(msg->sender, msg->objPath);
     }
-
-    AJ_CloseMsg(msg);
+    status = AJ_CloseMsg(msg);
 
     return status;
 }
@@ -318,8 +317,7 @@ AJ_Status AJTS_Client_RunStateChangedSignalHandler(AJ_Message* msg)
     }
 
 Exit:
-
-    AJ_CloseMsg(msg);
+    status = AJ_CloseMsg(msg);
 
     return status;
 }
@@ -450,7 +448,6 @@ AJ_Status AJTS_Client_SetDateTime(AJ_BusAttachment* bus, RequestContext*request,
 Exit:
     strcpy((char*)AJTS_ObjectList[(isAuthority ? AJTS_TIME_AUTHORITY_PROXY_OBJECT_INDEX : AJTS_CLOCK_PROXY_OBJECT_INDEX)].path, wildCard);
 
-
     return status;
 }
 
@@ -545,7 +542,6 @@ AJ_Status AJTS_Client_SetAlaramSchedule(AJ_BusAttachment* bus, RequestContext*re
     }
 
 Exit:
-
     strcpy((char*)AJTS_ObjectList[AJTS_ALARM_PROXY_OBJECT_INDEX].path, wildCard);
 
     return status;
@@ -595,7 +591,6 @@ AJ_Status AJTS_Client_SetAlaramTitle(AJ_BusAttachment* bus, RequestContext*reque
     }
 
 Exit:
-
     strcpy((char*)AJTS_ObjectList[AJTS_ALARM_PROXY_OBJECT_INDEX].path, wildCard);
 
     return status;
@@ -645,7 +640,6 @@ AJ_Status AJTS_Client_SetAlaramEnabled(AJ_BusAttachment* bus, RequestContext*req
     }
 
 Exit:
-
     strcpy((char*)AJTS_ObjectList[AJTS_ALARM_PROXY_OBJECT_INDEX].path, wildCard);
 
     return status;
@@ -692,6 +686,7 @@ AJ_Status AJTS_Client_TimerPause(AJ_BusAttachment* bus, RequestContext*request)
 
     return status;
 }
+
 AJ_Status AJTS_Client_TimerReset(AJ_BusAttachment* bus, RequestContext*request)
 {
     AJ_Status status = AJ_OK;
@@ -757,7 +752,6 @@ AJ_Status AJTS_Client_SetTimerInterval(AJ_BusAttachment* bus, RequestContext*req
     }
 
 Exit:
-
     strcpy((char*)AJTS_ObjectList[AJTS_TIMER_PROXY_OBJECT_INDEX].path, wildCard);
 
     return status;
@@ -837,7 +831,6 @@ AJ_Status AJTS_Client_SetTimerRepeat(AJ_BusAttachment* bus, RequestContext*reque
     }
 
 Exit:
-
     strcpy((char*)AJTS_ObjectList[AJTS_TIMER_PROXY_OBJECT_INDEX].path, wildCard);
 
     return status;
@@ -896,7 +889,6 @@ AJ_Status AJTS_Client_SetTimerTitle(AJ_BusAttachment* bus, RequestContext*reques
     }
 
 Exit:
-
     strcpy((char*)AJTS_ObjectList[AJTS_TIMER_PROXY_OBJECT_INDEX].path, wildCard);
 
     return status;
