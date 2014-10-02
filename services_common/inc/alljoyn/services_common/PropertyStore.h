@@ -27,10 +27,14 @@
 /**
  * Field indices
  */
+#define AJSVC_PROPERTY_STORE_ERROR_FIELD_INDEX   ((int8_t)(-1))  /**< error field index */
+
+/**
+ * Enum that is used for the Field indices of mandatory and optional fields
+ */
 typedef enum _AJSVC_PropertyStoreFieldIndices {
-    AJSVC_PROPERTY_STORE_ERROR_FIELD_INDEX = -1,
     //Start of keys
-    AJSVC_PROPERTY_STORE_DEVICE_ID,
+    AJSVC_PROPERTY_STORE_DEVICE_ID = 0,
     AJSVC_PROPERTY_STORE_APP_ID,
     AJSVC_PROPERTY_STORE_DEVICE_NAME,
 #ifndef CONFIG_SERVICE
@@ -68,13 +72,13 @@ typedef enum _AJSVC_PropertyStoreFieldIndices {
  * @param fieldIndex
  * @return aj_status
  */
-uint8_t AJSVC_PropertyStore_GetMaxValueLength(AJSVC_PropertyStoreFieldIndices fieldIndex);
+uint8_t AJSVC_PropertyStore_GetMaxValueLength(int8_t fieldIndex);
 
 /**
  * Language indices
  */
-#define AJSVC_PROPERTY_STORE_ERROR_LANGUAGE_INDEX   -1  /**< error language index */
-#define AJSVC_PROPERTY_STORE_NO_LANGUAGE_INDEX       0  /**< no language index */
+#define AJSVC_PROPERTY_STORE_ERROR_LANGUAGE_INDEX    ((int8_t)(-1))  /**< error language index */
+#define AJSVC_PROPERTY_STORE_NO_LANGUAGE_INDEX       0               /**< no language index */
 
 /**
  * Bitfield that defines the category to filter the properties
@@ -124,14 +128,14 @@ AJ_Status AJSVC_PropertyStore_ResetAll();
  * @param fieldIndex
  * @return fieldName
  */
-const char* AJSVC_PropertyStore_GetFieldName(AJSVC_PropertyStoreFieldIndices fieldIndex);
+const char* AJSVC_PropertyStore_GetFieldName(int8_t fieldIndex);
 
 /**
  * Get field index for given field name.
  * @param fieldName
  * @return fieldIndex
  */
-AJSVC_PropertyStoreFieldIndices AJSVC_PropertyStore_GetFieldIndex(const char* fieldName);
+int8_t AJSVC_PropertyStore_GetFieldIndex(const char* fieldName);
 
 /**
  * Get value for given field index for given language index.
@@ -139,14 +143,14 @@ AJSVC_PropertyStoreFieldIndices AJSVC_PropertyStore_GetFieldIndex(const char* fi
  * @param langIndex
  * @return value
  */
-const char* AJSVC_PropertyStore_GetValueForLang(AJSVC_PropertyStoreFieldIndices fieldIndex, int8_t langIndex);
+const char* AJSVC_PropertyStore_GetValueForLang(int8_t fieldIndex, int8_t langIndex);
 
 /**
  * Get value for field index for default language.
  * @param fieldIndex
  * @return value
  */
-const char* AJSVC_PropertyStore_GetValue(AJSVC_PropertyStoreFieldIndices fieldIndex);
+const char* AJSVC_PropertyStore_GetValue(int8_t fieldIndex);
 
 /**
  * Set value for given field index for given language index.
@@ -155,7 +159,7 @@ const char* AJSVC_PropertyStore_GetValue(AJSVC_PropertyStoreFieldIndices fieldIn
  * @param value
  * @return success
  */
-uint8_t AJSVC_PropertyStore_SetValueForLang(AJSVC_PropertyStoreFieldIndices fieldIndex, int8_t langIndex, const char* value);
+uint8_t AJSVC_PropertyStore_SetValueForLang(int8_t fieldIndex, int8_t langIndex, const char* value);
 
 /**
  * Set value for given field index for the default language.
@@ -163,7 +167,7 @@ uint8_t AJSVC_PropertyStore_SetValueForLang(AJSVC_PropertyStoreFieldIndices fiel
  * @param value
  * @return success
  */
-uint8_t AJSVC_PropertyStore_SetValue(AJSVC_PropertyStoreFieldIndices fieldIndex, const char* value);
+uint8_t AJSVC_PropertyStore_SetValue(int8_t fieldIndex, const char* value);
 
 /**
  * Get default language index among all languages indexes.
