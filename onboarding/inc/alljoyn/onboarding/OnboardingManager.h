@@ -42,13 +42,17 @@ uint8_t AJOBS_IsWiFiConnected();
 #define AJOBS_MAX_SCAN_INFOS 5
 
 /**
+ * authentication wildcards
+ */
+#define AJOBS_AUTH_TYPE_MIN_OF_WIFI_AUTH_TYPE   ((int8_t)(-4)) /**< Minimum value for authentication type*/
+#define AJOBS_AUTH_TYPE_WPA2_AUTO               ((int8_t)(-3)) /**< WPA2 with Automatic cipher*/
+#define AJOBS_AUTH_TYPE_WPA_AUTO                ((int8_t)(-2)) /**< WPA with Authomatic cipher */
+#define AJOBS_AUTH_TYPE_ANY                     ((int8_t)(-1)) /**< ANY authenticaion type */
+
+/**
  * authentication types
  */
 typedef enum _AJOBS_AuthType {
-    AJOBS_AUTH_TYPE_MIN_OF_WIFI_AUTH_TYPE = -4,
-    AJOBS_AUTH_TYPE_WPA2_AUTO = -3,
-    AJOBS_AUTH_TYPE_WPA_AUTO = -2,
-    AJOBS_AUTH_TYPE_ANY = -1,
     AJOBS_AUTH_TYPE_OPEN = 0,
     AJOBS_AUTH_TYPE_WEP = 1,
     AJOBS_AUTH_TYPE_WPA_TKIP = 2,
@@ -98,7 +102,7 @@ typedef enum _AJOBS_LastError {
 typedef struct _AJOBS_Info {
     char ssid[AJOBS_SSID_MAX_LENGTH + 1];            /**< ssid */
     char pc[AJOBS_PASSCODE_MAX_LENGTH + 1];          /**< pc */
-    AJOBS_AuthType authType;                         /**< authType */
+    int8_t authType;                                 /**< authType - Value is one of AJOBS_AuthType */
     AJOBS_State state;                               /**< state */
 } AJOBS_Info;
 
@@ -127,7 +131,7 @@ const AJ_Time* AJOBS_GetLastScanTime();
  */
 typedef struct _AJOBS_ScanInfo {
     char ssid[AJOBS_SSID_MAX_LENGTH + 1];            /**< ssid */
-    AJOBS_AuthType authType;                         /**< authType */
+    int8_t authType;                                 /**< authType - Value is one of AJOBS_AuthType */
 } AJOBS_ScanInfo;
 
 /**
