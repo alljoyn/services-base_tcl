@@ -282,7 +282,7 @@ int8_t AJOBS_ControllerAPI_IsWiFiClient()
     }
 }
 
-static AJOBS_AuthType GetAuthType(AJ_WiFiSecurityType secType, AJ_WiFiCipherType cipherType)
+static int8_t GetAuthType(AJ_WiFiSecurityType secType, AJ_WiFiCipherType cipherType)
 {
     switch (secType) {
     case AJ_WIFI_SECURITY_NONE:
@@ -326,7 +326,7 @@ static AJOBS_AuthType GetAuthType(AJ_WiFiSecurityType secType, AJ_WiFiCipherType
     return AJOBS_AUTH_TYPE_ANY;
 }
 
-static AJ_WiFiSecurityType GetSecType(AJOBS_AuthType authType)
+static AJ_WiFiSecurityType GetSecType(int8_t authType)
 {
     A_UINT32 secType = AJ_WIFI_SECURITY_NONE;
 
@@ -357,7 +357,7 @@ static AJ_WiFiSecurityType GetSecType(AJOBS_AuthType authType)
     return secType;
 }
 
-static AJ_WiFiCipherType GetCipherType(AJOBS_AuthType authType)
+static AJ_WiFiCipherType GetCipherType(int8_t authType)
 {
     A_UINT32 cipherType = AJ_WIFI_CIPHER_NONE;
 
@@ -401,8 +401,8 @@ static void WiFiScanResult(void* context, const char* ssid, const uint8_t bssid[
 {
     static const char* const sec[] = { "OPEN", "WEP", "WPA", "WPA2" };
     static const char* const typ[] = { "", ":TKIP", ":CCMP", ":WEP" };
+    int8_t authType = GetAuthType(secType, cipherType);
     AJ_InfoPrintf(("WiFiScanResult found ssid=%s rssi=%d security=%s%s\n", ssid, rssi, sec[secType], typ[cipherType]));
-    AJOBS_AuthType authType = GetAuthType(secType, cipherType);
     GotScanInfo(ssid, bssid, rssi, authType);
 }
 
@@ -449,8 +449,8 @@ static AJ_Status DoConnectWifi(AJOBS_Info* connectInfo)
     AJ_Status status = AJ_OK;
     AJ_WiFiSecurityType secType = AJ_WIFI_SECURITY_NONE;
     AJ_WiFiCipherType cipherType = AJ_WIFI_CIPHER_NONE;
-    AJOBS_AuthType fallback = AJOBS_AUTH_TYPE_OPEN;
-    AJOBS_AuthType fallbackUntil = AJOBS_AUTH_TYPE_OPEN;
+    int8_t fallback = AJOBS_AUTH_TYPE_OPEN;
+    int8_t fallbackUntil = AJOBS_AUTH_TYPE_OPEN;
     uint8_t retries = 0;
     AJ_WiFiConnectState wifiConnectState;
     uint8_t raw[(AJOBS_PASSCODE_MAX_LENGTH / 2) + 1];

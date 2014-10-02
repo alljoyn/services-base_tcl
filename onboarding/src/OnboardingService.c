@@ -145,7 +145,7 @@ AJ_Status AJOBS_ConfigureWiFiHandler(AJ_Message* msg)
     if (status != AJ_OK) {
         return status;
     }
-    if ((int8_t)newInfo.authType >= AJOBS_AUTH_TYPE_MAX_OF_WIFI_AUTH_TYPE || (int8_t)newInfo.authType <= AJOBS_AUTH_TYPE_MIN_OF_WIFI_AUTH_TYPE) {
+    if (newInfo.authType >= AJOBS_AUTH_TYPE_MAX_OF_WIFI_AUTH_TYPE || newInfo.authType <= AJOBS_AUTH_TYPE_MIN_OF_WIFI_AUTH_TYPE) {
         AJ_ErrPrintf(("Unknown authentication type %d\n", newInfo.authType));
         status = AJ_MarshalErrorMsg(msg, &reply, AJSVC_ERROR_INVALID_VALUE);
         if (status != AJ_OK) {
