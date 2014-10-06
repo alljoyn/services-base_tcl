@@ -25,16 +25,17 @@ if env['VARIANT'] == 'debug':
     env.Append(CPPDEFINES = ['ER_DEBUG_AJSVCALL=1'])
     env.Append(CPPDEFINES = ['AJ_DEBUG_RESTRICT=AJ_DEBUG_INFO'])
 
-env.Append(CPPDEFINES = ['AJ_NUM_REPLY_CONTEXTS=2', 'AJ_MAX_OBJECT_LISTS=8'])
+env.Append(CPPDEFINES = ['AJ_NUM_REPLY_CONTEXTS=4', 'AJ_MAX_OBJECT_LISTS=9'])
 
 env.Append(CPPPATH = [Dir('AppsCommon/inc')])
 env.Append(CPPPATH = [Dir('AppsCommon/target/' + env['TARG'])])
 env.Append(CPPPATH = [Dir('../config/inc')])
 env.Append(CPPPATH = [Dir('../notification/inc')])
 env.Append(CPPPATH = [Dir('../controlpanel/inc')])
+env.Append(CPPPATH = [Dir('../time/inc')])
 env.Append(CPPPATH = [Dir('.')])
 
-samples = ['ConfigSample', 'NotificationProducerSample', 'NotificationConsumerSample', 'ControlleeSample']
+samples = ['ConfigSample', 'NotificationProducerSample', 'NotificationConsumerSample', 'ControlleeSample', 'TimeServerSample','TimeClientSample']
 
 for sample in samples:
     print ''

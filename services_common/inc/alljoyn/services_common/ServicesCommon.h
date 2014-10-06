@@ -164,9 +164,14 @@ AJ_Status AJSVC_UnmarshalAppId(AJ_Message* msg, char* buf, size_t bufLen);
 #define AJCPS_OBJECT_LIST_INDEX            6
 
 /*
+ * ObjectsList index for Time Service objects
+ */
+#define AJTS_OBJECT_LIST_INDEX             7
+
+/*
  * ObjectsList index for Application objects
  */
-#define AJAPP_OBJECTS_LIST_INDEX           7
+#define AJAPP_OBJECTS_LIST_INDEX           8
 
 /**
  * The NVRAM starting id for the PropertyStore

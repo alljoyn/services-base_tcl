@@ -44,6 +44,12 @@
 #ifdef CONTROLPANEL_SERVICE
 #include <alljoyn/controlpanel/ControlPanelService.h>
 #endif
+#ifdef TIME_SERVICE_SERVER
+#include <alljoyn/time/TimeServiceServer.h>
+#endif
+#ifdef TIME_SERVICE_CLIENT
+#include <alljoyn/time/TimeServiceClient.h>
+#endif
 
 #include <aj_config.h>
 #include <aj_link_timeout.h>
@@ -132,6 +138,19 @@ AJ_Status AJSVC_ConnectedHandler(AJ_BusAttachment* busAttachment)
         goto ErrorExit;
     }
 #endif
+#ifdef TIME_SERVICE_SERVER
+    status = AJTS_Server_ConnectedHandler(busAttachment);
+    if (status != AJ_OK) {
+        goto ErrorExit;
+    }
+#endif
+#ifdef TIME_SERVICE_CLIENT
+    status = AJTS_Client_ConnectedHandler(busAttachment);
+    if (status != AJ_OK) {
+        goto ErrorExit;
+    }
+#endif
+
     return status;
 
 ErrorExit:
@@ -152,6 +171,10 @@ uint8_t AJSVC_CheckSessionAccepted(uint16_t port, uint32_t sessionId, char* join
     session_accepted |= AJCPS_CheckSessionAccepted(port, sessionId, joiner);
 #endif
 
+#ifdef TIME_SERVICE_SERVER
+    session_accepted |= AJTS_CheckSessionAccepted(port, sessionId, joiner);
+#endif
+
     return session_accepted;
 }
 
@@ -162,6 +185,11 @@ static AJSVC_ServiceStatus SessionJoinedHandler(AJ_BusAttachment* busAttachment,
 #ifdef NOTIFICATION_SERVICE_CONSUMER
     if (serviceStatus == AJSVC_SERVICE_STATUS_NOT_HANDLED) {
         serviceStatus = AJNS_Consumer_SessionJoinedHandler(busAttachment, sessionId, replySerialNum);
+    }
+#endif
+#ifdef TIME_SERVICE_CLIENT
+    if (serviceStatus == AJSVC_SERVICE_STATUS_NOT_HANDLED) {
+        serviceStatus = AJTS_Client_SessionJoinedHandler(busAttachment, sessionId, replySerialNum);
     }
 #endif
 
@@ -177,6 +205,11 @@ static AJSVC_ServiceStatus SessionRejectedHandler(AJ_BusAttachment* busAttachmen
         serviceStatus = AJNS_Consumer_SessionRejectedHandler(busAttachment, replySerialNum, replyCode);
     }
 #endif
+#ifdef TIME_SERVICE_CLIENT
+    if (serviceStatus == AJSVC_SERVICE_STATUS_NOT_HANDLED) {
+        serviceStatus = AJTS_Client_SessionRejectedHandler(busAttachment, replySerialNum, replyCode);
+    }
+#endif
 
     return serviceStatus;
 }
@@ -188,6 +221,11 @@ static AJSVC_ServiceStatus SessionLostHandler(AJ_BusAttachment* busAttachment, u
 #ifdef NOTIFICATION_SERVICE_CONSUMER
     if (serviceStatus == AJSVC_SERVICE_STATUS_NOT_HANDLED) {
         serviceStatus = AJNS_Consumer_SessionLostHandler(busAttachment, sessionId, reason);
+    }
+#endif
+#ifdef TIME_SERVICE_CLIENT
+    if (serviceStatus == AJSVC_SERVICE_STATUS_NOT_HANDLED) {
+        serviceStatus = AJTS_Client_SessionLostHandler(busAttachment, sessionId, reason);
     }
 #endif
 
@@ -271,6 +309,17 @@ AJSVC_ServiceStatus AJSVC_MessageProcessorAndDispatcher(AJ_BusAttachment* busAtt
             serviceStatus = AJCPS_MessageProcessor(busAttachment, msg, status);
         }
 #endif
+#ifdef TIME_SERVICE_SERVER
+        if (serviceStatus == AJSVC_SERVICE_STATUS_NOT_HANDLED) {
+            serviceStatus = AJTS_Server_MessageProcessor(busAttachment, msg, status);
+        }
+#endif
+#ifdef TIME_SERVICE_CLIENT
+        if (serviceStatus == AJSVC_SERVICE_STATUS_NOT_HANDLED) {
+            serviceStatus = AJTS_Client_MessageProcessor(busAttachment, msg, status);
+        }
+#endif
+
     }
     return serviceStatus;
 }
@@ -293,6 +342,12 @@ AJ_Status AJSVC_DisconnectHandler(AJ_BusAttachment* busAttachment)
 #endif
 #ifdef CONTROLPANEL_SERVICE
     AJCPS_DisconnectHandler(busAttachment);
+#endif
+#ifdef TIME_SERVICE_SERVER
+    AJTS_Server_DisconnectHandler(busAttachment);
+#endif
+#ifdef TIME_SERVICE_CLIENT
+    AJTS_Client_DisconnectHandler(busAttachment);
 #endif
 
     return status;
