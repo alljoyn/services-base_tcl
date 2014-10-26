@@ -453,6 +453,7 @@ static AJ_Status DoConnectWifi(AJOBS_Info* connectInfo)
     int8_t fallbackUntil = AJOBS_AUTH_TYPE_OPEN;
     uint8_t retries = 0;
     AJ_WiFiConnectState wifiConnectState;
+    uint8_t infoModified = FALSE;
     char* password = connectInfo->pc;
     size_t hexLen = strlen(password);
     uint8_t raw[(AJOBS_PASSCODE_MAX_LENGTH / 2) + 1] = { 0 };
@@ -520,7 +521,6 @@ static AJ_Status DoConnectWifi(AJOBS_Info* connectInfo)
             obLastError.code = AJOBS_STATE_LAST_ERROR_VALIDATED;
             obLastError.message[0] = '\0';
             obState = AJOBS_STATE_CONFIGURED_VALIDATED;
-            connectInfo->authType = fallback;
         } else if ((status == AJ_ERR_CONNECT) /* (wifiConnectState == AJ_WIFI_CONNECT_FAILED)*/) {
             obLastError.code = AJOBS_STATE_LAST_ERROR_UNREACHABLE;
             strncpy(obLastError.message, "Network unreachable!", AJOBS_ERROR_MESSAGE_LEN);
@@ -581,8 +581,19 @@ static AJ_Status DoConnectWifi(AJOBS_Info* connectInfo)
         }
     }
 
-    connectInfo->state = obState;
-    status = AJOBS_SetInfo(connectInfo);
+    if (connectInfo->state != obState) {
+        connectInfo->state = obState;
+        infoModified |= TRUE;
+    }
+    if ((connectInfo->state == AJOBS_STATE_CONFIGURED_VALIDATED) && (connectInfo->authType != fallback)) {
+        connectInfo->authType = fallback;
+        infoModified |= TRUE;
+    }
+
+    if (infoModified == TRUE) {
+        status = AJOBS_SetInfo(connectInfo);
+    }
+
     return status;
 }
 
