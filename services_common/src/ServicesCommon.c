@@ -98,14 +98,14 @@ AJ_Status AJSVC_MarshalAppId(AJ_Message* msg, const char* appId)
 AJ_Status AJSVC_UnmarshalAppIdFromVariant(AJ_Message* msg, char* buf, size_t bufLen)
 {
     AJ_Status status;
-    uint8_t appId[UUID_LENGTH];
+    uint8_t* appId;
     size_t appIdLen;
 
     if (bufLen < (UUID_LENGTH * 2 + 1)) {
         AJ_ErrPrintf(("UnmarshalAppId: Insufficient buffer size! Should be at least %u but got %u\n", UUID_LENGTH * 2 + 1, (uint32_t)bufLen));
         return AJ_ERR_RESOURCES;
     }
-    status = AJ_UnmarshalArgs(msg, "v", APP_ID_SIGNATURE, appId, &appIdLen);
+    status = AJ_UnmarshalArgs(msg, "v", APP_ID_SIGNATURE, &appId, &appIdLen);
     if (status != AJ_OK) {
         return status;
     }
@@ -117,14 +117,14 @@ AJ_Status AJSVC_UnmarshalAppIdFromVariant(AJ_Message* msg, char* buf, size_t buf
 AJ_Status AJSVC_UnmarshalAppId(AJ_Message* msg, char* buf, size_t bufLen)
 {
     AJ_Status status;
-    uint8_t appId[UUID_LENGTH];
+    uint8_t* appId;
     size_t appIdLen;
 
     if (bufLen < (UUID_LENGTH * 2 + 1)) {
         AJ_ErrPrintf(("UnmarshalAppId: Insufficient buffer size! Should be at least %u but got %u\n", UUID_LENGTH * 2 + 1, (uint32_t)bufLen));
         return AJ_ERR_RESOURCES;
     }
-    status = AJ_UnmarshalArgs(msg, APP_ID_SIGNATURE, appId, &appIdLen);
+    status = AJ_UnmarshalArgs(msg, APP_ID_SIGNATURE, &appId, &appIdLen);
     if (status != AJ_OK) {
         return status;
     }
