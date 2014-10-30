@@ -77,24 +77,15 @@ typedef enum _AJOBS_State {
 
 /**
  * Onboarding state getter.
+ * @return state
  */
-AJOBS_State AJOBS_GetState();
+int8_t AJOBS_GetState();
 
 /**
  * Onboarding state setter.
+ * @param state
  */
-void AJOBS_SetState(AJOBS_State state);
-
-/**
- * Last connection error
- */
-typedef enum _AJOBS_LastError {
-    AJOBS_STATE_LAST_ERROR_VALIDATED = 0,
-    AJOBS_STATE_LAST_ERROR_UNREACHABLE = 1,
-    AJOBS_STATE_LAST_ERROR_UNSUPPORTED_PROTOCOL = 2,
-    AJOBS_STATE_LAST_ERROR_UNAUTHORIZED = 3,
-    AJOBS_STATE_LAST_ERROR_ERROR_MESSAGE = 4,
-} AJOBS_LastError;
+void AJOBS_SetState(int8_t state);
 
 /**
  * Onboarding information
@@ -103,23 +94,30 @@ typedef struct _AJOBS_Info {
     char ssid[AJOBS_SSID_MAX_LENGTH + 1];            /**< ssid */
     char pc[AJOBS_PASSCODE_MAX_LENGTH + 1];          /**< pc */
     int8_t authType;                                 /**< authType - Value is one of AJOBS_AuthType */
-    AJOBS_State state;                               /**< state */
 } AJOBS_Info;
 
 /**
  * Deafult Onboarding information
  */
-#define AJOBS_INFO_DEFAULT { "", "", AJOBS_AUTH_TYPE_ANY, AJOBS_STATE_NOT_CONFIGURED }
+#define AJOBS_INFO_DEFAULT { "", "", AJOBS_AUTH_TYPE_ANY }
 
 /**
- * Onboarding info getter.
+ * perform a check of whether the provided configuration info is valid
+ * @param ssid
+ * @param pc
+ * @param authType
+ * @return success
  */
-AJ_Status AJOBS_GetInfo(AJOBS_Info* info);
+uint8_t AJOBS_IsInfoValid(const char* ssid, const char* pc, int8_t authType);
 
 /**
- * Onboarding info setter.
+ * Onboarding info updater.
+ * @param ssid
+ * @param pc
+ * @param authType
+ * @return aj_status
  */
-AJ_Status AJOBS_SetInfo(AJOBS_Info* info);
+AJ_Status AJOBS_UpdateInfo(const char* ssid, const char* pc, int8_t authType);
 
 /**
  * Onboarding last scan time.
@@ -136,13 +134,26 @@ typedef struct _AJOBS_ScanInfo {
 
 /**
  * Onboarding scan infos variable getter.
+ * @return an array of scan info structures of the last saved scan.
  */
 const AJOBS_ScanInfo* AJOBS_GetScanInfos();
 
 /**
  * Onboarding scan infos count variable getter.
+ * @param number of scan info structures in the last saved scan.
  */
 uint8_t AJOBS_GetScanInfoCount();
+
+/**
+ * Last connection error code
+ */
+typedef enum _AJOBS_LastError {
+    AJOBS_STATE_LAST_ERROR_VALIDATED = 0,
+    AJOBS_STATE_LAST_ERROR_UNREACHABLE = 1,
+    AJOBS_STATE_LAST_ERROR_UNSUPPORTED_PROTOCOL = 2,
+    AJOBS_STATE_LAST_ERROR_UNAUTHORIZED = 3,
+    AJOBS_STATE_LAST_ERROR_ERROR_MESSAGE = 4,
+} AJOBS_LastError;
 
 /**
  * Onboarding error
@@ -154,6 +165,7 @@ typedef struct _AJOBS_Error {
 
 /**
  * Onboarding error getter.
+ * @return an error structure.
  */
 const AJOBS_Error* AJOBS_GetError();
 
