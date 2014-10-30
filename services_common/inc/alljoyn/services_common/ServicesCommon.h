@@ -17,6 +17,7 @@
 #ifndef _SERVICES_COMMON_H_
 #define _SERVICES_COMMON_H_
 
+#include <aj_config.h>
 #include <alljoyn.h>
 
 /**
@@ -172,6 +173,10 @@ AJ_Status AJSVC_UnmarshalAppId(AJ_Message* msg, char* buf, size_t bufLen);
  * ObjectsList index for Application objects
  */
 #define AJAPP_OBJECTS_LIST_INDEX           8
+
+#if AJAPP_OBJECTS_LIST_INDEX >= AJ_MAX_OBJECT_LISTS
+#error AJ_MAX_OBJECT_LISTS in aj_config.h too small
+#endif
 
 /**
  * The NVRAM starting id for the PropertyStore

@@ -19,5 +19,5 @@ if not os.path.isfile(ajtcl_root + '/SConscript'):
     print "SConscript in 'AJ_TCL_ROOT=" + ajtcl_root + "' not found; aborting.\n"
     exit(1)
 env = SConscript(ajtcl_root + '/SConscript')
-env.Append(CPPDEFINES = ['AJ_NUM_REPLY_CONTEXTS=2', 'AJ_MAX_OBJECT_LISTS=8'])
+env.Append(CPPDEFINES = ['AJ_NUM_REPLY_CONTEXTS=2', 'AJ_MAX_OBJECT_LISTS=9'])
 env.SConscript('SConscript', variant_dir = 'obj', duplicate = 0)
