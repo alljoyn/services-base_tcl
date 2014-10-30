@@ -15,6 +15,7 @@
 import sys
 import os
 import subprocess
+import os.path
 import xml.etree.ElementTree as xml
 
 scriptDir = os.path.dirname(os.path.realpath(__file__))
@@ -54,13 +55,18 @@ if len(args) < 1 :
 
 for i in range(0, len(args)) :
     xmlfile = args[i]
-    print "\nProcessing xmlfile: " + xmlfile + "\n"    
-    cpFile = scriptDir + "/cp.xsd"
-    subprocArgs = "xmllint --noout --schema {0} {1}".format(cpFile, xmlfile)
-    rc = subprocess.call(subprocArgs, shell=True)
-    if rc != 0 :
-        print >> sys.stderr, "\nERROR - xml validation did not pass for xml: " + xmlfile + "\n"
-        sys.exit(2)
+    print "\nProcessing xmlfile: " + xmlfile + "\n"
+    if sys.platform != 'win32':
+        cpFile = os.path.join(scriptDir, "cp.xsd")
+        subprocArgs = "xmllint --noout --schema {0} {1}".format(cpFile, xmlfile)
+        rc = subprocess.call(subprocArgs, shell=True)
+        if rc != 0 :
+            print >> sys.stderr, "\nERROR - xml xsd validation did not pass"
+            sys.exit(2)
+        print "\nxml xsd validation passed"
+    else:
+        # There is no pure python way to easily do this
+        print "\nWARNING - skipping xml validation as xmllint is not available on this platform"
 
     ### Initialize the generated structure ###
     o = xml2objects.ObjectBuilder(xmlfile)
