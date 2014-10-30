@@ -143,63 +143,47 @@ AJ_Status AJOBS_ConfigureWiFiHandler(AJ_Message* msg)
 {
     AJ_Status status = AJ_OK;
     AJ_Message reply;
-    AJOBS_Info newInfo;
-    char* ssid;
-    char* pc;
-    size_t ssidLen;
-    size_t pcLen;
+    const char* ssid;
+    const char* pc;
+    int16_t authType;
     int16_t retVal;
 
     // Set provided network configuration
     AJ_InfoPrintf(("Handling ConfigureWiFi request\n"));
-    memset(&newInfo, 0, sizeof(newInfo));
 
-    status = AJ_UnmarshalArgs(msg, "ssn", &ssid, &pc, &newInfo.authType);
+    status = AJ_UnmarshalArgs(msg, "ssn", &ssid, &pc, &authType);
     if (status != AJ_OK) {
-        return status;
+        goto ErrorExit;
     }
-    if (newInfo.authType >= AJOBS_AUTH_TYPE_MAX_OF_WIFI_AUTH_TYPE || newInfo.authType <= AJOBS_AUTH_TYPE_MIN_OF_WIFI_AUTH_TYPE) {
-        AJ_ErrPrintf(("Unknown authentication type %d\n", newInfo.authType));
+
+    AJ_InfoPrintf(("Got new info for %s with passcode=%s and auth=%d\n", ssid, pc, authType));
+    if (!AJOBS_IsInfoValid(ssid, pc, authType)) {
+        AJ_InfoPrintf(("New info is invalid!\n"));
         status = AJ_MarshalErrorMsg(msg, &reply, AJSVC_ERROR_INVALID_VALUE);
         if (status != AJ_OK) {
-            return status;
+            goto ErrorExit;
         }
         status = AJ_DeliverMsg(&reply);
-        if (status != AJ_OK) {
-            return status;
-        }
-        return status;
+        goto ErrorExit;
     }
-    ssidLen = min(strlen(ssid), AJOBS_SSID_MAX_LENGTH);
-    strncpy(newInfo.ssid, ssid, AJOBS_SSID_MAX_LENGTH);
-    newInfo.ssid[ssidLen] = '\0';
-    pcLen = min(strlen(pc), AJOBS_PASSCODE_MAX_LENGTH);
-    strncpy(newInfo.pc, pc, AJOBS_PASSCODE_MAX_LENGTH);
-    newInfo.pc[pcLen] = '\0';
 
-    AJ_InfoPrintf(("Got new info for %s with passcode=%s and auth=%d\n", newInfo.ssid, newInfo.pc, newInfo.authType));
     retVal = 1;
     status = AJ_MarshalReplyMsg(msg, &reply);
     if (status != AJ_OK) {
-        return status;
+        goto ErrorExit;
     }
     status = AJ_MarshalArgs(&reply, "n", retVal);
     if (status != AJ_OK) {
-        return status;
+        goto ErrorExit;
     }
     status = AJ_DeliverMsg(&reply);
     if (status != AJ_OK) {
-        return status;
+        goto ErrorExit;
     }
 
-    newInfo.state = AJOBS_STATE_CONFIGURED_NOT_VALIDATED;
-    status = AJOBS_SetInfo(&newInfo);
+    AJOBS_UpdateInfo(ssid, pc, authType);
 
-    if (status == AJ_OK) {
-        // Change state to CONFIGURED
-        AJOBS_SetState(newInfo.state);
-    }
-
+ErrorExit:
     return status;
 }
 
@@ -208,15 +192,12 @@ AJ_Status AJOBS_ConnectWiFiHandler(AJ_Message* msg)
     AJ_Status status = AJ_OK;
 
     AJ_InfoPrintf(("Handling ConnectWiFi request\n"));
-    AJOBS_Info obInfo;
-    status = AJOBS_GetInfo(&obInfo);
-    if (status != AJ_OK) {
+    if (!AJOBS_ControllerAPI_IsConfigured()) {
+        AJ_WarnPrintf(("No current configuration to connect with\n"));
         return status;
     }
-    AJ_InfoPrintf(("ReadInfo status: %s\n", AJ_StatusText(status)));
-    status = AJ_ERR_RESTART;     // Force disconnect of AJ and services and reconnection of Wi-Fi on restart of message loop
 
-    return status;
+    return AJ_ERR_RESTART;     // Force disconnect of AJ and services and reconnection of Wi-Fi on restart of message loop
 }
 
 AJ_Status AJOBS_OffboardWiFiHandler(AJ_Message* msg)
@@ -287,6 +268,7 @@ AJ_Status AJOBS_GetScanInfoHandler(AJ_Message* msg)
     AJ_Status status = AJ_OK;
     const AJOBS_Error* obError = AJOBS_GetError();
     AJ_Message out;
+
     AJ_InfoPrintf(("Sending ConnectionResult signal\n"));
     status = AJ_MarshalSignal(bus, &out, OBS_CONNECTION_RESULT, NULL, obsSessionId, AJ_FLAG_GLOBAL_BROADCAST, AJOBS_CONNECTION_RESULT_TTL);
     if (status != AJ_OK) {
