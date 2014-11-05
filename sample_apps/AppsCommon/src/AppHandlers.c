@@ -58,7 +58,6 @@ typedef enum {
     INIT_START = 0,
     INIT_SERVICES = INIT_START,
     INIT_SERVICES_PORT,
-    INIT_ADVERTISE_NAME,
     INIT_ABOUT,
     INIT_CHECK_ANNOUNCE,
     INIT_FINISHED = INIT_CHECK_ANNOUNCE
@@ -130,14 +129,6 @@ AJ_Status AJApp_ConnectedHandler(AJ_BusAttachment* busAttachment, uint8_t maxNum
                 if (status != AJ_OK) {
                     goto ErrorExit;
                 }
-                nextServicesInitializationState = INIT_ADVERTISE_NAME;
-                break;
-
-            case INIT_ADVERTISE_NAME:
-                status = AJ_BusAdvertiseName(busAttachment, AJ_GetUniqueName(busAttachment), AJ_TRANSPORT_ANY, AJ_BUS_START_ADVERTISING, 0);
-                if (status != AJ_OK) {
-                    goto ErrorExit;
-                }
                 nextServicesInitializationState = INIT_ABOUT;
                 break;
 
@@ -204,12 +195,6 @@ AJSVC_ServiceStatus AJApp_MessageProcessor(AJ_BusAttachment* busAttachment, AJ_M
             }
             break;
 
-        case INIT_ADVERTISE_NAME:
-            if (msg->msgId == AJ_REPLY_ID(AJ_METHOD_ADVERTISE_NAME)) {
-                currentServicesInitializationState = nextServicesInitializationState;
-            }
-            break;
-
         default:
             serviceStatus = AJSVC_MessageProcessorAndDispatcher(busAttachment, msg, status);
             break;
@@ -243,7 +228,6 @@ AJ_Status AJApp_DisconnectHandler(AJ_BusAttachment* busAttachment, uint8_t resta
     AJ_Status status = AJ_OK;
 
     if (restart) {
-        AJ_BusAdvertiseName(busAttachment, AJ_GetUniqueName(busAttachment), AJ_TRANSPORT_ANY, AJ_BUS_STOP_ADVERTISING, 0);
         AJ_BusUnbindSession(busAttachment, servicePort);
     }
 
