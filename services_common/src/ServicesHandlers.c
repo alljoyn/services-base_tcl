@@ -63,7 +63,7 @@ AJ_Status AJSVC_RoutingNodeConnect(AJ_BusAttachment* busAttachment, const char* 
 #ifdef ONBOARDING_SERVICE
         status = AJOBS_EstablishWiFi();
         if (status != AJ_OK) {
-            AJ_AlwaysPrintf(("Failed to establish WiFi connectivity with status=%s\n", AJ_StatusText(status)));
+            AJ_ErrPrintf(("Failed to establish WiFi connectivity with status=%s\n", AJ_StatusText(status)));
             AJ_Sleep(connectPause);
             if (isConnected != NULL) {
                 *isConnected = FALSE;
@@ -71,16 +71,16 @@ AJ_Status AJSVC_RoutingNodeConnect(AJ_BusAttachment* busAttachment, const char* 
             return status;
         }
 #endif
-        AJ_AlwaysPrintf(("Attempting to connect to bus '%s'\n", routingNodeName));
+        AJ_InfoPrintf(("Attempting to connect to bus '%s'\n", routingNodeName));
         status = AJ_FindBusAndConnect(busAttachment, routingNodeName, connectTimeout);
         if (status != AJ_OK) {
-            AJ_AlwaysPrintf(("Failed attempt to connect to bus, sleeping for %d seconds\n", connectPause / 1000));
+            AJ_ErrPrintf(("Failed attempt to connect to bus, sleeping for %d seconds\n", connectPause / 1000));
             AJ_Sleep(connectPause);
 #ifdef ONBOARDING_SERVICE
             if (status == AJ_ERR_DHCP || status == AJ_ERR_TIMEOUT) {
                 status = AJOBS_SwitchToRetry();
                 if (status != AJ_OK) {
-                    AJ_AlwaysPrintf(("Failed to switch to Retry mode status=%s\n", AJ_StatusText(status)));
+                    AJ_ErrPrintf(("Failed to switch to Retry mode status=%s\n", AJ_StatusText(status)));
                 }
             }
 #endif
@@ -88,10 +88,10 @@ AJ_Status AJSVC_RoutingNodeConnect(AJ_BusAttachment* busAttachment, const char* 
         }
         busUniqueName = AJ_GetUniqueName(busAttachment);
         if (busUniqueName == NULL) {
-            AJ_AlwaysPrintf(("Failed to GetUniqueName() from newly connected bus, retrying\n"));
+            AJ_ErrPrintf(("Failed to GetUniqueName() from newly connected bus, retrying\n"));
             continue;
         }
-        AJ_AlwaysPrintf(("Connected to Routing Node with BusUniqueName=%s\n", busUniqueName));
+        AJ_InfoPrintf(("Connected to Routing Node with BusUniqueName=%s\n", busUniqueName));
         break;
     }
 
@@ -155,7 +155,7 @@ AJ_Status AJSVC_ConnectedHandler(AJ_BusAttachment* busAttachment)
 
 ErrorExit:
 
-    AJ_AlwaysPrintf(("Service ConnectedHandler returned an error %s\n", (AJ_StatusText(status))));
+    AJ_ErrPrintf(("Service ConnectedHandler returned an error %s\n", (AJ_StatusText(status))));
     return status;
 }
 
@@ -242,18 +242,18 @@ AJSVC_ServiceStatus AJSVC_MessageProcessorAndDispatcher(AJ_BusAttachment* busAtt
         uint8_t sessionJoined = FALSE;
         uint32_t joinSessionReplySerialNum = msg->replySerial;
         if (msg->hdr->msgType == AJ_MSG_ERROR) {
-            AJ_AlwaysPrintf(("JoinSessionReply: AJ_METHOD_JOIN_SESSION: AJ_ERR_FAILURE\n"));
+            AJ_ErrPrintf(("JoinSessionReply: AJ_METHOD_JOIN_SESSION: AJ_ERR_FAILURE\n"));
             *status = AJ_ERR_FAILURE;
         } else {
             *status = AJ_UnmarshalArgs(msg, "uu", &replyCode, &sessionId);
             if (*status != AJ_OK) {
-                AJ_AlwaysPrintf(("JoinSessionReply: failed to unmarshal\n"));
+                AJ_ErrPrintf(("JoinSessionReply: failed to unmarshal\n"));
             } else {
                 if (replyCode == AJ_JOINSESSION_REPLY_SUCCESS) {
-                    AJ_AlwaysPrintf(("JoinSessionReply: AJ_JOINSESSION_REPLY_SUCCESS with sessionId=%u and replySerial=%u\n", sessionId, joinSessionReplySerialNum));
+                    AJ_InfoPrintf(("JoinSessionReply: AJ_JOINSESSION_REPLY_SUCCESS with sessionId=%u and replySerial=%u\n", sessionId, joinSessionReplySerialNum));
                     sessionJoined = TRUE;
                 } else {
-                    AJ_AlwaysPrintf(("JoinSessionReply: AJ_ERR_FAILURE\n"));
+                    AJ_ErrPrintf(("JoinSessionReply: AJ_ERR_FAILURE\n"));
                     *status = AJ_ERR_FAILURE;
                 }
             }
@@ -275,9 +275,9 @@ AJSVC_ServiceStatus AJSVC_MessageProcessorAndDispatcher(AJ_BusAttachment* busAtt
             *status = AJ_UnmarshalArgs(msg, "u", &sessionId);
         }
         if (*status != AJ_OK) {
-            AJ_AlwaysPrintf(("JoinSessionReply: failed to marshal\n"));
+            AJ_ErrPrintf(("JoinSessionReply: failed to marshal\n"));
         } else {
-            AJ_AlwaysPrintf(("Session lost: sessionId = %u, reason = %u\n", sessionId, reason));
+            AJ_InfoPrintf(("Session lost: sessionId = %u, reason = %u\n", sessionId, reason));
             serviceStatus = SessionLostHandler(busAttachment, sessionId, reason);
             if (serviceStatus == AJSVC_SERVICE_STATUS_NOT_HANDLED) {
                 AJ_ResetArgs(msg);
@@ -357,7 +357,7 @@ AJ_Status AJSVC_RoutingNodeDisconnect(AJ_BusAttachment* busAttachment, uint8_t d
 {
     AJ_Status status = AJ_OK;
 
-    AJ_AlwaysPrintf(("AllJoyn disconnect\n"));
+    AJ_ErrPrintf(("AllJoyn disconnect\n"));
     AJ_Sleep(preDisconnectPause); // Sleep a little to let any pending requests to Routing Node to be sent
     AJ_Disconnect(busAttachment);
 #ifdef ONBOARDING_SERVICE
