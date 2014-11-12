@@ -33,6 +33,12 @@
 #include <alljoyn/services_common/ServicesHandlers.h>
 #include "AppHandlers.h"
 
+#ifdef __linux
+#include <ServerSampleUtil.h>
+#else
+#define ServerSample_SetupEnv(...)
+#endif
+
 #ifndef NDEBUG
 #ifndef ER_DEBUG_AJSVCAPP
 #define ER_DEBUG_AJSVCAPP 0
@@ -266,6 +272,8 @@ int AJ_Main(void)
     }
 
     SetBusAuthPwdCallback(MyBusAuthPwdCB);
+
+    ServerSample_SetupEnv();
 
     while (TRUE) {
         status = AJ_OK;
