@@ -94,6 +94,7 @@ if int(build_cps):
     srcs.extend(['ControlPanelGenerated.c', 'ControlPanelProvided.c', 'ControlPanelSample.c'])
     objs.extend(SConscript('../../../controlpanel/SConscript', {'cps_env': sersamp_env}))
 
+srcs.extend(['../../AppsCommon/target/' + sersamp_env['TARG'] + '/ServerSampleUtil.c'])
 objs.extend(sersamp_env.Object(srcs))
 
 sersamp_env['common_samples_srcs'] = common_samples_srcs
