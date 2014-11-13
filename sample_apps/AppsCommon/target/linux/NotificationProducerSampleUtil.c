@@ -304,3 +304,82 @@ void Producer_GetShouldDeleteNotificationFromUser(AJ_BusAttachment* busAttachmen
     }
     AJ_StopReadFromStdIn();
 }
+
+void Producer_ReadConfigFromEnv(uint8_t* producerEnabled, AJNS_NotificationContent* notificationContent,
+    uint32_t* messagesInterval, uint8_t* intervalTypeRandom, uint32_t* initialIntervalOffset,
+    uint16_t * messagePriority, uint8_t* priorityTypeRandom, uint32_t* messageTtl)
+{
+    char * value;
+
+    value = getenv("AJNS_PRODUCER_ENABLED");
+    if (value) {
+        AJ_AlwaysPrintf(("Read AJNS_PRODUCER_ENABLED from environment: '%s'\n", value));
+        if (strcasecmp(value,"true") == 0) {
+            *producerEnabled = 1;
+        } else {
+            *producerEnabled = 0;
+            return;
+        }
+    }
+
+    char * msgText = getenv("AJNS_MSG_TEXT");
+    char * msgLang = getenv("AJNS_MSG_LANG");
+
+    if (msgText || msgLang) {
+        // only send one language in this case
+        notificationContent->numTexts = 1;
+    }
+    if (msgLang) {
+        AJ_AlwaysPrintf(("Read AJNS_MSG_LANG from environment: '%s'\n", msgLang));
+        notificationContent->texts[0].key = msgLang;
+    }
+    if (msgText) {
+        AJ_AlwaysPrintf(("Read AJNS_MSG_TEXT from environment: '%s'\n", msgText));
+        notificationContent->texts[0].value = msgText;
+    }
+
+    value = getenv("AJNS_MSG_INTERVAL");
+    if (value) {
+        AJ_AlwaysPrintf(("Read AJNS_MSG_INTERVAL from environment: '%s'\n", value));
+        *messagesInterval = (uint32_t)atoi(value);
+    }
+
+    value = getenv("AJNS_MSG_INTERVAL_TYPE");
+    if (value) {
+        AJ_AlwaysPrintf(("Read AJNS_MSG_INTERVAL_TYPE from environment: '%s'\n", value));
+        if (strcasecmp(value,"random") == 0) {
+            *intervalTypeRandom = 1;
+        } else {
+            *intervalTypeRandom = 0;
+        }
+    }
+
+    value = getenv("AJNS_MSG_INTERVAL_OFFSET");
+    if (value) {
+        AJ_AlwaysPrintf(("Read AJNS_MSG_INTERVAL from environment: '%s'\n", value));
+        *initialIntervalOffset = (uint32_t)atoi(value);
+    }
+
+    value = getenv("AJNS_MSG_PRIORITY");
+    if (value) {
+        AJ_AlwaysPrintf(("Read AJNS_MSG_PRIORITY from environment: '%s'\n", value));
+        *messagePriority = (uint16_t)atoi(value);
+    }
+
+    value = getenv("AJNS_MSG_PRIORITY_TYPE");
+    if (value) {
+        AJ_AlwaysPrintf(("Read AJNS_MSG_PRIORITY_TYPE from environment: '%s'\n", value));
+        if (strcasecmp(value,"random") == 0) {
+            *priorityTypeRandom = 1;
+        } else {
+            *priorityTypeRandom = 0;
+        }
+    }
+
+    value = getenv("AJNS_MSG_TTL");
+    if (value) {
+        AJ_AlwaysPrintf(("Read AJNS_MSG_TTL from environment: '%s'\n", value));
+        *messageTtl = (uint32_t)atoi(value);
+    }
+
+}
