@@ -600,10 +600,11 @@ AJ_Status AJNS_Producer_DeleteLastNotification(AJ_BusAttachment* busAttachment, 
         return status;
     }
 
+    AJ_InfoPrintf(("***************** Message with Notification id %d and serialNum %u deleted successfully *****************\n", lastSentNotifications[messageType].notificationId, lastSentNotifications[messageType].serialNum));
+
     lastSentNotifications[messageType].notificationId = 0;
     lastSentNotifications[messageType].serialNum = 0;
 
-    AJ_InfoPrintf(("***************** Message deleted successfully *****************\n"));
     return status;
 }
 
@@ -634,6 +635,8 @@ static AJ_Status AJNS_Producer_CancelNotificationById(AJ_BusAttachment* busAttac
         AJ_ErrPrintf(("Failed to send cancelation\n"));
         return status;
     }
+
+    AJ_InfoPrintf(("***************** Message with Notification id %d and serialNum %u deleted successfully *****************\n", lastSentNotifications[messageType].notificationId, lastSentNotifications[messageType].serialNum));
 
     lastSentNotifications[messageType].notificationId = 0;
     lastSentNotifications[messageType].serialNum = 0;
@@ -668,6 +671,8 @@ AJ_Status AJNS_Producer_CancelNotification(AJ_BusAttachment* busAttachment, uint
         AJ_ErrPrintf(("Failed to send cancelation\n"));
         return status;
     }
+
+    AJ_InfoPrintf(("***************** Message with Notification id %d and serialNum %u deleted successfully *****************\n", lastSentNotifications[messageType].notificationId, lastSentNotifications[messageType].serialNum));
 
     lastSentNotifications[messageType].notificationId = 0;
     lastSentNotifications[messageType].serialNum = 0;
@@ -710,7 +715,8 @@ AJ_Status AJNS_Producer_DismissRequestHandler(AJ_BusAttachment* busAttachment, A
         return status;
     }
 
-    AJ_InfoPrintf(("***************** Message dismissed successfully *****************\n"));
+    AJ_InfoPrintf(("***************** Message with Notification id %d dismissed successfully *****************\n", notificationId));
+
     return status;
 }
 
