@@ -306,15 +306,15 @@ void Producer_GetShouldDeleteNotificationFromUser(AJ_BusAttachment* busAttachmen
 }
 
 void Producer_ReadConfigFromEnv(uint8_t* producerEnabled, AJNS_NotificationContent* notificationContent,
-    uint32_t* messagesInterval, uint8_t* intervalTypeRandom, uint32_t* initialIntervalOffset,
-    uint16_t * messagePriority, uint8_t* priorityTypeRandom, uint32_t* messageTtl)
+                                uint32_t* messagesInterval, uint8_t* intervalTypeRandom, uint32_t* initialIntervalOffset,
+                                uint16_t* messagePriority, uint8_t* priorityTypeRandom, uint32_t* messageTtl)
 {
-    char * value;
+    char* value;
 
     value = getenv("AJNS_PRODUCER_ENABLED");
     if (value) {
         AJ_AlwaysPrintf(("Read AJNS_PRODUCER_ENABLED from environment: '%s'\n", value));
-        if (strcasecmp(value,"true") == 0) {
+        if (strcasecmp(value, "true") == 0) {
             *producerEnabled = 1;
         } else {
             *producerEnabled = 0;
@@ -322,8 +322,8 @@ void Producer_ReadConfigFromEnv(uint8_t* producerEnabled, AJNS_NotificationConte
         }
     }
 
-    char * msgText = getenv("AJNS_MSG_TEXT");
-    char * msgLang = getenv("AJNS_MSG_LANG");
+    char* msgText = getenv("AJNS_MSG_TEXT");
+    char* msgLang = getenv("AJNS_MSG_LANG");
 
     if (msgText || msgLang) {
         // only send one language in this case
@@ -347,7 +347,7 @@ void Producer_ReadConfigFromEnv(uint8_t* producerEnabled, AJNS_NotificationConte
     value = getenv("AJNS_MSG_INTERVAL_TYPE");
     if (value) {
         AJ_AlwaysPrintf(("Read AJNS_MSG_INTERVAL_TYPE from environment: '%s'\n", value));
-        if (strcasecmp(value,"random") == 0) {
+        if (strcasecmp(value, "random") == 0) {
             *intervalTypeRandom = 1;
         } else {
             *intervalTypeRandom = 0;
@@ -369,7 +369,7 @@ void Producer_ReadConfigFromEnv(uint8_t* producerEnabled, AJNS_NotificationConte
     value = getenv("AJNS_MSG_PRIORITY_TYPE");
     if (value) {
         AJ_AlwaysPrintf(("Read AJNS_MSG_PRIORITY_TYPE from environment: '%s'\n", value));
-        if (strcasecmp(value,"random") == 0) {
+        if (strcasecmp(value, "random") == 0) {
             *priorityTypeRandom = 1;
         } else {
             *priorityTypeRandom = 0;
