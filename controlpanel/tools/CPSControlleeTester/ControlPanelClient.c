@@ -283,6 +283,10 @@ AJ_Status CPS_StartService(AJ_BusAttachment* bus, const char* busAddress, uint32
 
 void CPS_IdleConnectedHandler(AJ_BusAttachment*bus)
 {
+    AJ_Status status;
+    AJ_Message msg;
+    uint16_t numParam;
+
     if (runningTestNum == lastTestRun || CPSsessionId == 0) {
         return;
     }
@@ -293,13 +297,9 @@ void CPS_IdleConnectedHandler(AJ_BusAttachment*bus)
         exit(0);
     }
 
-    AJ_Status status;
-    AJ_Message msg;
-
     status = AJ_MarshalMethodCall(&busAttachment, &msg, testsToRun[runningTestNum].msgId,
                                   announceSender, CPSsessionId, 0, CPSC_CONNECT_TIMEOUT);
 
-    uint16_t numParam;
     for (numParam = 0; numParam < testsToRun[runningTestNum].numParams; numParam++) {
         if (status == AJ_OK) {
             status = AJ_MarshalArgs(&msg, "q", testsToRun[runningTestNum].param[numParam]);
@@ -318,6 +318,7 @@ AJSVC_ServiceStatus CPS_NotifySessionAccepted(uint32_t sessionId, const char* se
 {
     char dot = '.';
     uint16_t i;
+
     for (i = 0; i < strlen(sender); i++) {
         if (*(sender + i) == announceSender[i]) {
             if (*(sender + i) == dot) {
@@ -341,15 +342,16 @@ AJSVC_ServiceStatus CPS_MessageProcessor(AJ_BusAttachment* bus, AJ_Message* msg,
     case CONTROL_ANNOUNCE_SIGNAL_RECEIVED:
         AJ_InfoPrintf(("Received Announce Signal from %s.\n", msg->sender));
         if (CPSsessionId == 0) {
-            if (!isControlPanelAnnounce(msg)) {
-                break;
-            }
             AJ_SessionOpts sessionOpts = {
                 AJ_SESSION_TRAFFIC_MESSAGES,
                 AJ_SESSION_PROXIMITY_ANY,
                 AJ_TRANSPORT_ANY,
                 TRUE
             };
+
+            if (!isControlPanelAnnounce(msg)) {
+                break;
+            }
             strcpy(announceSender, msg->sender);
 
             AJ_BusJoinSession(bus, msg->sender, ServicePort, &sessionOpts);
@@ -380,7 +382,6 @@ void CPS_Finish()
 #ifndef COMBINED_SERVICES
 int AJ_Main(void)
 {
-
     AJ_Status status = AJ_OK;
 
     /* Required: Need to initialize once before starting */

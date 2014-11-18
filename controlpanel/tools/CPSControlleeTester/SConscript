@@ -55,11 +55,11 @@ cps_obj = cps_env.SConscript('../../src/CPSControllee/SConscript', {'cps_env': c
 services_common_objs = cps_env.SConscript('$SERVICES_COMMON_ROOT/SConscript', {'services_common_env': cps_env})
 objs.extend(services_common_objs)
 
-if cps_env['TARG'] == 'linux':
-    cps_env.Program(
-                target = target_name, 
-                source = [
-                    objs,
-                    cps_env['aj_obj'],
-                    cps_obj
-                ])
+cps_env.Program(
+            target = target_name, 
+            source = [
+                objs,
+                cps_env['aj_obj'],
+                cps_obj
+            ])
+
