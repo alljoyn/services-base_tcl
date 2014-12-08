@@ -29,41 +29,51 @@
  * Onboarding get state.
  * @return state
  */
-AJOBS_State AJOBS_ControllerAPI_GetState();
+int8_t AJOBS_ControllerAPI_GetState();
+
 /**
  * Onboarding set state.
  * @param state
  */
-void AJOBS_ControllerAPI_SetState(AJOBS_State state);
+void AJOBS_ControllerAPI_SetState(int8_t state);
 
 /**
  * Onboarding last error variable.
+ * @return an error structure filled in
  */
 const AJOBS_Error* AJOBS_ControllerAPI_GetError();
 
 /**
  * Onboarding last scan time.
+ * @return time of last scan
  */
 const AJ_Time* AJOBS_ControllerAPI_GetLastScanTime();
 
 /**
  * Onboarding scan infos variable.
+ * @return an array of scanInfo structures filled in by last scan.
  */
 const AJOBS_ScanInfo* AJOBS_ControllerAPI_GetScanInfos();
 
 /**
  * Onboarding scan infos count variable.
+ * @return number of scanInfos if last saved scan
  */
 uint8_t AJOBS_ControllerAPI_GetScanInfoCount();
+
+/**
+ * returns whether there is a current configuration
+ * @return success
+ */
+uint8_t AJOBS_ControllerAPI_IsConfigured();
 
 /**
  * perform a check of the current configuration state and accordingly take the relevant action of
  * either establishing SoftAP mode if not configured
  * or attempt to connect using the current connection info.
- * @param obInfo
  * @return status
  */
-AJ_Status AJOBS_ControllerAPI_StartSoftAPIfNeededOrConnect(AJOBS_Info* obInfo);
+AJ_Status AJOBS_ControllerAPI_StartSoftAPIfNeededOrConnect();
 
 /**
  * disconnect from current mode (SoftAP or client) and go to idle mode.
@@ -88,13 +98,19 @@ AJ_Status AJOBS_ControllerAPI_DoScanInfo();
  * return whether the Wi-Fi is in SoftAP mode.
  * @return success
  */
-int8_t AJOBS_ControllerAPI_IsWiFiSoftAP();
+uint8_t AJOBS_ControllerAPI_IsWiFiSoftAP();
 
 /**
  * return whether the Wi-Fi is in client mode.
  * @return success
  */
-int8_t AJOBS_ControllerAPI_IsWiFiClient();
+uint8_t AJOBS_ControllerAPI_IsWiFiClient();
+
+/**
+ * return whether the Wi-Fi is connected.
+ * @return success
+ */
+uint8_t AJOBS_ControllerAPI_IsConnected();
 
 /** @} */ // End of group 'ControllerAPI'
  #endif // _ONBOARDINGCONTROLLERAPI_H_

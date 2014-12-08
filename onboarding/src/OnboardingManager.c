@@ -32,26 +32,30 @@
 #include <aj_nvram.h>
 
 /**
+ * Configuration
+ */
+static AJOBS_Info g_obInfo = AJOBS_INFO_DEFAULT;
+
+/**
  * State and Error
  */
-static AJOBS_State obState = AJOBS_STATE_NOT_CONFIGURED;
-static AJOBS_Error obLastError = { 0, 0 };
+static uint8_t g_obState = AJOBS_STATE_NOT_CONFIGURED;
+static AJOBS_Error g_obLastError = { AJOBS_STATE_LAST_ERROR_VALIDATED, "" };
 
 /**
  * ScanInfos
  */
-static AJ_Time obLastScan;
-static AJOBS_ScanInfo obScanInfos[AJOBS_MAX_SCAN_INFOS];
-static uint8_t obScanInfoCount = 0;
+static AJ_Time g_obLastScan = { 0, 0 };
+static AJOBS_ScanInfo g_obScanInfos[AJOBS_MAX_SCAN_INFOS];
+static uint8_t g_obScanInfoCount = 0;
 
 /**
- * Onboarding timer activated state.
+ * Onboarding settings
  */
-static uint8_t bFirstStart = TRUE;
-
-static const AJOBS_Settings* obSettings;
+static const AJOBS_Settings* g_obSettings = NULL;
 
 #define AJ_OBS_OBINFO_NV_ID AJ_OBS_NV_ID_BEGIN
+#define AJ_OBS_OBLASTERRORCODE_NV_ID (AJ_OBS_OBINFO_NV_ID + 1)
 
 static AJ_Status OnboardingReadInfo(AJOBS_Info* info)
 {
@@ -61,11 +65,14 @@ static AJ_Status OnboardingReadInfo(AJOBS_Info* info)
     int sizeRead;
 
     if (NULL == info) {
-        return AJ_ERR_NULL;
+        status = AJ_ERR_NULL;
+        AJ_ErrPrintf(("Failed to read info: info buffer is NULL\n"));
+        goto ErrorExit;
     }
 
     if (!AJ_NVRAM_Exist(AJ_OBS_OBINFO_NV_ID)) {
-        return AJ_ERR_INVALID;
+        AJ_WarnPrintf(("Failed to read info: info handle in NVRAM (%d) not found\n", AJ_OBS_OBINFO_NV_ID));
+        goto ErrorExit;
     }
 
     memset(info, 0, size);
@@ -75,11 +82,13 @@ static AJ_Status OnboardingReadInfo(AJOBS_Info* info)
         status = AJ_NVRAM_Close(nvramHandle);
         if (sizeRead != sizeRead) {
             status = AJ_ERR_NVRAM_READ;
+            AJ_ErrPrintf(("Failed to read info: mismatched size read\n"));
         } else {
-            AJ_AlwaysPrintf(("Read Info values: state=%d, ssid=%s authType=%d pc=%s\n", info->state, info->ssid, info->authType, info->pc));
+            AJ_InfoPrintf(("Read Info values: ssid=%s authType=%d pc=%s lastErrorCode=%d\n", info->ssid, info->authType, info->pc));
         }
     }
 
+ErrorExit:
     return status;
 }
 
@@ -91,10 +100,10 @@ static AJ_Status OnboardingWriteInfo(AJOBS_Info* info)
     int sizeWritten;
 
     if (NULL == info) {
-        return AJ_ERR_NULL;
+        status = AJ_ERR_NULL;
+        AJ_ErrPrintf(("Failed to write info: info buffer is NULL\n"));
+        goto ErrorExit;
     }
-
-    AJ_AlwaysPrintf(("Going to write Info values: state=%d, ssid=%s authType=%d pc=%s\n", info->state, info->ssid, info->authType, info->pc));
 
     nvramHandle = AJ_NVRAM_Open(AJ_OBS_OBINFO_NV_ID, "w", size);
     if (nvramHandle != NULL) {
@@ -102,9 +111,76 @@ static AJ_Status OnboardingWriteInfo(AJOBS_Info* info)
         status = AJ_NVRAM_Close(nvramHandle);
         if (sizeWritten != size) {
             status = AJ_ERR_NVRAM_WRITE;
+            AJ_ErrPrintf(("Failed to write info: mismatched size written\n"));
+        } else {
+            AJ_InfoPrintf(("Wrote Info values: ssid=%s authType=%d pc=%s\n", info->ssid, info->authType, info->pc));
         }
     }
 
+ErrorExit:
+    return status;
+}
+
+static AJ_Status OnboardingReadLastErrorCode(int8_t* lastErrorCode)
+{
+    AJ_Status status = AJ_OK;
+    size_t size = sizeof(int8_t);
+    AJ_NV_DATASET* nvramHandle;
+    int sizeRead;
+
+    if (NULL == lastErrorCode) {
+        status = AJ_ERR_NULL;
+        AJ_ErrPrintf(("Failed to read last error code: error code buffer is NULL\n"));
+        goto ErrorExit;
+    }
+
+    if (!AJ_NVRAM_Exist(AJ_OBS_OBLASTERRORCODE_NV_ID)) {
+        AJ_WarnPrintf(("Failed to read last error code: last error code handle in NVRAM (%d) not found\n", AJ_OBS_OBLASTERRORCODE_NV_ID));
+        goto ErrorExit;
+    }
+
+    nvramHandle = AJ_NVRAM_Open(AJ_OBS_OBLASTERRORCODE_NV_ID, "r", 0);
+    if (nvramHandle != NULL) {
+        sizeRead = AJ_NVRAM_Read(lastErrorCode, size, nvramHandle);
+        status = AJ_NVRAM_Close(nvramHandle);
+        if (sizeRead != sizeRead) {
+            AJ_ErrPrintf(("Failed to read last error code: mismatched size read\n"));
+            status = AJ_ERR_NVRAM_READ;
+        } else {
+            AJ_InfoPrintf(("Read Last Error Code: lastErrorCode=%d\n", *lastErrorCode));
+        }
+    }
+
+ErrorExit:
+    return status;
+}
+
+static AJ_Status OnboardingWriteLastErrorCode(int8_t* lastErrorCode)
+{
+    AJ_Status status = AJ_OK;
+    size_t size = sizeof(int8_t);
+    AJ_NV_DATASET* nvramHandle;
+    int sizeWritten;
+
+    if (NULL == lastErrorCode) {
+        status = AJ_ERR_NULL;
+        AJ_ErrPrintf(("Failed to write last error code: error code buffer is NULL\n"));
+        goto ErrorExit;
+    }
+
+    nvramHandle = AJ_NVRAM_Open(AJ_OBS_OBLASTERRORCODE_NV_ID, "w", size);
+    if (nvramHandle != NULL) {
+        sizeWritten = AJ_NVRAM_Write(lastErrorCode, size, nvramHandle);
+        status = AJ_NVRAM_Close(nvramHandle);
+        if (sizeWritten != size) {
+            status = AJ_ERR_NVRAM_WRITE;
+            AJ_ErrPrintf(("Failed to write last error code: mismatched size written\n"));
+        } else {
+            AJ_InfoPrintf(("Wrote Last Error Code: lastErrorCode=%d\n", *lastErrorCode));
+        }
+    }
+
+ErrorExit:
     return status;
 }
 
@@ -112,17 +188,43 @@ AJ_Status AJOBS_Start(const AJOBS_Settings* settings)
 {
     AJ_Status status = AJ_OK;
 
-    obSettings = settings;
-    if (obSettings == NULL || obSettings->AJOBS_SoftAPSSID == NULL || (obSettings->AJOBS_SoftAPSSID)[0] == '\0') {
+    g_obSettings = settings;
+    if (g_obSettings == NULL || g_obSettings->AJOBS_SoftAPSSID == NULL || (g_obSettings->AJOBS_SoftAPSSID)[0] == '\0') {
         AJ_ErrPrintf(("AJOBS_Start(): No SoftAP SSID was provided!\n"));
         status = AJ_ERR_INVALID;
-    } else if (obSettings->AJOBS_SoftAPPassphrase != NULL && strlen(obSettings->AJOBS_SoftAPPassphrase) < 8) {
+    } else if (g_obSettings->AJOBS_SoftAPPassphrase != NULL && strlen(g_obSettings->AJOBS_SoftAPPassphrase) < 8) {
         AJ_ErrPrintf(("AJOBS_Start(): SoftAP Passphrase is too short! Needs to 8 to 63 characters long\n"));
         status = AJ_ERR_INVALID;
     }
 
     if (status == AJ_OK) {
         status = AJOBS_RegisterObjectList();
+    }
+
+    // Check if just started and setup globals from persisted info
+    if (status == AJ_OK) {
+        status = OnboardingReadInfo(&g_obInfo);
+        if (status == AJ_OK) {
+            status = OnboardingReadLastErrorCode(&g_obLastError.code);
+            g_obLastError.message[0] = '\0';
+            if (status == AJ_OK) {
+                if (AJOBS_ControllerAPI_IsConfigured()) {
+                    switch (g_obLastError.code) {
+                    case AJOBS_STATE_LAST_ERROR_VALIDATED:
+                    case AJOBS_STATE_LAST_ERROR_UNREACHABLE:
+                    case AJOBS_STATE_LAST_ERROR_ERROR_MESSAGE:
+                        g_obState = AJOBS_STATE_CONFIGURED_NOT_VALIDATED;
+                        break;
+
+                    case AJOBS_STATE_LAST_ERROR_UNSUPPORTED_PROTOCOL:
+                    case AJOBS_STATE_LAST_ERROR_UNAUTHORIZED:
+                    default:
+                        g_obState = AJOBS_STATE_CONFIGURED_ERROR;
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     return status;
@@ -145,14 +247,14 @@ uint8_t AJOBS_IsWiFiConnected()
 /**
  * Onboarding state variable.
  */
-AJOBS_State AJOBS_GetState()
+int8_t AJOBS_GetState()
 {
-    return obState;
+    return g_obState;
 }
 
-void AJOBS_SetState(AJOBS_State state)
+void AJOBS_SetState(int8_t state)
 {
-    obState = state;
+    g_obState = state;
 }
 
 /**
@@ -160,7 +262,7 @@ void AJOBS_SetState(AJOBS_State state)
  */
 const AJOBS_Error* AJOBS_GetError()
 {
-    return &obLastError;
+    return &g_obLastError;
 }
 
 /**
@@ -168,7 +270,7 @@ const AJOBS_Error* AJOBS_GetError()
  */
 const AJ_Time* AJOBS_GetLastScanTime()
 {
-    return &obLastScan;
+    return &g_obLastScan;
 }
 
 /**
@@ -176,7 +278,7 @@ const AJ_Time* AJOBS_GetLastScanTime()
  */
 const AJOBS_ScanInfo* AJOBS_GetScanInfos()
 {
-    return obScanInfos;
+    return g_obScanInfos;
 }
 
 /**
@@ -187,23 +289,71 @@ uint8_t AJOBS_GetScanInfoCount()
     return AJOBS_MAX_SCAN_INFOS;
 }
 
-static const AJOBS_Info defaultInfo = AJOBS_INFO_DEFAULT;
-
-AJ_Status AJOBS_GetInfo(AJOBS_Info* obInfo)
+uint8_t AJOBS_IsInfoValid(const char* ssid, const char* pc, int8_t authType)
 {
-    AJ_Status status = OnboardingReadInfo(obInfo);
-    AJ_InfoPrintf(("ReadInfo status: %s\n", AJ_StatusText(status)));
-    if (status == AJ_ERR_INVALID) {
-        *obInfo = defaultInfo;
-        status = AJ_OK; // Handle does not exist so return default info
+    if ((ssid == NULL) || (strlen(ssid) == 0) || (strlen(ssid) > AJOBS_SSID_MAX_LENGTH)) {
+        return FALSE;
     }
-    return status;
+    switch (authType) {
+    case AJOBS_AUTH_TYPE_OPEN:
+        return (pc == NULL) || (strlen(pc) == 0);
+
+    case AJOBS_AUTH_TYPE_WEP:
+        return (pc != NULL) && ((strlen(pc) == 5) || (strlen(pc) == 10) || (strlen(pc) == 13) || (strlen(pc) == 26));
+
+    case AJOBS_AUTH_TYPE_WPA_TKIP:
+    case AJOBS_AUTH_TYPE_WPA_CCMP:
+    case AJOBS_AUTH_TYPE_WPA_AUTO:
+    case AJOBS_AUTH_TYPE_WPA2_TKIP:
+    case AJOBS_AUTH_TYPE_WPA2_CCMP:
+    case AJOBS_AUTH_TYPE_WPA2_AUTO:
+        return (pc != NULL) && (strlen(pc) >= 8) && (strlen(pc) <= AJOBS_PASSCODE_MAX_LENGTH);
+
+    case AJOBS_AUTH_TYPE_WPS:
+        return (pc != NULL) && (strlen(pc) == 8);
+
+    case AJOBS_AUTH_TYPE_ANY:
+        return (pc != NULL) && (strlen(pc) > 0) && (strlen(pc) <= AJOBS_PASSCODE_MAX_LENGTH);
+
+    default:
+        return FALSE;
+    }
 }
 
-AJ_Status AJOBS_SetInfo(AJOBS_Info* obInfo)
-{
-    AJ_Status status = OnboardingWriteInfo(obInfo);
-    AJ_InfoPrintf(("WriteInfo status: %s\n", AJ_StatusText(status)));
+AJ_Status AJOBS_UpdateInfo(const char* ssid, const char* pc, int8_t authType) {
+    AJ_Status status = AJ_OK;
+    size_t ssidLen = 0;
+    size_t pcLen = 0;
+    uint8_t modified = FALSE;
+
+    if ((g_obInfo.ssid != ssid) && (strcmp(g_obInfo.ssid, ssid) != 0)) {
+        ssidLen = min(strlen(ssid), AJOBS_SSID_MAX_LENGTH);
+        strncpy(g_obInfo.ssid, ssid, AJOBS_SSID_MAX_LENGTH);
+        g_obInfo.ssid[ssidLen] = '\0';
+        modified |= TRUE;
+    }
+
+    if ((g_obInfo.pc != pc) && (strcmp(g_obInfo.pc, pc) != 0)) {
+        pcLen = min(strlen(pc), AJOBS_PASSCODE_MAX_LENGTH);
+        strncpy(g_obInfo.pc, pc, AJOBS_PASSCODE_MAX_LENGTH);
+        g_obInfo.pc[pcLen] = '\0';
+        modified |= TRUE;
+    }
+
+    if (g_obInfo.authType != authType) {
+        g_obInfo.authType = authType;
+        modified |= TRUE;
+    }
+
+    if (modified == TRUE) {
+        if (g_obInfo.ssid[0] == '\0') {
+            g_obState = AJOBS_STATE_NOT_CONFIGURED; // Change state to NOT_CONFIGURED
+        } else {
+            g_obState = AJOBS_STATE_CONFIGURED_NOT_VALIDATED; // Change state to CONFIGURED_NOT_VALIDATED
+        }
+        status = OnboardingWriteInfo(&g_obInfo);
+    }
+
     return status;
 }
 
@@ -242,7 +392,7 @@ static const char* AJ_WiFiConnectStateText(AJ_WiFiConnectState state)
 #endif
 }
 
-int8_t AJOBS_ControllerAPI_IsWiFiSoftAP()
+uint8_t AJOBS_ControllerAPI_IsWiFiSoftAP()
 {
     AJ_WiFiConnectState state = AJ_GetWifiConnectState();
     switch (state) {
@@ -262,7 +412,7 @@ int8_t AJOBS_ControllerAPI_IsWiFiSoftAP()
     }
 }
 
-int8_t AJOBS_ControllerAPI_IsWiFiClient()
+uint8_t AJOBS_ControllerAPI_IsWiFiClient()
 {
     AJ_WiFiConnectState state = AJ_GetWifiConnectState();
     switch (state) {
@@ -390,10 +540,10 @@ static AJ_WiFiCipherType GetCipherType(int8_t authType)
 
 static void GotScanInfo(const char* ssid, const uint8_t bssid[6], uint8_t rssi, AJOBS_AuthType authType)
 {
-    if (obScanInfoCount < AJOBS_MAX_SCAN_INFOS) {
-        strncpy(obScanInfos[obScanInfoCount].ssid, ssid, AJOBS_SSID_MAX_LENGTH);
-        obScanInfos[obScanInfoCount].authType = authType;
-        ++obScanInfoCount;
+    if (g_obScanInfoCount < AJOBS_MAX_SCAN_INFOS) {
+        strncpy(g_obScanInfos[g_obScanInfoCount].ssid, ssid, AJOBS_SSID_MAX_LENGTH);
+        g_obScanInfos[g_obScanInfoCount].authType = authType;
+        ++g_obScanInfoCount;
     }
 }
 
@@ -410,12 +560,12 @@ AJ_Status AJOBS_ControllerAPI_DoScanInfo()
 {
     AJ_Status status = AJ_OK;
 
-    memset(obScanInfos, 0, sizeof(obScanInfos));
-    obScanInfoCount = 0;
+    memset(g_obScanInfos, 0, sizeof(g_obScanInfos));
+    g_obScanInfoCount = 0;
     // Scan neighbouring networks and save info -> Call OBM_WiFiScanResult().
     status = AJ_WiFiScan(NULL, WiFiScanResult, AJOBS_MAX_SCAN_INFOS);
     if (status == AJ_OK) {
-        AJ_InitTimer(&obLastScan);
+        AJ_InitTimer(&g_obLastScan);
     }
 
     return status;
@@ -444,7 +594,7 @@ AJ_Status AJOBS_ControllerAPI_GotoIdleWiFi(uint8_t reset)
     return status;
 }
 
-static AJ_Status DoConnectWifi(AJOBS_Info* connectInfo)
+static AJ_Status DoConnectWifi()
 {
     AJ_Status status = AJ_OK;
     AJ_WiFiSecurityType secType = AJ_WIFI_SECURITY_NONE;
@@ -453,22 +603,23 @@ static AJ_Status DoConnectWifi(AJOBS_Info* connectInfo)
     int8_t fallbackUntil = AJOBS_AUTH_TYPE_OPEN;
     uint8_t retries = 0;
     AJ_WiFiConnectState wifiConnectState;
-    uint8_t infoModified = FALSE;
-    char* password = connectInfo->pc;
+    int8_t prevLastErrorCode = g_obLastError.code;
+    char* password = g_obInfo.pc;
     size_t hexLen = strlen(password);
     uint8_t raw[(AJOBS_PASSCODE_MAX_LENGTH / 2) + 1] = { 0 };
+    int8_t prevObState = g_obState;
 
     /* Only decode the password from HEX if authentication type is NOT WEP */
-    if (AJOBS_AUTH_TYPE_WEP != connectInfo->authType) {
+    if (AJOBS_AUTH_TYPE_WEP != g_obInfo.authType) {
         AJ_HexToRaw(password, hexLen, raw, (AJOBS_PASSCODE_MAX_LENGTH / 2) + 1);
         raw[hexLen / 2] = 0;
     }
 
-    AJ_InfoPrintf(("Attempting to connect to %s with passcode=%s and auth=%d\n", connectInfo->ssid, connectInfo->pc, connectInfo->authType));
+    AJ_InfoPrintf(("Attempting to connect to %s with passcode=%s and auth=%d\n", g_obInfo.ssid, g_obInfo.pc, g_obInfo.authType));
 
-    switch (connectInfo->authType) {
+    switch (g_obInfo.authType) {
     case AJOBS_AUTH_TYPE_ANY:
-        if (strlen(connectInfo->pc) == 0) {
+        if (strlen(g_obInfo.pc) == 0) {
             break;
         }
         fallback = AJOBS_AUTH_TYPE_WPA2_CCMP;
@@ -476,7 +627,7 @@ static AJ_Status DoConnectWifi(AJOBS_Info* connectInfo)
         break;
 
     case AJOBS_AUTH_TYPE_WPA_AUTO:
-        if (strlen(connectInfo->pc) == 0) {
+        if (strlen(g_obInfo.pc) == 0) {
             break;
         }
         fallback = AJOBS_AUTH_TYPE_WPA_CCMP;
@@ -484,7 +635,7 @@ static AJ_Status DoConnectWifi(AJOBS_Info* connectInfo)
         break;
 
     case AJOBS_AUTH_TYPE_WPA2_AUTO:
-        if (strlen(connectInfo->pc) == 0) {
+        if (strlen(g_obInfo.pc) == 0) {
             break;
         }
         fallback = AJOBS_AUTH_TYPE_WPA2_CCMP;
@@ -492,7 +643,7 @@ static AJ_Status DoConnectWifi(AJOBS_Info* connectInfo)
         break;
 
     default:
-        fallback = connectInfo->authType;
+        fallback = g_obInfo.authType;
     }
 
     secType = GetSecType(fallback);
@@ -501,120 +652,107 @@ static AJ_Status DoConnectWifi(AJOBS_Info* connectInfo)
 
     while (1) {
         // Setup the password
-        if (AJ_WIFI_SECURITY_WEP == secType && ((hexLen / 2) & 1)) { // Ensure that the HEX encoded password is passed for WEP when raw password is not HEX
-            password = connectInfo->pc;
+        if ((AJ_WIFI_SECURITY_WEP == secType) && ((hexLen / 2) & 1)) { // Ensure that the HEX encoded password is passed for WEP when raw password is not HEX
+            password = g_obInfo.pc;
         } else {
             password = (char*)raw;
         }
 
-        if (connectInfo->state == AJOBS_STATE_CONFIGURED_NOT_VALIDATED) {
-            connectInfo->state = AJOBS_STATE_CONFIGURED_VALIDATING;
+        if (prevObState == AJOBS_STATE_CONFIGURED_NOT_VALIDATED) {
+            g_obLastError.code = AJOBS_STATE_LAST_ERROR_VALIDATED;
+            g_obLastError.message[0] = '\0';
+            g_obState = AJOBS_STATE_CONFIGURED_VALIDATING;
         }
 
-        status = AJ_ConnectWiFi(connectInfo->ssid, secType, cipherType, password);
+        status = AJ_ConnectWiFi(g_obInfo.ssid, secType, cipherType, password);
         AJ_InfoPrintf(("AJ_ConnectWifi returned %s\n", AJ_StatusText(status)));
 
         wifiConnectState = AJ_GetWifiConnectState();
 
         // Set last error and state
         if ((status == AJ_OK) /* (wifiConnectState == AJ_WIFI_CONNECT_OK)*/) {
-            obLastError.code = AJOBS_STATE_LAST_ERROR_VALIDATED;
-            obLastError.message[0] = '\0';
-            obState = AJOBS_STATE_CONFIGURED_VALIDATED;
+            g_obLastError.code = AJOBS_STATE_LAST_ERROR_VALIDATED;
+            g_obLastError.message[0] = '\0';
+            g_obState = AJOBS_STATE_CONFIGURED_VALIDATED;
+            break; // Leave retry loop
         } else if ((status == AJ_ERR_CONNECT) /* (wifiConnectState == AJ_WIFI_CONNECT_FAILED)*/) {
-            obLastError.code = AJOBS_STATE_LAST_ERROR_UNREACHABLE;
-            strncpy(obLastError.message, "Network unreachable!", AJOBS_ERROR_MESSAGE_LEN);
-            if (connectInfo->state == AJOBS_STATE_CONFIGURED_VALIDATED || connectInfo->state == AJOBS_STATE_CONFIGURED_RETRY) {
-                obState = AJOBS_STATE_CONFIGURED_RETRY;
-            } else {
-                obState = AJOBS_STATE_CONFIGURED_ERROR;
-            }
+            g_obLastError.code = AJOBS_STATE_LAST_ERROR_UNREACHABLE;
+            strncpy(g_obLastError.message, "Network unreachable!", AJOBS_ERROR_MESSAGE_LEN);
+            g_obState = AJOBS_STATE_CONFIGURED_RETRY;
         } else if ((status == AJ_ERR_SECURITY) /* (wifiConnectState == AJ_WIFI_AUTH_FAILED)*/) {
-            obLastError.code = AJOBS_STATE_LAST_ERROR_UNAUTHORIZED;
-            strncpy(obLastError.message, "Authorization failed!", AJOBS_ERROR_MESSAGE_LEN);
-            if (connectInfo->state == AJOBS_STATE_CONFIGURED_VALIDATED || connectInfo->state == AJOBS_STATE_CONFIGURED_RETRY) {
-                obState = AJOBS_STATE_CONFIGURED_RETRY;
-            } else {
-                obState = AJOBS_STATE_CONFIGURED_ERROR;
-            }
+            g_obLastError.code = AJOBS_STATE_LAST_ERROR_UNAUTHORIZED;
+            strncpy(g_obLastError.message, "Authorization failed!", AJOBS_ERROR_MESSAGE_LEN);
+            g_obState = AJOBS_STATE_CONFIGURED_ERROR;
         } else if (status == AJ_ERR_DRIVER) {
-            obLastError.code = AJOBS_STATE_LAST_ERROR_ERROR_MESSAGE;
-            strncpy(obLastError.message, "Driver error", AJOBS_ERROR_MESSAGE_LEN);
-            obState = AJOBS_STATE_CONFIGURED_ERROR;
+            g_obLastError.code = AJOBS_STATE_LAST_ERROR_ERROR_MESSAGE;
+            strncpy(g_obLastError.message, "Driver error!", AJOBS_ERROR_MESSAGE_LEN);
+            g_obState = AJOBS_STATE_CONFIGURED_ERROR;
         } else if (status == AJ_ERR_DHCP) {
-            obLastError.code = AJOBS_STATE_LAST_ERROR_ERROR_MESSAGE;
-            strncpy(obLastError.message, "Failed to establish IP!", AJOBS_ERROR_MESSAGE_LEN);
-            if (connectInfo->state == AJOBS_STATE_CONFIGURED_VALIDATED || connectInfo->state == AJOBS_STATE_CONFIGURED_RETRY) {
-                obState = AJOBS_STATE_CONFIGURED_RETRY;
-            } else {
-                obState = AJOBS_STATE_CONFIGURED_ERROR;
-            }
-        } else {
-            obLastError.code = AJOBS_STATE_LAST_ERROR_ERROR_MESSAGE;
-            strncpy(obLastError.message, "Failed to connect! Unexpected error", AJOBS_ERROR_MESSAGE_LEN);
-            obState = AJOBS_STATE_CONFIGURED_ERROR;
+            g_obLastError.code = AJOBS_STATE_LAST_ERROR_ERROR_MESSAGE;
+            strncpy(g_obLastError.message, "Failed to establish IP!", AJOBS_ERROR_MESSAGE_LEN);
+            g_obState = AJOBS_STATE_CONFIGURED_RETRY;
+        } else { /* if (status == AJ_ERR_UNKNOWN) */
+            g_obLastError.code = AJOBS_STATE_LAST_ERROR_ERROR_MESSAGE;
+            strncpy(g_obLastError.message, "Failed to connect! Unexpected error", AJOBS_ERROR_MESSAGE_LEN);
+            g_obState = AJOBS_STATE_CONFIGURED_ERROR;
+        }
+        // Treat any errors on first validation as terminal and do NOT switch to RETRY mode
+        if (prevObState == AJOBS_STATE_CONFIGURED_NOT_VALIDATED) {
+            g_obState = AJOBS_STATE_CONFIGURED_ERROR;
         }
 
-        if (obState == AJOBS_STATE_CONFIGURED_VALIDATED) {
-            break;
-        }
         AJ_WarnPrintf(("Warning - DoConnectWifi wifiConnectState = %s\n", AJ_WiFiConnectStateText(wifiConnectState)));
-        AJ_WarnPrintf(("Last error set to \"%s\" (code=%d)\n", obLastError.message, obLastError.code));
+        AJ_WarnPrintf(("Last error set to \"%s\" (code=%d)\n", g_obLastError.message, g_obLastError.code));
 
-        if (obState == AJOBS_STATE_CONFIGURED_ERROR || obState == AJOBS_STATE_CONFIGURED_RETRY) {
-            if (retries++ >= obSettings->AJOBS_MAX_RETRIES) {
-                if (obState == AJOBS_STATE_CONFIGURED_ERROR && connectInfo->state == AJOBS_STATE_CONFIGURED_VALIDATING) {
-                    if (connectInfo->authType < 0 && fallback > fallbackUntil) {
-                        obLastError.code = AJOBS_STATE_LAST_ERROR_UNSUPPORTED_PROTOCOL;
-                        strncpy(obLastError.message, "Unsupported protocol", AJOBS_ERROR_MESSAGE_LEN);
-                        fallback--; // Try next authentication protocol
-                        secType = GetSecType(fallback);
-                        cipherType = GetCipherType(fallback);
-                        retries = 0;
-                        AJ_InfoPrintf(("Trying to connect with fallback auth=%d (secType=%d, cipherType=%d)\n", fallback, secType, cipherType));
-                        continue;
-                    }
+        // Check if retry limit reached
+        if (retries++ >= g_obSettings->AJOBS_MAX_RETRIES) {
+            // Check whether in a automatic authentication type fallback loop
+            if (g_obInfo.authType < 0) {
+                // Check whether there is another fallback to try
+                if (fallback > fallbackUntil) {
+                    fallback--; // Try next authentication protocol
+                    secType = GetSecType(fallback);
+                    cipherType = GetCipherType(fallback);
+                    retries = 0;
+                    AJ_InfoPrintf(("Trying to connect with fallback auth=%d (secType=%d, cipherType=%d)\n", fallback, secType, cipherType));
+                    continue;
                 }
-                break;
+                g_obLastError.code = AJOBS_STATE_LAST_ERROR_UNSUPPORTED_PROTOCOL;
+                strncpy(g_obLastError.message, "Unsupported protocol", AJOBS_ERROR_MESSAGE_LEN);
+                g_obState = AJOBS_STATE_CONFIGURED_ERROR;
+                AJ_WarnPrintf(("Warning - all fallbacks were exhausted\n"));
+                AJ_WarnPrintf(("Last error set to \"%s\" (code=%d)\n", g_obLastError.message, g_obLastError.code));
             }
-            AJ_InfoPrintf(("Retry number %d out of %d\n", retries, obSettings->AJOBS_MAX_RETRIES));
+            break; // Leave retry loop
         }
+        AJ_InfoPrintf(("Retry number %d out of %d\n", retries, g_obSettings->AJOBS_MAX_RETRIES));
     }
 
-    if (connectInfo->state != obState) {
-        connectInfo->state = obState;
-        infoModified |= TRUE;
-    }
-    if ((connectInfo->state == AJOBS_STATE_CONFIGURED_VALIDATED) && (connectInfo->authType != fallback)) {
-        connectInfo->authType = fallback;
-        infoModified |= TRUE;
+    // If succeeded through a fallback loop set the successful authType
+    if ((g_obState == AJOBS_STATE_CONFIGURED_VALIDATED) && (g_obInfo.authType != fallback)) {
+        g_obInfo.authType = fallback;
+        OnboardingWriteInfo(&g_obInfo);
     }
 
-    if (infoModified == TRUE) {
-        status = AJOBS_SetInfo(connectInfo);
+    // If error code changed persist it
+    if (g_obLastError.code != prevLastErrorCode) {
+        OnboardingWriteLastErrorCode(&g_obLastError.code);
     }
 
     return status;
 }
 
-AJ_Status AJOBS_ControllerAPI_StartSoftAPIfNeededOrConnect(AJOBS_Info* obInfo)
+AJ_Status AJOBS_ControllerAPI_StartSoftAPIfNeededOrConnect()
 {
     AJ_Status status = AJ_OK;
 
-    // Check if just started and force immediate validation for previous retry
-    if (bFirstStart) {
-        bFirstStart = FALSE;
-        if (obInfo->state == AJOBS_STATE_CONFIGURED_RETRY) {
-            obInfo->state = AJOBS_STATE_CONFIGURED_VALIDATED;
-        }
-    }
     // Check if there is Wi-Fi connectivity and return if established already
     if (AJOBS_IsWiFiConnected()) {
         AJ_InfoPrintf(("Already connected with ConnectionState=%u, no need to establish connection!\n", (uint8_t)AJ_GetWifiConnectState()));
         return status;
     }
     while (1) {
-        status = AJOBS_ControllerAPI_GotoIdleWiFi(obSettings->AJOBS_RESET_WIFI_ON_IDLE); // Go into IDLE mode, reset Wi-Fi
+        status = AJOBS_ControllerAPI_GotoIdleWiFi(g_obSettings->AJOBS_RESET_WIFI_ON_IDLE); // Go into IDLE mode, reset Wi-Fi
         if (status != AJ_OK) {
             break;
         }
@@ -623,56 +761,70 @@ AJ_Status AJOBS_ControllerAPI_StartSoftAPIfNeededOrConnect(AJOBS_Info* obInfo)
             break;
         }
         // Check if require to switch into SoftAP mode.
-        if ((obInfo->state == AJOBS_STATE_NOT_CONFIGURED || obInfo->state == AJOBS_STATE_CONFIGURED_ERROR || obInfo->state == AJOBS_STATE_CONFIGURED_RETRY)) {
-            AJ_InfoPrintf(("Establishing SoftAP with ssid=%s%s auth=%s\n", obSettings->AJOBS_SoftAPSSID, (obSettings->AJOBS_SoftAPIsHidden ? " (hidden)" : ""), obSettings->AJOBS_SoftAPPassphrase == NULL ? "OPEN" : obSettings->AJOBS_SoftAPPassphrase));
-            if (obInfo->state == AJOBS_STATE_CONFIGURED_RETRY) {
+        if ((g_obState == AJOBS_STATE_NOT_CONFIGURED || g_obState == AJOBS_STATE_CONFIGURED_ERROR || g_obState == AJOBS_STATE_CONFIGURED_RETRY)) {
+            AJ_InfoPrintf(("Establishing SoftAP with ssid=%s%s auth=%s\n", g_obSettings->AJOBS_SoftAPSSID, (g_obSettings->AJOBS_SoftAPIsHidden ? " (hidden)" : ""), g_obSettings->AJOBS_SoftAPPassphrase == NULL ? "OPEN" : g_obSettings->AJOBS_SoftAPPassphrase));
+            if (g_obState == AJOBS_STATE_CONFIGURED_RETRY) {
                 AJ_InfoPrintf(("Retry timer activated\n"));
-                status = AJ_EnableSoftAP(obSettings->AJOBS_SoftAPSSID, obSettings->AJOBS_SoftAPIsHidden, obSettings->AJOBS_SoftAPPassphrase, obSettings->AJOBS_WAIT_BETWEEN_RETRIES);
+                status = AJ_EnableSoftAP(g_obSettings->AJOBS_SoftAPSSID, g_obSettings->AJOBS_SoftAPIsHidden, g_obSettings->AJOBS_SoftAPPassphrase, g_obSettings->AJOBS_WAIT_BETWEEN_RETRIES);
             } else {
-                status = AJ_EnableSoftAP(obSettings->AJOBS_SoftAPSSID, obSettings->AJOBS_SoftAPIsHidden, obSettings->AJOBS_SoftAPPassphrase, obSettings->AJOBS_WAIT_FOR_SOFTAP_CONNECTION);
+                status = AJ_EnableSoftAP(g_obSettings->AJOBS_SoftAPSSID, g_obSettings->AJOBS_SoftAPIsHidden, g_obSettings->AJOBS_SoftAPPassphrase, g_obSettings->AJOBS_WAIT_FOR_SOFTAP_CONNECTION);
             }
             if (status != AJ_OK) {
+                AJ_WarnPrintf(("Failed to establish connection in SoftAP status=%s\n", AJ_StatusText(status)));
                 if (AJ_ERR_TIMEOUT == status) {
-                    //check for timer elapsed for retry
-                    if (obInfo->state == AJOBS_STATE_CONFIGURED_RETRY) {
-                        AJ_InfoPrintf(("Retry timer elapsed at %ums\n", obSettings->AJOBS_WAIT_BETWEEN_RETRIES));
-                        obInfo->state = AJOBS_STATE_CONFIGURED_VALIDATED;
-                        status = AJOBS_SetInfo(obInfo);
-                        if (status == AJ_OK) {
-                            continue; // Loop back and connect in client mode
-                        }
+                    // Check for timer elapsed for retry
+                    if (g_obState == AJOBS_STATE_CONFIGURED_RETRY) {
+                        AJ_InfoPrintf(("Retry timer elapsed at %ums\n", g_obSettings->AJOBS_WAIT_BETWEEN_RETRIES));
+                        g_obState = AJOBS_STATE_CONFIGURED_VALIDATED;
+                        continue; // Loop back and connect in client mode
                     }
                 }
-                AJ_WarnPrintf(("Failed to establish SoftAP with status=%s\n", AJ_StatusText(status)));
             }
         } else { // Otherwise connect to given configuration and according to error code returned map to relevant onboarding state and set value for LastError and ConnectionResult.
-            status = DoConnectWifi(obInfo);
-            if (status == AJ_OK) {
-                if (obInfo->state == AJOBS_STATE_CONFIGURED_ERROR || obInfo->state == AJOBS_STATE_CONFIGURED_RETRY) {
-                    continue; // Loop back and establish SoftAP mode
-                }
-            } else {
+            status = DoConnectWifi();
+            if (status != AJ_OK) {
                 AJ_WarnPrintf(("Failed to establish connection with current configuration status=%s\n", AJ_StatusText(status)));
+            }
+            if (g_obState == AJOBS_STATE_CONFIGURED_ERROR || g_obState == AJOBS_STATE_CONFIGURED_RETRY) {
+                continue; // Loop back and establish SoftAP mode
             }
         }
         break; // Either connected to (as client) or connected from (as SoftAP) a station
     }
+
     return status;
 }
 
 AJ_Status AJOBS_ClearInfo()
 {
-    AJOBS_Info emptyInfo;
-    memset(&emptyInfo, 0, sizeof(emptyInfo));
-
-    // Clear state
-    obState = emptyInfo.state = AJOBS_STATE_NOT_CONFIGURED;
+    AJ_Status status;
 
     // Clear last error
-    obLastError.code = AJOBS_STATE_LAST_ERROR_VALIDATED;
-    obLastError.message[0] = '\0';
+    g_obLastError.message[0] = '\0';
+    if (g_obLastError.code != AJOBS_STATE_LAST_ERROR_VALIDATED) {
+        g_obLastError.code = AJOBS_STATE_LAST_ERROR_VALIDATED;
+        status = OnboardingWriteLastErrorCode(&g_obLastError.code);
+        if (status != AJ_OK) {
+            goto ErrorExit;
+        }
+    }
 
-    return AJOBS_SetInfo(&emptyInfo);
+    // Clear info
+    status = AJOBS_UpdateInfo("", "", AJOBS_AUTH_TYPE_OPEN);
+    if (status != AJ_OK) {
+        goto ErrorExit;
+    }
+
+    // Clear state
+    g_obState = AJOBS_STATE_NOT_CONFIGURED;
+
+    AJ_InfoPrintf(("ClearInfo status: %s\n", AJ_StatusText(status)));
+    return status;
+
+ErrorExit:
+
+    AJ_ErrPrintf(("ClearInfo status: %s\n", AJ_StatusText(status)));
+    return status;
 }
 
 AJ_Status AJOBS_ControllerAPI_DoOffboardWiFi()
@@ -680,21 +832,26 @@ AJ_Status AJOBS_ControllerAPI_DoOffboardWiFi()
     return (AJOBS_ClearInfo());
 }
 
+uint8_t AJOBS_ControllerAPI_IsConfigured()
+{
+    return g_obInfo.ssid[0] != '\0';
+}
+
+uint8_t AJOBS_ControllerAPI_IsConnected()
+{
+    return AJOBS_IsWiFiConnected();
+}
+
 AJ_Status AJOBS_EstablishWiFi()
 {
     AJ_Status status;
-    AJOBS_Info obInfo;
 
-    status = AJOBS_GetInfo(&obInfo);
+    status = AJOBS_ControllerAPI_StartSoftAPIfNeededOrConnect();
     if (status != AJ_OK) {
         goto ErrorExit;
     }
 
-    status = AJOBS_ControllerAPI_StartSoftAPIfNeededOrConnect(&obInfo);
-    if (status != AJ_OK) {
-        goto ErrorExit;
-    }
-
+    AJ_InfoPrintf(("EstablishWiFi status: %s\n", AJ_StatusText(status)));
     return status;
 
 ErrorExit:
@@ -706,17 +863,8 @@ ErrorExit:
 AJ_Status AJOBS_SwitchToRetry()
 {
     AJ_Status status = AJ_OK;
-    AJOBS_Info obInfo;
 
-    status = AJOBS_GetInfo(&obInfo);
-    if (status != AJ_OK) {
-        goto ErrorExit;
-    }
-    obInfo.state = AJOBS_STATE_CONFIGURED_RETRY;
-    status = AJOBS_SetInfo(&obInfo);
-    if (status != AJ_OK) {
-        goto ErrorExit;
-    }
+    g_obState = AJOBS_STATE_CONFIGURED_RETRY;
     status = AJOBS_DisconnectWiFi();
     if (status != AJ_OK) {
         goto ErrorExit;
@@ -726,7 +874,6 @@ AJ_Status AJOBS_SwitchToRetry()
     return status;
 
 ErrorExit:
-
     AJ_ErrPrintf(("SwitchToRetry status: %s\n", AJ_StatusText(status)));
     return status;
 }
@@ -735,7 +882,7 @@ AJ_Status AJOBS_DisconnectWiFi()
 {
     AJ_Status status = AJ_OK;
 
-    status = AJOBS_ControllerAPI_GotoIdleWiFi(obSettings->AJOBS_RESET_WIFI_ON_IDLE);
+    status = AJOBS_ControllerAPI_GotoIdleWiFi(g_obSettings->AJOBS_RESET_WIFI_ON_IDLE);
 
     return status;
 }
