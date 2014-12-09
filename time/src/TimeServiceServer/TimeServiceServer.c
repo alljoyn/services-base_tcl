@@ -661,7 +661,7 @@ AJ_Status AJTS_Server_PropSetHandler(AJ_Message* replyMsg, uint32_t propId, void
 
     case TIME_ALARM1_ENABLED_PROP:
         {
-            uint8_t isEnabled;
+            uint32_t isEnabled;
 
             status = AJ_UnmarshalArgs(replyMsg, "b", &isEnabled);
             if (status != AJ_OK) {

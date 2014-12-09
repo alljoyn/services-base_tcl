@@ -112,7 +112,6 @@ static AJTS_OnSessionReply g_onSessionReply = NULL;
 
 AJSVC_ServiceStatus AJTS_Client_MessageProcessor(AJ_BusAttachment* busAttachment, AJ_Message* msg, AJ_Status* msgStatus)
 {
-
     switch (msg->msgId) {
     case TIME_AUTHORITY_TIMESYNC_PROXY_SIGNAL:
         AJ_InfoPrintf(("Received timesync signal.\n"));
@@ -138,6 +137,7 @@ AJSVC_ServiceStatus AJTS_Client_MessageProcessor(AJ_BusAttachment* busAttachment
     default:
         return AJSVC_SERVICE_STATUS_NOT_HANDLED;
     }
+
     return AJSVC_SERVICE_STATUS_HANDLED;
 }
 
@@ -270,7 +270,6 @@ AJ_Status AJTS_Client_TimeSyncSignalHandler(AJ_Message* msg)
     if (appOnTimeSync) {
         (*appOnTimeSync)(msg->sender, msg->objPath);
     }
-    status = AJ_CloseMsg(msg);
 
     return status;
 }
@@ -282,7 +281,6 @@ AJ_Status AJTS_Client_AlarmReachedSignalHandler(AJ_Message* msg)
     if (appOnAlarmReached) {
         (*appOnAlarmReached)(msg->sender, msg->objPath);
     }
-    status = AJ_CloseMsg(msg);
 
     return status;
 }
@@ -296,15 +294,13 @@ AJ_Status AJTS_Client_TimerEventSignalHandler(AJ_Message* msg)
         (*appOnTimerEvent)(msg->sender, msg->objPath);
     }
 
-    AJ_CloseMsg(msg);
-
     return status;
 }
 
 AJ_Status AJTS_Client_RunStateChangedSignalHandler(AJ_Message* msg)
 {
     AJ_Status status = AJ_OK;
-    uint8_t state;
+    uint32_t state;
 
     status = AJ_UnmarshalArgs(msg, "b", &state);
 
@@ -317,7 +313,6 @@ AJ_Status AJTS_Client_RunStateChangedSignalHandler(AJ_Message* msg)
     }
 
 Exit:
-    status = AJ_CloseMsg(msg);
 
     return status;
 }
@@ -977,7 +972,7 @@ AJ_Status AJTS_Client_PropGetHandler(AJ_Message* replyMsg, RequestContext* conte
     case TIME_CLOCK_PROXY_ISSET_PROP:
     case TIME_CLOCK_AUTHORITY_ISSET_PROXY_PROP:
         {
-            uint8_t isSet;
+            uint32_t isSet;
             status = AJ_UnmarshalArgs(replyMsg, "v", "b", &isSet);
             if (status != AJ_OK) {
                 return appIsSetHandler(replyMsg->sender, context, -1, status);
@@ -1032,7 +1027,7 @@ AJ_Status AJTS_Client_PropGetHandler(AJ_Message* replyMsg, RequestContext* conte
 
     case TIME_ALARM1_ENABLED_PROXY_PROP:
         {
-            uint8_t enabled;
+            uint32_t enabled;
             status = AJ_UnmarshalArgs(replyMsg, "v", "b", &enabled);
             if (status != AJ_OK) {
                 return appGetAlaramEnabledHandler(replyMsg->sender, context, -1, status);
@@ -1073,7 +1068,7 @@ AJ_Status AJTS_Client_PropGetHandler(AJ_Message* replyMsg, RequestContext* conte
 
     case TIME_TIMER1_ISRUNNING_PROXY_PROP:
         {
-            uint8_t enabled;
+            uint32_t enabled;
             status = AJ_UnmarshalArgs(replyMsg, "v", "b", &enabled);
             if (status != AJ_OK) {
                 return appGetTimerIsRunningHandler(replyMsg->sender, context, -1, status);
