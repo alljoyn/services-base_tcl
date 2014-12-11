@@ -140,7 +140,7 @@ const AJOBS_ScanInfo* AJOBS_GetScanInfos();
 
 /**
  * Onboarding scan infos count variable getter.
- * @param number of scan info structures in the last saved scan.
+ * @return number of scan info structures in the last saved scan.
  */
 uint8_t AJOBS_GetScanInfoCount();
 
