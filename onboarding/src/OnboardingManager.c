@@ -763,9 +763,6 @@ AJ_Status AJOBS_ControllerAPI_StartSoftAPIfNeededOrConnect()
         // Check if require to switch into SoftAP mode.
         if ((g_obState == AJOBS_STATE_NOT_CONFIGURED || g_obState == AJOBS_STATE_CONFIGURED_ERROR || g_obState == AJOBS_STATE_CONFIGURED_RETRY)) {
             AJ_InfoPrintf(("Establishing SoftAP with ssid=%s%s auth=%s\n", g_obSettings->AJOBS_SoftAPSSID, (g_obSettings->AJOBS_SoftAPIsHidden ? " (hidden)" : ""), g_obSettings->AJOBS_SoftAPPassphrase == NULL ? "OPEN" : g_obSettings->AJOBS_SoftAPPassphrase));
-#ifndef NDEBUG
-            AJ_Sleep(2500); // Hack which seems to resolve a timing issue which fails the authentication phase later when performing the Onboarding process in release
-#endif
             if (g_obState == AJOBS_STATE_CONFIGURED_RETRY) {
                 AJ_InfoPrintf(("Retry timer activated\n"));
                 status = AJ_EnableSoftAP(g_obSettings->AJOBS_SoftAPSSID, g_obSettings->AJOBS_SoftAPIsHidden, g_obSettings->AJOBS_SoftAPPassphrase, g_obSettings->AJOBS_WAIT_BETWEEN_RETRIES);
