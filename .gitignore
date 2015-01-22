@@ -7,3 +7,5 @@
 *.lib
 *.dll
 *.DS_Store
+.cproject
+.project

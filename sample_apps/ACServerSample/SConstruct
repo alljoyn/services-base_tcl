@@ -1,4 +1,4 @@
-# Copyright (c) 2013 - 2014, AllSeen Alliance. All rights reserved.
+# Copyright (c) 2013 - 2015, AllSeen Alliance. All rights reserved.
 #
 #    Permission to use, copy, modify, and/or distribute this software for any
 #    purpose with or without fee is hereby granted, provided that the above
@@ -19,5 +19,7 @@ if not os.path.isfile(ajtcl_root + '/SConscript'):
     print "SConscript in 'AJ_TCL_ROOT=" + ajtcl_root + "' not found; aborting.\n"
     exit(1)
 env = SConscript(ajtcl_root + '/SConscript')
+env['CPPDEFINES'].remove('AJ_NUM_REPLY_CONTEXTS=8')
+env['CPPDEFINES'].remove('AJ_NUM_REPLY_CONTEXTS=4')
 env.Append(CPPDEFINES = ['AJ_NUM_REPLY_CONTEXTS=2', 'AJ_MAX_OBJECT_LISTS=9'])
 env.SConscript('SConscript', variant_dir = 'obj', duplicate = 0)
