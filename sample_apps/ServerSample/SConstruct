@@ -20,6 +20,5 @@ if not os.path.isfile(ajtcl_root + '/SConscript'):
     exit(1)
 env = SConscript(ajtcl_root + '/SConscript')
 env['CPPDEFINES'].remove('AJ_NUM_REPLY_CONTEXTS=8')
-env['CPPDEFINES'].remove('AJ_NUM_REPLY_CONTEXTS=4')
 env.Append(CPPDEFINES = ['AJ_NUM_REPLY_CONTEXTS=2', 'AJ_MAX_OBJECT_LISTS=9'])
 env.SConscript('SConscript', variant_dir = 'obj', duplicate = 0)
