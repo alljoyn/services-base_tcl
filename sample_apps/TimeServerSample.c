@@ -752,9 +752,6 @@ static AJ_Status TimeServer_Init()
 
 void AJTS_DoWork(AJ_BusAttachment* busAttachment)
 {
-    static uint32_t t = 0;
-    // printf("tick\n");
-
     UpdateTime();
 
     if (g_alarm_enabled && g_isSet) {

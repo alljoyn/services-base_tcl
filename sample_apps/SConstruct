@@ -33,11 +33,10 @@ env.Append(CPPPATH = [Dir('AppsCommon/target/' + env['TARG'])])
 env.Append(CPPPATH = [Dir('../config/inc')])
 env.Append(CPPPATH = [Dir('../notification/inc')])
 env.Append(CPPPATH = [Dir('../controlpanel/inc')])
-#env.Append(CPPPATH = [Dir('../time/inc')])
+env.Append(CPPPATH = [Dir('../time/inc')])
 env.Append(CPPPATH = [Dir('.')])
 
-#samples = ['ConfigSample', 'NotificationProducerSample', 'NotificationConsumerSample', 'ControlleeSample', 'TimeServerSample','TimeClientSample']
-samples = ['ConfigSample', 'NotificationProducerSample', 'NotificationConsumerSample', 'ControlleeSample']
+samples = ['ConfigSample', 'NotificationProducerSample', 'NotificationConsumerSample', 'ControlleeSample', 'TimeServerSample','TimeClientSample']
 
 for sample in samples:
     print ''
