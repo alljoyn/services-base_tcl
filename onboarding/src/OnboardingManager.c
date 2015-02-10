@@ -32,10 +32,19 @@
 #include <aj_nvram.h>
 
 /**
+ * Defines soft AP fallback behavior
+ * 0 = Don't go back to soft AP if connection fails (default)
+ * 1 = Go back into soft AP if connection fails for the set number of retries
+ */
+#ifndef AJOBS_SOFTAP_FALLBACK
+#define AJOBS_SOFTAP_FALLBACK 0
+#endif
+
+/**
  * Configuration
  */
 static AJOBS_Info g_obInfo = AJOBS_INFO_DEFAULT;
-
+static uint8_t g_obSoftAPFallback = AJOBS_SOFTAP_FALLBACK;
 /**
  * State and Error
  */
@@ -56,6 +65,44 @@ static const AJOBS_Settings* g_obSettings = NULL;
 
 #define AJ_OBS_OBINFO_NV_ID AJ_OBS_NV_ID_BEGIN
 #define AJ_OBS_OBLASTERRORCODE_NV_ID (AJ_OBS_OBINFO_NV_ID + 1)
+#define AJ_OBS_SOFTAP_FALLBACK_NV_ID (AJ_OBS_OBINFO_NV_ID + 2)
+
+static AJ_Status OnboardingReadSoftAPFallback(uint8_t* fallback)
+{
+    AJ_Status status = AJ_OK;
+    AJ_NV_DATASET* handle;
+    if (!fallback) {
+        AJ_ErrPrintf(("Failed to read: fallback is NULL\n"));
+        return AJ_ERR_NULL;
+    }
+    handle = AJ_NVRAM_Open(AJ_OBS_SOFTAP_FALLBACK_NV_ID, "r", 0);
+    if (handle != NULL) {
+        if (AJ_NVRAM_Read(fallback, 1, handle) != 1) {
+            AJ_ErrPrintf(("Failed to read fallback: mismatched size read\n"));
+            return AJ_ERR_NVRAM_READ;
+        } else {
+            status = AJ_NVRAM_Close(handle);
+        }
+        return AJ_OK;
+    }
+    return AJ_ERR_NULL;
+}
+
+static AJ_Status OnboardingWriteSoftAPFallback(uint8_t fallback)
+{
+    AJ_Status status = AJ_OK;
+    AJ_NV_DATASET* handle = AJ_NVRAM_Open(AJ_OBS_SOFTAP_FALLBACK_NV_ID, "w", 1);
+    if (handle != NULL) {
+        if (AJ_NVRAM_Write(&fallback, 1, handle) != 1) {
+            AJ_ErrPrintf(("Failed to write fallback byte: mismatched size write\n"));
+            return AJ_ERR_NVRAM_READ;
+        } else {
+            status = AJ_NVRAM_Close(handle);
+        }
+        return AJ_OK;
+    }
+    return AJ_ERR_NULL;
+}
 
 static AJ_Status OnboardingReadInfo(AJOBS_Info* info)
 {
@@ -242,6 +289,15 @@ uint8_t AJOBS_IsWiFiConnected()
     default:
         return FALSE;
     }
+}
+
+AJ_Status AJOBS_SetSoftAPFallback(uint8_t fallback)
+{
+    /*
+     * Set the global to the new fallback and write it into NVRAM
+     */
+    g_obSoftAPFallback = fallback;
+    return OnboardingWriteSoftAPFallback(fallback);
 }
 
 /**
@@ -761,7 +817,7 @@ AJ_Status AJOBS_ControllerAPI_StartSoftAPIfNeededOrConnect()
             break;
         }
         // Check if require to switch into SoftAP mode.
-        if ((g_obState == AJOBS_STATE_NOT_CONFIGURED || g_obState == AJOBS_STATE_CONFIGURED_ERROR || g_obState == AJOBS_STATE_CONFIGURED_RETRY)) {
+        if ((g_obState == AJOBS_STATE_NOT_CONFIGURED) || ((g_obState == AJOBS_STATE_CONFIGURED_ERROR || g_obState == AJOBS_STATE_CONFIGURED_RETRY) && g_obSoftAPFallback)) {
             AJ_InfoPrintf(("Establishing SoftAP with ssid=%s%s auth=%s\n", g_obSettings->AJOBS_SoftAPSSID, (g_obSettings->AJOBS_SoftAPIsHidden ? " (hidden)" : ""), g_obSettings->AJOBS_SoftAPPassphrase == NULL ? "OPEN" : g_obSettings->AJOBS_SoftAPPassphrase));
             if (g_obState == AJOBS_STATE_CONFIGURED_RETRY) {
                 AJ_InfoPrintf(("Retry timer activated\n"));

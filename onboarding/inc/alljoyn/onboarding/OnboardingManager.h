@@ -76,6 +76,18 @@ typedef enum _AJOBS_State {
 } AJOBS_State;
 
 /**
+ * The default softAP fallback behavior can be changed at
+ * compile time, and usually is the case, but this API provides
+ * a way to change the default fallback behavior at runtime
+ * as well, giving the user two options.
+ *
+ * @param fallback      The new default SoftAP fallback behavior
+ *                      0 = don't fall back to soft AP
+ *                      1 = fall back to soft AP after the number of retries expires
+ */
+AJ_Status AJOBS_SetSoftAPFallback(uint8_t fallback);
+
+/**
  * Onboarding state getter.
  * @return state
  */
