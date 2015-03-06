@@ -179,7 +179,7 @@ static AJ_Status AJNS_Producer_MarshalNotificationMsg(AJ_BusAttachment* busAttac
         return status;
     }
 
-    status = AJ_MarshalSignal(busAttachment, msg, AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_OBJECT_INDEX + notification->messageType, 1, 0), NULL, 0, ALLJOYN_FLAG_SESSIONLESS, ttl);
+    status = AJ_MarshalSignal(busAttachment, msg, AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_OBJECT_INDEX + notification->messageType, 1, 0), NULL, 0, AJ_FLAG_SESSIONLESS, ttl);
     if (status != AJ_OK) {
         AJ_ErrPrintf(("Could not Marshal Signal\n"));
         return status;

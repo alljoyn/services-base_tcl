@@ -281,7 +281,7 @@ static AJ_Status SendEvent(AJ_BusAttachment* busAttachment, uint32_t eventId)
     AJ_Status status = AJ_OK;
     AJ_Message msg;
 
-    status = AJ_MarshalSignal(busAttachment, &msg, eventId, NULL, 0, ALLJOYN_FLAG_SESSIONLESS, 0);
+    status = AJ_MarshalSignal(busAttachment, &msg, eventId, NULL, 0, AJ_FLAG_SESSIONLESS, 0);
     if (status != AJ_OK) {
         goto ErrorExit;
     }
