@@ -121,7 +121,7 @@ static const char* DescriptionLookup(uint32_t descId, const char* lang)
     uint8_t i;
     const char* deviceNamePerLanguage;
 
-    AJ_InfoPrintf(("Looking up description for o:%u i:%u m:%u a:%u", (descId >> 24) & 0xFF, (descId >> 16) & 0xFF, (descId >> 8) & 0xFF, (descId >> 0) & 0xFF));
+    AJ_InfoPrintf(("Looking up description for o:%u i:%u m:%u a:%u\n", (descId >> 24) & 0xFF, (descId >> 16) & 0xFF, (descId >> 8) & 0xFF, (descId >> 0) & 0xFF));
     if (langIndex != AJSVC_PROPERTY_STORE_ERROR_LANGUAGE_INDEX) {
         actualLanguage = AJSVC_PropertyStore_GetLanguageName(langIndex);
         AJ_InfoPrintf((" language=%s\n", actualLanguage));
