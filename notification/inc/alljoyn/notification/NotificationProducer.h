@@ -66,6 +66,14 @@ AJ_Status AJNS_Producer_Start();
 AJ_Status AJNS_Producer_SendNotification(AJ_BusAttachment* busAttachment, AJNS_NotificationContent* notificationContent, uint16_t messageType, uint32_t ttl, uint32_t* messageSerialNumber);
 
 /*!
+   \brief Get the notification id of the last message of the specified type
+   \param messageType One of \ref AJNS_NOTIFICATION_MESSAGE_TYPE_INFO, \ref AJNS_NOTIFICATION_MESSAGE_TYPE_WARNING, or \ref AJNS_NOTIFICATION_MESSAGE_TYPE_EMERGENCY
+   \param messageNotificationId Returned notification id of the last message of the specified type sent (and not deleted)
+   \return AJ_Status
+ */
+AJ_Status AJNS_Producer_GetLastNotificationId(uint16_t messageType, int32_t* messageNotificationId);
+
+/*!
    \brief Instruct the AllJoyn bus to remove last message of the specified message type from the bus
    \details
    Effectively, this overrides the ttl parameter in the function

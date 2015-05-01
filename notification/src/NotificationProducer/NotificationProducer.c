@@ -576,6 +576,19 @@ AJ_Status AJNS_Producer_SendNotification(AJ_BusAttachment* busAttachment, AJNS_N
     return status;
 }
 
+AJ_Status AJNS_Producer_GetLastNotificationId(uint16_t messageType, int32_t* messageNotificationId)
+{
+    AJ_InfoPrintf(("In GetLastNotificationId\n"));
+    if (messageType >= AJNS_NUM_MESSAGE_TYPES) {
+        AJ_ErrPrintf(("MessageType is not valid\n"));
+        return AJ_ERR_DISALLOWED;
+    }
+
+    *messageNotificationId = lastSentNotifications[messageType].notificationId;
+    return AJ_OK;
+}
+
+
 AJ_Status AJNS_Producer_DeleteLastNotification(AJ_BusAttachment* busAttachment, uint16_t messageType)
 {
     AJ_Status status;
