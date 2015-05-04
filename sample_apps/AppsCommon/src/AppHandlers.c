@@ -165,6 +165,8 @@ ErrorExit:
             AJ_ErrPrintf(("Application ConnectedHandler attempt %u of %u\n", initAttempts, maxNumberOfAttempts));
             AJ_Sleep(sleepTimeBetweenAttempts);
         }
+    } else if (status == AJ_ERR_WRITE) {
+        status = AJ_ERR_READ; // Force disconnect from Routing Node
     }
 
     return status;
