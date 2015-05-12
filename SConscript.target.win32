@@ -28,4 +28,4 @@ else:
     env.Append(CFLAGS = [ '/Gy', '/O1', '/GF' ])
     env.Append(LINKFLAGS = [ '/opt:ref', '/NODEFAULTLIB:libcmt.lib' ])
 
-env['build_shared'] = True
+env['build_shared'] = False
