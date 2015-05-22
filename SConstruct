@@ -15,9 +15,9 @@ def CheckAJLib(context, ajlib, ajheader, sconsvarname, ajdistpath):
     prog = "#include <%s>\nint main(void) { return 0; }" % ajheader
     context.Message('Checking for AllJoyn library %s...' % ajlib)
 
-    prevLIBS = context.env.get('LIBS', [])
-    prevLIBPATH = context.env.get('LIBPATH', [])
-    prevCPPPATH = context.env.get('CPPPATH', [])
+    prevLIBS = list(context.env.get('LIBS', []))
+    prevLIBPATH = list(context.env.get('LIBPATH', []))
+    prevCPPPATH = list(context.env.get('CPPPATH', []))
 
     # Check if library is in standard system locations
     context.env.Prepend(LIBS = [ajlib])
