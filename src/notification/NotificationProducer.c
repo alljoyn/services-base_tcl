@@ -179,7 +179,7 @@ static AJ_Status AJNS_Producer_MarshalNotificationMsg(AJ_BusAttachment* busAttac
         return status;
     }
 
-    status = AJ_MarshalSignal(busAttachment, msg, AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_OBJECT_INDEX + notification->messageType, 1, 0), NULL, 0, ALLJOYN_FLAG_SESSIONLESS, ttl);
+    status = AJ_MarshalSignal(busAttachment, msg, AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_OBJECT_INDEX + notification->messageType, 1, 0), NULL, 0, AJ_FLAG_SESSIONLESS, ttl);
     if (status != AJ_OK) {
         AJ_ErrPrintf(("Could not Marshal Signal\n"));
         return status;
@@ -575,6 +575,19 @@ AJ_Status AJNS_Producer_SendNotification(AJ_BusAttachment* busAttachment, AJNS_N
 
     return status;
 }
+
+AJ_Status AJNS_Producer_GetLastNotificationId(uint16_t messageType, int32_t* messageNotificationId)
+{
+    AJ_InfoPrintf(("In GetLastNotificationId\n"));
+    if (messageType >= AJNS_NUM_MESSAGE_TYPES) {
+        AJ_ErrPrintf(("MessageType is not valid\n"));
+        return AJ_ERR_DISALLOWED;
+    }
+
+    *messageNotificationId = lastSentNotifications[messageType].notificationId;
+    return AJ_OK;
+}
+
 
 AJ_Status AJNS_Producer_DeleteLastNotification(AJ_BusAttachment* busAttachment, uint16_t messageType)
 {

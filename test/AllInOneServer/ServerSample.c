@@ -275,6 +275,14 @@ int AJ_Main(void)
 
     ServerSample_SetupEnv();
 
+    // log the identifiers for this app
+    AJ_AlwaysPrintf(("\n---------------------\nApp identifiers:\n"));
+    AJ_AlwaysPrintf(("DeviceId:     %s\n", AJSVC_PropertyStore_GetValue(AJSVC_PROPERTY_STORE_DEVICE_ID)));
+    AJ_AlwaysPrintf(("DeviceName:   %s\n", AJSVC_PropertyStore_GetValueForLang(AJSVC_PROPERTY_STORE_DEVICE_NAME, AJSVC_PropertyStore_GetLanguageIndex(""))));
+    AJ_AlwaysPrintf(("AppId:        %s\n", AJSVC_PropertyStore_GetValue(AJSVC_PROPERTY_STORE_APP_ID)));
+    AJ_AlwaysPrintf(("AppName:      %s\n", AJSVC_PropertyStore_GetValue(AJSVC_PROPERTY_STORE_APP_NAME)));
+    AJ_AlwaysPrintf(("---------------------\n\n"));
+
     while (TRUE) {
         status = AJ_OK;
         serviceStatus = AJSVC_SERVICE_STATUS_NOT_HANDLED;

@@ -251,6 +251,7 @@ static void PossiblySendNotification(AJ_BusAttachment* busAttachment)
     uint32_t serialNum;
     uint32_t random;
     uint32_t elapsed = AJ_GetElapsedTime(&isMessageTime, TRUE);
+    int32_t notificationId;
 
     if (elapsed >= nextMessageTime) {
         if (!inputMode) {
@@ -263,7 +264,8 @@ static void PossiblySendNotification(AJ_BusAttachment* busAttachment)
             Producer_GetNotificationFromUser(&notificationContent, &messageType, &ttl, &nextMessageTime);
         }
         status = AJNS_Producer_SendNotification(busAttachment, &notificationContent, messageType, ttl, &serialNum);
-        AJ_AlwaysPrintf(("Send Message Type: %u with TTL: %u secs returned: '%s'\n", messageType, ttl, AJ_StatusText(status)));
+        AJNS_Producer_GetLastNotificationId(messageType, &notificationId);
+        AJ_AlwaysPrintf(("Send Message Type: %u with TTL: %u secs and notificationId: %i returned: '%s'\n", messageType, ttl, notificationId, AJ_StatusText(status)));
         if (inputMode) {
             Producer_FreeNotification(&notificationContent);
             PossiblyDeleteNotification(busAttachment);

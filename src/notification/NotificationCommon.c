@@ -115,7 +115,7 @@ AJ_Status AJNS_SendDismissSignal(AJ_BusAttachment* busAttachment, int32_t msgId,
     AJNS_NotificationDismisserObjectPath[snprintf(AJNS_NotificationDismisserObjectPath, NOTIFICATION_DISMISSER_OBJECT_PATH_LENGTH, "%s/%s/%d", AJNS_NotificationDismisserObjectPath, appId, msgId)] = '\0';
 #endif
 
-    status = AJ_MarshalSignal(busAttachment, &msg, NOTIFICATION_DISMISSER_DISMISS_EMITTER, NULL, 0, ALLJOYN_FLAG_SESSIONLESS, AJNS_NOTIFICATION_TTL_MAX); // TODO: Add the "DON'T COLLAPSE" flag
+    status = AJ_MarshalSignal(busAttachment, &msg, NOTIFICATION_DISMISSER_DISMISS_EMITTER, NULL, 0, AJ_FLAG_SESSIONLESS, AJNS_NOTIFICATION_TTL_MAX); // TODO: Add the "DON'T COLLAPSE" flag
     if (status != AJ_OK) {
         AJ_ErrPrintf(("Could not Marshal Signal\n"));
         return status;
