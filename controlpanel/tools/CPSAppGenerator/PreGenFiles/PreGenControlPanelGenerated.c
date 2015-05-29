@@ -21,7 +21,7 @@
  */
 #define AJ_MODULE AJSVCAPP
 #include <aj_debug.h>
-
+#include "ControlPanelGenerated.h"
 #include <alljoyn.h>
 #include <alljoyn/controlpanel/Common/ConstraintList.h>
 #include <alljoyn/controlpanel/ControlPanelService.h>
