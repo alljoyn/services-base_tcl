@@ -200,8 +200,12 @@ uint8_t AJSVC_PropertyStore_SetValueForLang(int8_t fieldIndex, int8_t langIndex,
     }
     AJ_InfoPrintf(("Set key [%s] defaultValue [%s]\n", propertyStoreProperties[fieldIndex].keyName, value));
     var_size = propertyStoreRuntimeValues[fieldIndex].size;
-    strncpy(propertyStoreRuntimeValues[fieldIndex].value[langIndex], value, var_size - 1);
-    (propertyStoreRuntimeValues[fieldIndex].value[langIndex])[var_size - 1] = '\0';
+    //Check that the field we are trying to write into is not actually the same value.
+    //On Darwin this will fail per the strncpy function definition
+    if (propertyStoreRuntimeValues[fieldIndex].value[langIndex] != value) {
+        strncpy(propertyStoreRuntimeValues[fieldIndex].value[langIndex], value, var_size - 1);
+        (propertyStoreRuntimeValues[fieldIndex].value[langIndex])[var_size - 1] = '\0';
+    }
 
     return TRUE;
 }
