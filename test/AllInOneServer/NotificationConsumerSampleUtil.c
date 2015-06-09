@@ -20,6 +20,10 @@
 #include <ajtcl/services/NotificationConsumer.h>
 #include "NotificationConsumerSampleUtil.h"
 
+#ifdef _WIN32
+#define snprintf _snprintf
+#endif
+
 #define BUF_SIZE 500
 
 static uint8_t GetCmdLine(char* buf, size_t num)

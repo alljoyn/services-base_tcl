@@ -23,6 +23,7 @@
 
 #ifdef _WIN32
 #define strcasecmp _stricmp
+#define snprintf _snprintf
 #endif
 
 #define BUF_SIZE 500
