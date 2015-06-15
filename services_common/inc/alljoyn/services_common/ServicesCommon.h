@@ -181,11 +181,11 @@ AJ_Status AJSVC_UnmarshalAppId(AJ_Message* msg, char* buf, size_t bufLen);
 /**
  * The NVRAM starting id for the PropertyStore
  */
-#define AJ_PROPERTIES_NV_ID_BEGIN          (AJ_NVRAM_ID_CREDS_MAX + 1)
+#define AJ_PROPERTIES_NV_ID_BEGIN          (AJ_NVRAM_ID_SERVICES_BEGIN)
 /**
  * The NVRAM maximum id for the PropertyStore
  */
-#define AJ_PROPERTIES_NV_ID_MAX            (AJ_NVRAM_ID_CREDS_MAX + 1000)
+#define AJ_PROPERTIES_NV_ID_MAX            (AJ_PROPERTIES_NV_ID_BEGIN + 999)
 
 /**
  * The NVRAM starting id for the Onboarding Service
