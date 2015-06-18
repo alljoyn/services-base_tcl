@@ -21,10 +21,12 @@
  */
 #define AJ_MODULE AJSVCAPP
 #include <ajtcl/aj_debug.h>
-
 #include <ajtcl/alljoyn.h>
 #include <alljoyn/controlpanel/Common/ConstraintList.h>
 #include <alljoyn/controlpanel/ControlPanelService.h>
+
+#include "ControlPanelGenerated.h"
+
 //INCLUDES_GO_HERE
 #ifndef NDEBUG
 extern AJ_EXPORT uint8_t dbgAJSVCAPP;
