@@ -159,7 +159,7 @@ if env['build']:
     if not env.GetOption('help') and not all(dep_libs):
         print 'Missing required external libraries'
         Exit(1)
-    env.SConscript('src/SConscript',     variant_dir='#build/$VARIANT',         duplicate = 0)
+    env.SConscript('src/SConscript',     variant_dir='#build/$VARIANT/src',     duplicate = 0)
     env.SConscript('samples/SConscript', variant_dir='#build/$VARIANT/samples', duplicate = 0)
     env.SConscript('test/SConscript',    variant_dir='#build/$VARIANT/test',    duplicate = 0)
 
