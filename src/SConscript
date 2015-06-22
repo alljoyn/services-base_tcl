@@ -11,7 +11,7 @@ srcs.extend(src_env.Glob('controlpanel/*.c'))
 srcs.extend(src_env.Glob('controlpanel/Common/*.c'))
 srcs.extend(src_env.Glob('controlpanel/Widgets/*.c'))
 srcs.extend(src_env.Glob('notification/*.c'))
-if not src_env['EXCLUDE_ONBOARDING']:
+if src_env['enable_onboarding']:
     srcs.extend(src_env.Glob('onboarding/*.c'))
 srcs.extend(src_env.Glob('time/*.c'))
 

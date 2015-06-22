@@ -27,7 +27,7 @@ build_samples = [
     'TimeServer'
 ]
 
-if not env['EXCLUDE_ONBOARDING']:
+if env['enable_onboarding']:
     build_samples.append('Onboardee')
 
 for sample in build_samples:

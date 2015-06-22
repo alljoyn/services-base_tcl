@@ -77,7 +77,6 @@ vars = Variables()
 vars.Add(BoolVariable('V',                  'Build verbosity',            False))
 vars.Add(EnumVariable('TARG',               'Target platform variant',    os.environ.get('AJ_TARG',               default_target),     allowed_values = target_options))
 vars.Add(EnumVariable('VARIANT',            'Build variant',              os.environ.get('AJ_VARIANT',            'debug'),            allowed_values = ('debug', 'release')))
-vars.Add(BoolVariable('EXCLUDE_ONBOARDING', 'Exclude Onboarding support', os.environ.get('AJ_EXCLUDE_ONBOARDING', False)))
 vars.Add('CC',  'C Compiler override')
 vars.Add('CXX', 'C++ Compiler override')
 vars.Update(env)
@@ -119,6 +118,7 @@ found_ws = config.CheckCommand('uncrustify')
 dep_libs = [
     config.CheckAJLib('ajtcl', 'ajtcl/aj_bus.h', 'AJTCL_DIST', '../../core/ajtcl/dist')
 ]
+env['enable_onboarding'] = config.CheckFunc('AJ_EnableSoftAP', 'aj_wifi_ctrl.h', 'c')
 env = config.Finish()
 
 #######################################################
@@ -131,7 +131,7 @@ env.Append(CPPDEFINES = [ 'CONFIG_SERVICE',
                           'TIME_SERVICE_SERVER' ])
 if env['VARIANT'] == 'release':
     env.Append(CPPDEFINES = [ 'NDEBUG' ])
-if not env['EXCLUDE_ONBOARDING']:
+if env['enable_onboarding']:
     env.Append(CPPDEFINES = 'ONBOARDING_SERVICE')
 
 

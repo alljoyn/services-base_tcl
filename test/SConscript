@@ -13,7 +13,7 @@ test_env.Append(LIBPATH = '#dist/lib')
 test_env.Prepend(LIBS = 'ajtcl_services')
 
 common_srcs = [ s for s in Glob('common/*.c')
-                if not (test_env['EXCLUDE_ONBOARDING'] and s.name == 'OnboardingSample.c') ]
+                if test_env['enable_onboarding'] or not s.name == 'OnboardingSample.c' ]
 
 common_objs = test_env.Object(common_srcs)
 
