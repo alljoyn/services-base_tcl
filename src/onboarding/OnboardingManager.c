@@ -401,6 +401,7 @@ AJ_Status AJOBS_UpdateInfo(const char* ssid, const char* pc, int8_t authType) {
     }
 
     if (modified == TRUE) {
+        g_obInfo.validationPending = -1;
         if (g_obInfo.ssid[0] == '\0') {
             g_obState = AJOBS_STATE_NOT_CONFIGURED; // Change state to NOT_CONFIGURED
         } else {
@@ -778,14 +779,21 @@ static AJ_Status DoConnectWifi()
                 AJ_WarnPrintf(("Warning - all fallbacks were exhausted\n"));
                 AJ_WarnPrintf(("Last error set to \"%s\" (code=%d)\n", g_obLastError.message, g_obLastError.code));
             }
+            if (g_obInfo.validationPending) {
+                /* Failed to validate, so delete these credentials */
+                AJ_WarnPrintf(("Warning - Clearing un-Validated Onboarding Credentials\n"));
+                AJOBS_ClearInfo();
+            }
             break; // Leave retry loop
         }
         AJ_InfoPrintf(("Retry number %d out of %d\n", retries, g_obSettings->AJOBS_MAX_RETRIES));
     }
 
     // If succeeded through a fallback loop set the successful authType
-    if ((g_obState == AJOBS_STATE_CONFIGURED_VALIDATED) && (g_obInfo.authType != fallback)) {
+    if ((g_obState == AJOBS_STATE_CONFIGURED_VALIDATED) &&
+            ((g_obInfo.authType != fallback) || g_obInfo.validationPending)) {
         g_obInfo.authType = fallback;
+        g_obInfo.validationPending = 0;
         OnboardingWriteInfo(&g_obInfo);
     }
 
