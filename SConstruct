@@ -2,6 +2,14 @@ import os
 import platform
 import re
 
+def IsBuildingBinaries():
+    if BUILD_TARGETS == []:
+        return True
+    for t in BUILD_TARGETS:
+        if t.startswith('dist/lib') or t.startswith('dist/bin'):
+            return True
+    return False
+
 #######################################################
 # Custom Configure functions
 #######################################################
@@ -155,13 +163,15 @@ env.Install('#dist/include/ajtcl/services/Widgets', env.Glob('inc/Widgets/*.h'))
 #######################################################
 # Build the various parts
 #######################################################
-if env['build']:
-    if not env.GetOption('help') and not all(dep_libs):
-        print 'Missing required external libraries'
-        Exit(1)
+if env['build'] and all(dep_libs):
     env.SConscript('src/SConscript',     variant_dir='#build/$VARIANT/src',     duplicate = 0)
     env.SConscript('samples/SConscript', variant_dir='#build/$VARIANT/samples', duplicate = 0)
     env.SConscript('test/SConscript',    variant_dir='#build/$VARIANT/test',    duplicate = 0)
+
+
+if not env.GetOption('help') and not all(dep_libs) and IsBuildingBinaries():
+    print 'Missing required external libraries'
+    Exit(1)
 
 #######################################################
 # Run the whitespace checker
