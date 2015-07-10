@@ -159,6 +159,9 @@ env.Append(CPPDEFINES = [ v for k, v in ARGLIST if k.lower() == 'define' ])
 env.Install('#dist/include/ajtcl/services', env.Glob('inc/*.h'))
 env.Install('#dist/include/ajtcl/services/Common', env.Glob('inc/Common/*.h'))
 env.Install('#dist/include/ajtcl/services/Widgets', env.Glob('inc/Widgets/*.h'))
+# Need to force a dpendency here because SCons can't follow nested
+# #include dependencies otherwise
+env.Depends('#build/$VARIANT', '#dist/include')
 
 #######################################################
 # Build the various parts
@@ -172,6 +175,18 @@ if env['build'] and all(dep_libs):
 if not env.GetOption('help') and not all(dep_libs) and IsBuildingBinaries():
     print 'Missing required external libraries'
     Exit(1)
+
+#######################################################
+# Distclean target
+#######################################################
+Clean('distclean',
+          [ 'dist',
+            'build',
+            'config.log',
+            #'.sconsign.dblite',  # Can't delete .sconsign.dblite because it doesn't exist until SCons completes
+            '.sconf_temp',
+            '.whitespace.db'
+        ])
 
 #######################################################
 # Run the whitespace checker
