@@ -88,9 +88,7 @@ uint8_t AJSVC_PropertyStore_GetMaxValueLength(int8_t fieldIndex);
  */
 typedef struct _AJSVC_PropertyStoreCategoryFilter {
     uint8_t bit0About : 1;                               /**< about */
-#ifdef CONFIG_SERVICE
     uint8_t bit1Config : 1;                              /**< config */
-#endif
     uint8_t bit2Announce : 1;                            /**< announce */
 } AJSVC_PropertyStoreCategoryFilter;
 

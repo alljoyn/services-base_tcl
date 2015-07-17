@@ -19,12 +19,7 @@
 
 #include <alljoyn/controlpanel/ControlPanelInterfaces.h>
 #include <alljoyn/controlpanel/Definitions.h>
-
-#ifdef CONTROLPANEL_SERVICE
 #include <alljoyn/services_common/ServicesCommon.h>
-#else
-#include "ControlPanelClientGenerated.h"
-#endif
 
 /**
  * Send Signal if a property of a widget has changed.
