@@ -19,12 +19,7 @@
 
 #include <ajtcl/services/ControlPanelInterfaces.h>
 #include <ajtcl/services/Definitions.h>
-
-#ifdef CONTROLPANEL_SERVICE
 #include <ajtcl/services/ServicesCommon.h>
-#else
-#include "ControlPanelClientGenerated.h"
-#endif
 
 /**
  * Send Signal if a property of a widget has changed.
