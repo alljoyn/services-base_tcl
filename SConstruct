@@ -177,18 +177,6 @@ if not env.GetOption('help') and not all(dep_libs) and IsBuildingBinaries():
     Exit(1)
 
 #######################################################
-# Distclean target
-#######################################################
-Clean('distclean',
-          [ 'dist',
-            'build',
-            'config.log',
-            #'.sconsign.dblite',  # Can't delete .sconsign.dblite because it doesn't exist until SCons completes
-            '.sconf_temp',
-            '.whitespace.db'
-        ])
-
-#######################################################
 # Run the whitespace checker
 #######################################################
 # Set the location of the uncrustify config file
