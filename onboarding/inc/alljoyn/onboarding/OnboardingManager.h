@@ -106,12 +106,13 @@ typedef struct _AJOBS_Info {
     char ssid[AJOBS_SSID_MAX_LENGTH + 1];            /**< ssid */
     char pc[AJOBS_PASSCODE_MAX_LENGTH + 1];          /**< pc */
     int8_t authType;                                 /**< authType - Value is one of AJOBS_AuthType */
+    int8_t validationPending;                        /**< validationPending - if Non-Zero, these credentials not verified */
 } AJOBS_Info;
 
 /**
  * Deafult Onboarding information
  */
-#define AJOBS_INFO_DEFAULT { "", "", AJOBS_AUTH_TYPE_ANY }
+#define AJOBS_INFO_DEFAULT { "", "", AJOBS_AUTH_TYPE_ANY, -1 }
 
 /**
  * perform a check of whether the provided configuration info is valid
