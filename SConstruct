@@ -87,6 +87,7 @@ vars.Add(EnumVariable('TARG',               'Target platform variant',    os.env
 vars.Add(EnumVariable('VARIANT',            'Build variant',              os.environ.get('AJ_VARIANT',            'debug'),            allowed_values = ('debug', 'release')))
 vars.Add('CC',  'C Compiler override')
 vars.Add('CXX', 'C++ Compiler override')
+vars.Add(EnumVariable('NDEBUG', 'Override NDEBUG default for release variant', 'defined', allowed_values=('defined', 'undefined')))
 vars.Update(env)
 Help(vars.GenerateHelpText(env))
 
@@ -137,7 +138,7 @@ env.Append(CPPDEFINES = [ 'CONFIG_SERVICE',
                           'NOTIFICATION_SERVICE_PRODUCER',
                           'TIME_SERVICE_CLIENT',
                           'TIME_SERVICE_SERVER' ])
-if env['VARIANT'] == 'release':
+if env['VARIANT'] == 'release' and env['NDEBUG'] == 'defined':
     env.Append(CPPDEFINES = [ 'NDEBUG' ])
 if env['enable_onboarding']:
     env.Append(CPPDEFINES = 'ONBOARDING_SERVICE')
