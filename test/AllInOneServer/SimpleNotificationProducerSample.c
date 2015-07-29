@@ -265,7 +265,7 @@ static void PossiblySendNotification(AJ_BusAttachment* busAttachment)
         }
         status = AJNS_Producer_SendNotification(busAttachment, &notificationContent, messageType, ttl, &serialNum);
         AJNS_Producer_GetLastNotificationId(messageType, &notificationId);
-        AJ_AlwaysPrintf(("Send Message Type: %u with TTL: %u secs and notificationId: %i returned: '%s'\n", messageType, ttl, notificationId, AJ_StatusText(status)));
+        AJ_AlwaysHdrPrintf(("Send Message Type: %u with TTL: %u secs and notificationId: %i returned: '%s'\n", messageType, ttl, notificationId, AJ_StatusText(status)));
         if (inputMode) {
             Producer_FreeNotification(&notificationContent);
             PossiblyDeleteNotification(busAttachment);

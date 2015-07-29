@@ -291,6 +291,9 @@ int AJ_Main(void)
             status = AJSVC_RoutingNodeConnect(&busAttachment, ROUTING_NODE_NAME, AJAPP_CONNECT_TIMEOUT, AJAPP_CONNECT_PAUSE, AJAPP_BUS_LINK_TIMEOUT, &isBusConnected);
             if (!isBusConnected) { // Failed to connect to Routing Node?
                 continue; // Retry establishing connection to Routing Node.
+            } else {
+                // log the BusUniqueName of the routing node to which we've connected
+                AJ_AlwaysHdrPrintf(("Found and connected to Routing Node with BusUniqueName=%s\n", AJ_GetUniqueName(&busAttachment)));
             }
             /* Setup password based authentication listener for secured peer to peer connections */
             AJ_BusSetPasswordCallback(&busAttachment, PasswordCallback);
