@@ -54,8 +54,8 @@ static const char* sampleDialogMessage = "Dialog message";
 static const char* sampleUnitOfMeasure = "ms";
 static const char* sampleUrlString = "www.ControlPanelTest.com";
 
-static DatePropertyValue date = { 13, 6, 2006 }; // = { .fullYear = 2006, .month = 6, .mDay = 13 }
-static TimePropertyValue time = { 18, 0, 0 }; // = { .hour = 18, .minute = 0, .second = 0 }
+static DatePropertyValue datePropValue = { 13, 6, 2006 }; // = { .fullYear = 2006, .month = 6, .mDay = 13 }
+static TimePropertyValue timePropValue = { 18, 0, 0 }; // = { .hour = 18, .minute = 0, .second = 0 }
 
 void addDismissSignal(ExecuteActionContext* context, int32_t dismissSignal)
 {
@@ -71,26 +71,26 @@ const char* getUrlString()
 
 void* getDateProperty(PropertyWidget* thisWidget)
 {
-    return &date;
+    return &datePropValue;
 }
 
 void setDateProperty(DatePropertyValue* datePropertyValue)
 {
-    date.fullYear = datePropertyValue->fullYear;
-    date.month = datePropertyValue->month;
-    date.mDay = datePropertyValue->mDay;
+    datePropValue.fullYear = datePropertyValue->fullYear;
+    datePropValue.month = datePropertyValue->month;
+    datePropValue.mDay = datePropertyValue->mDay;
 }
 
 void* getTimeProperty(PropertyWidget* thisWidget)
 {
-    return &time;
+    return &timePropValue;
 }
 
 void setTimeProperty(TimePropertyValue* timePropertyValue)
 {
-    time.hour = timePropertyValue->hour;
-    time.minute = timePropertyValue->minute;
-    time.second = timePropertyValue->second;
+    timePropValue.hour = timePropertyValue->hour;
+    timePropValue.minute = timePropertyValue->minute;
+    timePropValue.second = timePropertyValue->second;
 }
 
 uint8_t getEnabledFunc()
