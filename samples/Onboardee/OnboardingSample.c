@@ -389,7 +389,7 @@ static AJ_Status FactoryReset()
     if (status != AJ_OK) {
         return status;
     }
-    AJ_ClearCredentials();
+    AJ_ClearCredentials(0);
     status = AJOBS_ClearInfo();
     if (status != AJ_OK) {
         return status;
@@ -419,7 +419,7 @@ static AJ_Status SetPasscode(const char* daemonRealm, const uint8_t* newPasscode
         if (status != AJ_OK) {
             return status;
         }
-        AJ_ClearCredentials();
+        AJ_ClearCredentials(AJ_CRED_TYPE_GENERIC);
         status = AJ_ERR_READ;     //Force disconnect of AJ and services to refresh current sessions
     } else {
 
