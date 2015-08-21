@@ -62,17 +62,6 @@ static uint8_t isBusConnected = FALSE;
 static AJ_BusAttachment busAttachment;
 
 /**
- * Application wide callbacks
- */
-
-static uint32_t MyBusAuthPwdCB(uint8_t* buf, uint32_t bufLen)
-{
-    const char* myRoutingNodePwd = "000000";
-    strncpy((char*)buf, myRoutingNodePwd, bufLen);
-    return (uint32_t)strlen(myRoutingNodePwd);
-}
-
-/**
  * Application handlers
  */
 
@@ -248,8 +237,6 @@ int AJ_Main(void)
     if (status != AJ_OK) {
         goto Exit;
     }
-
-    SetBusAuthPwdCallback(MyBusAuthPwdCB);
 
     while (TRUE) {
         status = AJ_OK;

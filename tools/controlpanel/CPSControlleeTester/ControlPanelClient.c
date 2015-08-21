@@ -194,13 +194,6 @@ uint8_t isControlPanelAnnounce(AJ_Message* msg)
 
 static const char PWD[] = "ABCDEFGH";
 
-uint32_t MyBusAuthPwdCB(uint8_t* buf, uint32_t bufLen)
-{
-    const char* myPwd = "000000";
-    strncpy((char*)buf, myPwd, bufLen);
-    return (uint32_t)strlen(myPwd);
-}
-
 uint32_t PasswordCallback(uint8_t* buffer, uint32_t bufLen)
 {
     memcpy(buffer, PWD, sizeof(PWD));
@@ -388,8 +381,6 @@ int AJ_Main(void)
     AJ_Initialize();
 
     CPS_Init();
-
-    SetBusAuthPwdCallback(MyBusAuthPwdCB);
 
     while (TRUE) {
 
