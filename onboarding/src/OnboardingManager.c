@@ -792,7 +792,7 @@ static AJ_Status DoConnectWifi()
 
     // If succeeded through a fallback loop set the successful authType
     if ((g_obState == AJOBS_STATE_CONFIGURED_VALIDATED) &&
-            ((g_obInfo.authType != fallback) || g_obInfo.validationPending)) {
+        ((g_obInfo.authType != fallback) || g_obInfo.validationPending)) {
         g_obInfo.authType = fallback;
         g_obInfo.validationPending = 0;
         OnboardingWriteInfo(&g_obInfo);

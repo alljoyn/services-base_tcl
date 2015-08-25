@@ -61,7 +61,7 @@ AJ_EXPORT uint8_t dbgAJSVCAPP = ER_DEBUG_AJSVCAPP;
 
 #define ROUTING_NODE_NAME "org.alljoyn.BusNode"
 static uint8_t isBusConnected = FALSE;
-static AJ_BusAttachment busAttachment;
+static AJ_BusAttachment globalBusAttachment;
 #define AJ_ABOUT_SERVICE_PORT 900
 
 /**
@@ -346,7 +346,7 @@ static AJ_Status FactoryReset()
     if (status != AJ_OK) {
         return status;
     }
-    AJ_ClearCredentials();
+    AJ_ClearCredentials(0);
     return AJ_ERR_RESTART_APP;     // Force disconnect of AJ and services and reconnection of WiFi on restart of app
 }
 
@@ -372,7 +372,7 @@ static AJ_Status SetPasscode(const char* daemonRealm, const uint8_t* newPasscode
         if (status != AJ_OK) {
             return status;
         }
-        AJ_ClearCredentials();
+        AJ_ClearCredentials(0);
         status = AJ_ERR_READ;     //Force disconnect of AJ and services to refresh current sessions
     } else {
 
@@ -430,29 +430,29 @@ int AJ_Main(void)
         serviceStatus = AJSVC_SERVICE_STATUS_NOT_HANDLED;
 
         if (!isBusConnected) {
-            status = AJSVC_RoutingNodeConnect(&busAttachment, ROUTING_NODE_NAME, AJAPP_CONNECT_TIMEOUT, AJAPP_CONNECT_PAUSE, AJAPP_BUS_LINK_TIMEOUT, &isBusConnected);
+            status = AJSVC_RoutingNodeConnect(&globalBusAttachment, ROUTING_NODE_NAME, AJAPP_CONNECT_TIMEOUT, AJAPP_CONNECT_PAUSE, AJAPP_BUS_LINK_TIMEOUT, &isBusConnected);
             if (!isBusConnected) { // Failed to connect to Routing Node.
                 continue; // Retry establishing connection to Routing Node.
             }
             /* Setup password based authentication listener for secured peer to peer connections */
-            AJ_BusSetPasswordCallback(&busAttachment, PasswordCallback);
+            AJ_BusSetPasswordCallback(&globalBusAttachment, PasswordCallback);
         }
 
-        status = AJApp_ConnectedHandler(&busAttachment);
+        status = AJApp_ConnectedHandler(&globalBusAttachment);
 
         if (status == AJ_OK) {
-            status = AJ_UnmarshalMsg(&busAttachment, &msg, AJAPP_UNMARSHAL_TIMEOUT);
+            status = AJ_UnmarshalMsg(&globalBusAttachment, &msg, AJAPP_UNMARSHAL_TIMEOUT);
             isUnmarshalingSuccessful = (status == AJ_OK);
 
             if (status == AJ_ERR_TIMEOUT) {
-                if (AJ_ERR_LINK_TIMEOUT == AJ_BusLinkStateProc(&busAttachment)) {
+                if (AJ_ERR_LINK_TIMEOUT == AJ_BusLinkStateProc(&globalBusAttachment)) {
                     status = AJ_ERR_READ;             // something's not right. force disconnect
                 }
             }
 
             if (isUnmarshalingSuccessful) {
                 if (serviceStatus == AJSVC_SERVICE_STATUS_NOT_HANDLED) {
-                    serviceStatus = AJApp_MessageProcessor(&busAttachment, &msg, &status);
+                    serviceStatus = AJApp_MessageProcessor(&globalBusAttachment, &msg, &status);
                 }
                 if (serviceStatus == AJSVC_SERVICE_STATUS_NOT_HANDLED) {
                     //Pass to the built-in bus message handlers
@@ -465,12 +465,12 @@ int AJ_Main(void)
             AJ_CloseMsg(&msg);
         }
 
-        if (status == AJ_ERR_READ || status == AJ_ERR_RESTART || status == AJ_ERR_RESTART_APP) {
+        if (status == AJ_ERR_READ || status == AJ_ERR_WRITE || status == AJ_ERR_RESTART || status == AJ_ERR_RESTART_APP) {
             if (isBusConnected) {
                 forcedDisconnnect = (status != AJ_ERR_READ);
                 rebootRequired = (status == AJ_ERR_RESTART_APP);
-                AJApp_DisconnectHandler(&busAttachment, forcedDisconnnect);
-                AJSVC_RoutingNodeDisconnect(&busAttachment, forcedDisconnnect, AJAPP_SLEEP_TIME, AJAPP_SLEEP_TIME, &isBusConnected);
+                AJApp_DisconnectHandler(&globalBusAttachment, forcedDisconnnect);
+                AJSVC_RoutingNodeDisconnect(&globalBusAttachment, forcedDisconnnect, AJAPP_SLEEP_TIME, AJAPP_SLEEP_TIME, &isBusConnected);
                 if (rebootRequired) {
                     AJ_Reboot();
                 }

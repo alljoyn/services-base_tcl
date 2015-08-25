@@ -117,7 +117,7 @@ AJ_Status AJCFG_Start(AJCFG_FactoryReset factoryReset, AJCFG_Restart restart, AJ
     return status;
 }
 
-AJ_Status AJCFG_PropGetHandler(AJ_Message* replyMsg, uint32_t propId, void* context)
+static AJ_Status AJCFG_PropGetHandler(AJ_Message* replyMsg, uint32_t propId, void* context)
 {
     if (propId == CONFIG_VERSION_PROP) {
         return AJ_MarshalArgs(replyMsg, "q", AJSVC_ConfigVersion);
@@ -126,12 +126,12 @@ AJ_Status AJCFG_PropGetHandler(AJ_Message* replyMsg, uint32_t propId, void* cont
     }
 }
 
-AJ_Status AJCFG_PropSetHandler(AJ_Message* replyMsg, uint32_t propId, void* context)
+static AJ_Status AJCFG_PropSetHandler(AJ_Message* replyMsg, uint32_t propId, void* context)
 {
     return AJ_ERR_UNEXPECTED;
 }
 
-AJ_Status AJCFG_FactoryResetHandler(AJ_Message* msg)
+static AJ_Status AJCFG_FactoryResetHandler(AJ_Message* msg)
 {
     AJ_Status status = AJ_OK;
 
@@ -142,7 +142,7 @@ AJ_Status AJCFG_FactoryResetHandler(AJ_Message* msg)
     return status;
 }
 
-AJ_Status AJCFG_RestartHandler(AJ_Message* msg)
+static AJ_Status AJCFG_RestartHandler(AJ_Message* msg)
 {
     AJ_Status status = AJ_OK;
 
@@ -153,7 +153,7 @@ AJ_Status AJCFG_RestartHandler(AJ_Message* msg)
     return status;
 }
 
-AJ_Status AJCFG_GetConfigurationsHandler(AJ_Message* msg)
+static AJ_Status AJCFG_GetConfigurationsHandler(AJ_Message* msg)
 {
     AJ_Status status = AJ_OK;
     AJ_Message reply;
@@ -216,7 +216,7 @@ static uint8_t IsValueValid(AJ_Message* msg, AJ_Message* reply, const char* key,
     return FALSE;
 }
 
-AJ_Status AJCFG_UpdateConfigurationsHandler(AJ_Message* msg)
+static AJ_Status AJCFG_UpdateConfigurationsHandler(AJ_Message* msg)
 {
     AJ_Status status = AJ_OK;
     AJ_Arg array;
@@ -317,7 +317,7 @@ Exit:
     return status;
 }
 
-AJ_Status AJCFG_ResetConfigurationsHandler(AJ_Message* msg)
+static AJ_Status AJCFG_ResetConfigurationsHandler(AJ_Message* msg)
 {
     AJ_Status status = AJ_OK;
     AJ_Arg array;
@@ -395,7 +395,7 @@ Exit:
     return status;
 }
 
-AJ_Status AJCFG_SetPasscodeHandler(AJ_Message* msg)
+static AJ_Status AJCFG_SetPasscodeHandler(AJ_Message* msg)
 {
     AJ_Status status = AJ_OK;
     char* daemonRealm;
@@ -426,7 +426,7 @@ AJ_Status AJCFG_SetPasscodeHandler(AJ_Message* msg)
                 }
                 errorReply = TRUE;
             }
-            forceRoutingNodeDisconnect = (status == AJ_ERR_READ);
+            forceRoutingNodeDisconnect = (status == AJ_ERR_READ || status == AJ_ERR_WRITE);
         }
     } else {
         AJ_ErrPrintf(("Error - newPasscode cannot be empty!\n"));
