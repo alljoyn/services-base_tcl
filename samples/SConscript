@@ -23,12 +23,14 @@ build_samples = [
     'Config',
     'Controllee',
 #    'NotificationConsumer',
-    'NotificationProducer',
-    'TimeServer'
+    'NotificationProducer'
 ]
 
 if env['enable_onboarding']:
     build_samples.append('Onboardee')
+
+if env['TIME_SERVICE']:
+    build_samples.append('TimeServer')
 
 for sample in build_samples:
     objs = samples_env.Object(samples_env.Glob(sample + '/*.c'))

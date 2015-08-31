@@ -85,6 +85,7 @@ vars = Variables()
 vars.Add(BoolVariable('V',                  'Build verbosity',            False))
 vars.Add(EnumVariable('TARG',               'Target platform variant',    os.environ.get('AJ_TARG',               default_target),     allowed_values = target_options))
 vars.Add(EnumVariable('VARIANT',            'Build variant',              os.environ.get('AJ_VARIANT',            'debug'),            allowed_values = ('debug', 'release')))
+vars.Add(BoolVariable('TIME_SERVICE',       'Enable Time Service',        False))
 vars.Add('CC',  'C Compiler override')
 vars.Add('CXX', 'C++ Compiler override')
 vars.Add(EnumVariable('NDEBUG', 'Override NDEBUG default for release variant', 'defined', allowed_values=('defined', 'undefined')))
@@ -135,9 +136,12 @@ env = config.Finish()
 #######################################################
 env.Append(CPPDEFINES = [ 'CONFIG_SERVICE',
                           'CONTROLPANEL_SERVICE',
-                          'NOTIFICATION_SERVICE_PRODUCER',
-                          'TIME_SERVICE_CLIENT',
-                          'TIME_SERVICE_SERVER' ])
+                          'NOTIFICATION_SERVICE_PRODUCER'
+                          ])
+if env['TIME_SERVICE']:
+    env.Append(CPPDEFINES = [ 'TIME_SERVICE_CLIENT',
+                              'TIME_SERVICE_SERVER' ])
+
 if env['VARIANT'] == 'release' and env['NDEBUG'] == 'defined':
     env.Append(CPPDEFINES = [ 'NDEBUG' ])
 if env['enable_onboarding']:
