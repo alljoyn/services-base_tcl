@@ -321,6 +321,8 @@ void Producer_ReadConfigFromEnv(uint8_t* producerEnabled, AJNS_NotificationConte
                                 uint16_t* messagePriority, uint8_t* priorityTypeRandom, uint32_t* messageTtl)
 {
     char* value;
+    char* msgText;
+    char* msgLang;
 
     value = getenv("AJNS_PRODUCER_ENABLED");
     if (value) {
@@ -333,8 +335,8 @@ void Producer_ReadConfigFromEnv(uint8_t* producerEnabled, AJNS_NotificationConte
         }
     }
 
-    char* msgText = getenv("AJNS_MSG_TEXT");
-    char* msgLang = getenv("AJNS_MSG_LANG");
+    msgText = getenv("AJNS_MSG_TEXT");
+    msgLang = getenv("AJNS_MSG_LANG");
 
     if (msgText || msgLang) {
         // only send one language in this case
