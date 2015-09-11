@@ -346,7 +346,7 @@ static AJ_Status FactoryReset()
     if (status != AJ_OK) {
         return status;
     }
-    AJ_ClearCredentials(0);
+    AJ_ClearCredentials();
     return AJ_ERR_RESTART_APP;     // Force disconnect of AJ and services and reconnection of WiFi on restart of app
 }
 
@@ -372,7 +372,7 @@ static AJ_Status SetPasscode(const char* daemonRealm, const uint8_t* newPasscode
         if (status != AJ_OK) {
             return status;
         }
-        AJ_ClearCredentials(0);
+        AJ_ClearCredentials();
         status = AJ_ERR_READ;     //Force disconnect of AJ and services to refresh current sessions
     } else {
 
