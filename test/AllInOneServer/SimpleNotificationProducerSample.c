@@ -200,9 +200,7 @@ AJ_Status NotificationProducer_Init()
                 AJ_RandBytes((uint8_t*)&random, sizeof(random));
                 nextMessageTime = random % messagesInterval;
             }
-            if (initialIntervalOffset > 0) { // Delay the initial message by a random amount if value is greater than 0
-                AJ_RandBytes((uint8_t*)&random, sizeof(random));
-                initialIntervalOffset = random % initialIntervalOffset;
+            if (initialIntervalOffset > 0) { // Delay the initial message by the given offset amount
                 nextMessageTime += initialIntervalOffset;
                 haveInitialOffset = 1;
             }
