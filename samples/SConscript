@@ -20,23 +20,24 @@ samples_env.Prepend(LIBS = ['ajtcl_services'])
 common_objs = samples_env.Object(samples_env.Glob('common/*.c'))
 
 build_samples = [
-    'Config',
-    'Controllee',
+#    'Config',
+#    'Controllee',
 #    'NotificationConsumer',
-    'NotificationProducer'
+#    'NotificationProducer',
+    'NotifConfig'
 ]
 
-if env['enable_onboarding']:
-    build_samples.append('Onboardee')
+#if env['enable_onboarding']:
+#    build_samples.append('Onboardee')
 
-if env['TIME_SERVICE']:
-    build_samples.append('TimeServer')
+#if env['TIME_SERVICE']:
+#    build_samples.append('TimeServer')
 
 for sample in build_samples:
     objs = samples_env.Object(samples_env.Glob(sample + '/*.c'))
-    if sample == 'TimeClient':
-        progs.append(samples_env.Program(sample + 'Sample', objs))
-    else:
-        progs.append(samples_env.Program(sample + 'Sample', common_objs + objs))
+#    if sample == 'TimeClient':
+#        progs.append(samples_env.Program(sample + 'Sample', objs))
+#    else:
+    progs.append(samples_env.Program(sample + 'Sample', common_objs + objs))
 
 samples_env.Install('#dist/bin', progs)

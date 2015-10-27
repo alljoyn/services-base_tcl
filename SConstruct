@@ -85,7 +85,7 @@ vars = Variables()
 vars.Add(BoolVariable('V',                  'Build verbosity',            False))
 vars.Add(EnumVariable('TARG',               'Target platform variant',    os.environ.get('AJ_TARG',               default_target),     allowed_values = target_options))
 vars.Add(EnumVariable('VARIANT',            'Build variant',              os.environ.get('AJ_VARIANT',            'debug'),            allowed_values = ('debug', 'release')))
-vars.Add(BoolVariable('TIME_SERVICE',       'Enable Time Service',        False))
+#vars.Add(BoolVariable('TIME_SERVICE',       'Enable Time Service',        False))
 vars.Add('CC',  'C Compiler override')
 vars.Add('CXX', 'C++ Compiler override')
 vars.Add(EnumVariable('NDEBUG', 'Override NDEBUG default for release variant', 'defined', allowed_values=('defined', 'undefined')))
@@ -135,12 +135,12 @@ env = config.Finish()
 # Compilation defines
 #######################################################
 env.Append(CPPDEFINES = [ 'CONFIG_SERVICE',
-                          'CONTROLPANEL_SERVICE',
-                          'NOTIFICATION_SERVICE_PRODUCER'
+                          'NOTIFICATION_SERVICE_PRODUCER',
+                          'NOTIFICATION_SERVICE_CONSUMER'
                           ])
-if env['TIME_SERVICE']:
-    env.Append(CPPDEFINES = [ 'TIME_SERVICE_CLIENT',
-                              'TIME_SERVICE_SERVER' ])
+#if env['TIME_SERVICE']:
+#    env.Append(CPPDEFINES = [ 'TIME_SERVICE_CLIENT',
+#                              'TIME_SERVICE_SERVER' ])
 
 if env['VARIANT'] == 'release' and env['NDEBUG'] == 'defined':
     env.Append(CPPDEFINES = [ 'NDEBUG' ])
@@ -161,9 +161,32 @@ env.Append(CPPDEFINES = [ v for k, v in ARGLIST if k.lower() == 'define' ])
 #######################################################
 # Install header files
 #######################################################
-env.Install('#dist/include/ajtcl/services', env.Glob('inc/*.h'))
-env.Install('#dist/include/ajtcl/services/Common', env.Glob('inc/Common/*.h'))
-env.Install('#dist/include/ajtcl/services/Widgets', env.Glob('inc/Widgets/*.h'))
+config_hdrs = [
+    'inc/ConfigService.h'
+]
+notification_hdrs = [
+    'inc/NotificationCommon.h',
+    'inc/NotificationProducer.h',
+    'inc/NotificationConsumer.h'
+]
+onboarding_hdrs = [
+    'inc/OnboardingControllerAPI.h',
+    'inc/OnboardingManager.h',
+    'inc/OnboardingService.h'
+]
+other_hdrs = [
+    'inc/PropertyStore.h',
+    'inc/ServicesCommon.h',
+    'inc/ServicesHandlers.h'
+]
+common_hdrs = [
+    'inc/Common/AllJoynLogo.h'
+]
+env.Install('#dist/include/ajtcl/services', config_hdrs + notification_hdrs + other_hdrs)
+if env['enable_onboarding']:
+    env.Install('#dist/include/ajtcl/services', onboarding_hdrs)
+env.Install('#dist/include/ajtcl/services/Common', common_hdrs)
+#env.Install('#dist/include/ajtcl/services/Widgets', env.Glob('inc/Widgets/*.h'))
 # Need to force a dpendency here because SCons can't follow nested
 # #include dependencies otherwise
 env.Depends('#build/$VARIANT', '#dist/include')
@@ -174,7 +197,7 @@ env.Depends('#build/$VARIANT', '#dist/include')
 if env['build'] and all(dep_libs):
     env.SConscript('src/SConscript',     variant_dir='#build/$VARIANT/src',     duplicate = 0)
     env.SConscript('samples/SConscript', variant_dir='#build/$VARIANT/samples', duplicate = 0)
-    env.SConscript('test/SConscript',    variant_dir='#build/$VARIANT/test',    duplicate = 0)
+    #env.SConscript('test/SConscript',    variant_dir='#build/$VARIANT/test',    duplicate = 0)
 
 
 if not env.GetOption('help') and not all(dep_libs) and IsBuildingBinaries():
