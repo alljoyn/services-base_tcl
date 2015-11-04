@@ -26,6 +26,7 @@
 #include <ajtcl/services/ConfigService.h>
 #include <ajtcl/services/ServicesCommon.h>
 #include <ajtcl/services/PropertyStore.h>
+#include <ajtcl/aj_security.h>
 
 /**
  * Turn on per-module debug printing by setting this variable to non-zero value
@@ -134,6 +135,12 @@ AJ_Status AJCFG_PropSetHandler(AJ_Message* replyMsg, uint32_t propId, void* cont
 AJ_Status AJCFG_FactoryResetHandler(AJ_Message* msg)
 {
     AJ_Status status = AJ_OK;
+
+    /* Reset Security 2.0 as part of doing a Factory Reset */
+    status = AJ_SecurityResetHelper(msg->bus);
+    if (status != AJ_OK) {
+        return status;
+    }
 
     if (AppFactoryReset) {
         status = (AppFactoryReset)();
