@@ -96,28 +96,30 @@ static AJ_Status AuthListenerCallback(uint32_t authmechanism, uint32_t command, 
             status = AJ_OK;
             break;
 
-        case AJ_CRED_PRV_KEY:;
-            const char* hexPassword = AJSVC_PropertyStore_GetValue(AJSVC_PROPERTY_STORE_PASSCODE);
-            size_t hexPasswordLen;
-            uint32_t len = 0;
+        case AJ_CRED_PRV_KEY:
+            {
+                const char* hexPassword = AJSVC_PropertyStore_GetValue(AJSVC_PROPERTY_STORE_PASSCODE);
+                size_t hexPasswordLen;
+                uint32_t len = 0;
 
-            if (hexPassword == NULL) {
-                AJ_ErrPrintf(("Password is NULL!\n"));
-                return AJ_ERR_INVALID;
+                if (hexPassword == NULL) {
+                    AJ_ErrPrintf(("Password is NULL!\n"));
+                    return AJ_ERR_INVALID;
+                }
+                AJ_InfoPrintf(("Configured password=%s\n", hexPassword));
+                hexPasswordLen = strlen(hexPassword);
+                len = hexPasswordLen / 2;
+
+                status = AJ_HexToRaw(hexPassword, hexPasswordLen, psk_char, len);
+                psk_char[len] = '\0';
+                AJ_InfoPrintf(("Configured password=%s\n", &psk_char));
+
+                cred->data = psk_char;
+                cred->len = len;
+                cred->expiration = keyexpiration;
+                status = AJ_OK;
+                break;
             }
-            AJ_InfoPrintf(("Configured password=%s\n", hexPassword));
-            hexPasswordLen = strlen(hexPassword);
-            len = hexPasswordLen / 2;
-
-            status = AJ_HexToRaw(hexPassword, hexPasswordLen, psk_char, len);
-            psk_char[len] = '\0';
-            AJ_InfoPrintf(("Configured password=%s\n", &psk_char));
-
-            cred->data = psk_char;
-            cred->len = len;
-            cred->expiration = keyexpiration;
-            status = AJ_OK;
-            break;
         }
         break;
 
