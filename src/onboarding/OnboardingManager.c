@@ -126,7 +126,7 @@ static AJ_Status OnboardingReadInfo(AJOBS_Info* info)
     if (nvramHandle != NULL) {
         sizeRead = AJ_NVRAM_Read(info, size, nvramHandle);
         status = AJ_NVRAM_Close(nvramHandle);
-        if (sizeRead != sizeRead) {
+        if (sizeRead != size) {
             status = AJ_ERR_NVRAM_READ;
             AJ_ErrPrintf(("Failed to read info: mismatched size read\n"));
         } else {
@@ -189,7 +189,7 @@ static AJ_Status OnboardingReadLastErrorCode(int8_t* lastErrorCode)
     if (nvramHandle != NULL) {
         sizeRead = AJ_NVRAM_Read(lastErrorCode, size, nvramHandle);
         status = AJ_NVRAM_Close(nvramHandle);
-        if (sizeRead != sizeRead) {
+        if (sizeRead != size) {
             AJ_ErrPrintf(("Failed to read last error code: mismatched size read\n"));
             status = AJ_ERR_NVRAM_READ;
         } else {

@@ -659,7 +659,7 @@ int AJ_Main(void)
             AJ_CloseMsg(&msg);
         }
 
-        if (status == AJ_ERR_READ || status == AJ_ERR_RESTART || status == AJ_ERR_RESTART_APP) {
+        if (status == AJ_ERR_READ || status == AJ_ERR_WRITE || status == AJ_ERR_RESTART || status == AJ_ERR_RESTART_APP) {
             if (isBusConnected) {
                 forcedDisconnnect = (status != AJ_ERR_READ);
                 rebootRequired = (status == AJ_ERR_RESTART_APP);
