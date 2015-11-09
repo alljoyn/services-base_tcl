@@ -104,7 +104,7 @@ void AJOBS_SetState(int8_t state);
  */
 typedef struct _AJOBS_Info {
     char ssid[AJOBS_SSID_MAX_LENGTH + 1];            /**< ssid */
-    char pc[AJOBS_PASSCODE_MAX_LENGTH + 1];          /**< pc */
+    char pc[AJOBS_PASSCODE_MAX_LENGTH + 1];          /**< password in hex format */
     int8_t authType;                                 /**< authType - Value is one of AJOBS_AuthType */
     int8_t validationPending;                        /**< validationPending - if Non-Zero, these credentials not verified */
 } AJOBS_Info;
