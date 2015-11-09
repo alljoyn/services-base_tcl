@@ -44,7 +44,7 @@ uint8_t dbgAJNS = ER_DEBUG_AJNS || ER_DEBUG_AJSVCALL;
  */
 
 static const char AJNS_NotificationInterfaceName[]   = "org.alljoyn.Notification";
-const char AJNS_NotificationSignalName[]      = "!&notify >q >i >q >s >s >ay >s >a{iv} >a{ss} >a(ss)";
+const char AJNS_NotificationSignalName[]      = "!&Notify >q >i >q >s >s >ay >s >a{iv} >a{ss} >a(ss)";
 const char AJNS_NotificationPropertyVersion[] = "@Version>q";
 
 static const char AJNS_NotificationObjectPathEmergency[]   = "/emergency";
