@@ -1,4 +1,4 @@
-AllJoyn Thin Core Services Library 15.04 Release Notes
+AllJoyn Thin Core Services Library 15.09 Release Notes
 ======================================================
 
 Platform Support
@@ -6,43 +6,64 @@ Platform Support
 1) Linux Ubuntu (64 bit x86)
 
 
-Features added in Version 15.04
+Supported Services in 15.09
+---------------------------
+1) Config
+2) Notification
+
+Note:
+* The Onboarding, Control Panel and Time services source code is available
+  in the source code repository, but is no longer part of the Base Services
+  Thin Client release, and is not supported.
+* In addition, the Time service source code is no longer in the "master" branch, 
+  and has been moved to the "feature/time" branch in the source code repository.
+
+
+Features added in Version 15.09
 -------------------------------
-The API function to allow the application to control return to Soft AP on failed
-retries to connect to the access point continues to be an experimental feature.
+None.
 
 
-Issues Addressed in Version 15.04
+Issues Addressed in Version 15.09
 ---------------------------------
-ASABASE-503 TCL Control Panel Generator '.c' file does not include the
-            generated '.h' file
-ASABASE-498 base_tcl sample apps fail on darwin
-ASABASE-249 Can not onboard when the Wifi credentials are set to type WEP with
-            security ASCII and the client uses ANY
-ASABASE-241 AllJoyn Thin Application do not handle AJ_ERR_WRITE. This can lead
-            the application to send Announcement infinitely
+ASABASE-522: Document that ConfigureWifi expects the password as a Hex encoded string
+ASABASE-528: Remove unneeded #include and problematic #ifdef
+ASABASE-529: Reduce the router selection time out when in AP mode
+ASABASE-530: Add ability to enable logging in release mode builds
+ASABASE-531: Add more logging to AllInOneServer test application
+ASABASE-533: Symbol redeclaration error when building thin client samples/tests on OpenWrt
+ASABASE-534: Fix services\base_tcl build break from AJ_ClearCredentials
+ASABASE-538: Must handle AJ_ERR_WRITE returnedby AJ_BusHandleBusMessage() 
+ASABASE-540: Avoid using AJ_BusSetPasswordCallback
+ASABASE-542: AllInOneServerTest app should not be including Time Service code
+ASABASE-543: Time Service code should be removed from master and into feature branch
+ASABASE-544: Invalid comparison condition
+ASABASE-551: Update 15.09 TC base services to only use Config, Notification on Linux
+ASABASE-552: Update Doxyfile for 15.09
+
+To search for other fixed issues:
+https://jira.allseenalliance.org/issues/?jql=project%20%3D%20ASABASE%20AND%20issuetype%20%3D%20Bug%20AND%20%22Language%20Binding%22%20%3D%20C%20AND%20fixVersion%20%3D%20%2215.09%22%20AND%20status%20in%20(Resolved%2C%20Closed)
 
 
 Known Issues
 ------------
-TCL onboarding has not been fully verified
+Base services have not been updated to support security 2.0
 
-For a complete list of known issues:
-https://jira.allseenalliance.org/issues/?jql=project%20%3D%20ASABASE%20AND%20issuetype%20%3D%20Bug%20AND%20fixVersion%20%3D%20%2215.04%22%20AND%20status%20in%20%28Open%2C%20%22In%20Progress%22%2C%20New%2C%20%22Monitor%20%2F%20On%20Hold%22%29
+To search for other known issues:
+https://jira.allseenalliance.org/issues/?jql=project%20%3D%20ASABASE%20AND%20issuetype%20%3D%20Bug%20AND%20fixVersion%20in%20(15.09a%2C%20%22Next%20Major%20Release%22)%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20New%2C%20%22Monitor%20%2F%20On%20Hold%22)
+
 
 Compatibility
 -------------
-The removal of PIN_KEYX from Standard Core Library (ASACORE-1641) has introduced
-inter-version inter-operability issue such that the samples will not connect to
-a pre-15.04 routing node that requires security. More details are available in
-the Core 15.04 release notes.  The samples using security will also not
-inter-operate with their pre-15.04 peers.
+No changes
 
 
 Change history
 --------------
-15.04 - bug fixes, compatibility with Core 15.04
-14.12 - bug fixes, a minor on-boarding feature and compatibility with Core 14.12
-14.06 - bug fixes, code improvements, added events and actions, new security
-        mechanism,  and minor features
+15.09 - Fewer supported services, bug fixes, compatibility with Core 15.09
+15.04 - Bug fixes, compatibility with Core 15.04
+14.12 - Bug fixes, a minor on-boarding feature and compatibility with Core 14.12
+14.06 - Bug fixes, code improvements, added events and actions, new security
+        mechanism, and minor features
 14.02 - 1st AllSeen Alliance release
+
