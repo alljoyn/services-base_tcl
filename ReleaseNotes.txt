@@ -13,8 +13,7 @@ Supported Services in 15.09
 
 Note:
 * The Onboarding, Control Panel and Time services source code is available
-  in the source code repository, but is no longer part of the Base Services
-  Thin Client release, and is not supported.
+  in the source code repository and is not supported.
 * In addition, the Time service source code is no longer in the "master" branch, 
   and has been moved to the "feature/time" branch in the source code repository.
 
