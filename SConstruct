@@ -161,9 +161,6 @@ env.Append(CPPDEFINES = [ v for k, v in ARGLIST if k.lower() == 'define' ])
 #######################################################
 # Install header files
 #######################################################
-config_hdrs = [
-    'inc/ConfigService.h'
-]
 notification_hdrs = [
     'inc/NotificationCommon.h',
     'inc/NotificationProducer.h',
@@ -182,7 +179,7 @@ other_hdrs = [
 common_hdrs = [
     'inc/Common/AllJoynLogo.h'
 ]
-env.Install('#dist/include/ajtcl/services', config_hdrs + notification_hdrs + other_hdrs)
+env.Install('#dist/include/ajtcl/services', notification_hdrs + other_hdrs)
 if env['enable_onboarding']:
     env.Install('#dist/include/ajtcl/services', onboarding_hdrs)
 env.Install('#dist/include/ajtcl/services/Common', common_hdrs)

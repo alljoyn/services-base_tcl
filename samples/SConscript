@@ -15,12 +15,12 @@ samples_env.Append(CPPDEFINES = {
 samples_env.Append(CPPPATH = './inc')
 
 samples_env.Append(LIBPATH = '#dist/lib')
+samples_env.Prepend(LIBS = ['ajtcl_services_config'])
 samples_env.Prepend(LIBS = ['ajtcl_services'])
 
 common_objs = samples_env.Object(samples_env.Glob('common/*.c'))
 
 build_samples = [
-#    'Config',
 #    'Controllee',
 #    'NotificationConsumer',
 #    'NotificationProducer',
