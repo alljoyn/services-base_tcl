@@ -19,46 +19,83 @@ def CheckCommand(context, cmd):
     context.Result(r is not None)
     return r
 
-def CheckAJLib(context, ajlib, ajheader, sconsvarname, ajdistpath):
+def SetupDistEnvironment(config, ajlib, ajheader, sconsvarname, ajdistpath):
     prog = "#include <%s>\nint main(void) { return 0; }" % ajheader
-    context.Message('Checking for AllJoyn library %s...' % ajlib)
-
-    prevLIBS = list(context.env.get('LIBS', []))
-    prevLIBPATH = list(context.env.get('LIBPATH', []))
-    prevCPPPATH = list(context.env.get('CPPPATH', []))
-
     # Check if library is in standard system locations
-    context.env.Prepend(LIBS = [ajlib])
+    config.env.Prepend(LIBS = [ajlib])
     defpath = ''  # default path is a system directory
-    if not context.TryLink(prog, '.c'):
+    if not config.TryLink(prog, '.c'):
         # Check if library is in project default location
-        context.env.Append(LIBPATH = ajdistpath + '/lib', CPPPATH = ajdistpath + '/include')
-        if context.TryLink(prog, '.c'):
+        old_env = config.env
+        config.env = config.env.Clone()
+        config.env.MergeFlags({ 'CPPPATH' : [ ajdistpath + '/include' ], 'LIBPATH' : [ ajdistpath + '/lib' ] })
+        if config.TryLink(prog, '.c'):
             defpath = ajdistpath  # default path is the dist directory
-        # Remove project default location from LIBPATH and CPPPATH
-        context.env.Replace(LIBPATH = prevLIBPATH, CPPPATH = prevCPPPATH)
-
+        config.env = old_env
     vars = Variables()
     vars.Add(PathVariable(sconsvarname,
                           'Path to %s dist directory' % ajlib,
                           os.environ.get('AJ_%s' % sconsvarname, defpath),
                           lambda k, v, e : v == '' or PathVariable.PathIsDir(k, v, e)))
-    vars.Update(context.env)
-    Help(vars.GenerateHelpText(context.env))
+    vars.Update(config.env)
+    Help(vars.GenerateHelpText(config.env))
+
+def CheckAJLib(context, ajlib, ajheader, sconsvarname):
+    prog = "#include <%s>\nint main(void) { return 0; }" % ajheader
+    context.Message('Checking for AllJoyn library %s...' % ajlib)
+    context.env.Prepend(LIBS = [ajlib])
 
     # Get the actual library path to use ('' == system path, may be same as ajdistpath)
-    libpath = env.get(sconsvarname, '')
-    if libpath is not '':
-        libpath = str(context.env.Dir(libpath))
+    distpath = context.env.get(sconsvarname, '')
+    if distpath is not '':
+        distpath = str(context.env.Dir(distpath))
         # Add the user specified (or ajdistpath) to LIBPATH and CPPPATH
-        context.env.Append(LIBPATH = libpath + '/lib', CPPPATH = libpath + '/include')
+        flags = { 'CPPPATH' : [  distpath + '/include' ], 'LIBPATH' : [ distpath + '/lib' ] }
+        context.env.MergeFlags(flags)
 
     # The real test for the library
     r = context.TryLink(prog, '.c')
-    if not r:
-        context.env.Replace(LIBS = prevLIBS, LIBPATH = prevLIBPATH, CPPPATH = prevCPPPATH)
     context.Result(r)
     return r
+
+def CheckAJFuncWithArgs(context, function_name, function_args, header = None, language = None): 
+    # Lifted from official scons code - see: http://www.scons.org/doc/2.4.0/HTML/scons-api/
+    if context.headerfilename: 
+        includetext = '#include "%s"' % context.headerfilename 
+    else: 
+        includetext = '' 
+    if not header: 
+        header = """ 
+  #ifdef __cplusplus 
+  extern "C" 
+  #endif 
+  char %s();""" % function_name 
+   
+    lang = "C"
+    suffix = ".c"
+    text = """ 
+  %(include)s 
+  #include <assert.h> 
+  %(hdr)s 
+   
+  int main() { 
+  #if defined (__stub_%(name)s) || defined (__stub___%(name)s) 
+    fail fail fail 
+  #else 
+    %(name)s(%(args)s); 
+  #endif 
+   
+    return 0; 
+  } 
+  """ % { 'name': function_name, 
+          'args': function_args,
+          'include': includetext, 
+          'hdr': header } 
+   
+    context.Display("Checking for %s function %s()... " % (lang, function_name)) 
+    ret = context.BuildProg(text, suffix) 
+    context.Result(ret)
+    return ret 
 
 #######################################################
 # Initialize our build environment
@@ -85,7 +122,6 @@ vars = Variables()
 vars.Add(BoolVariable('V',                  'Build verbosity',            False))
 vars.Add(EnumVariable('TARG',               'Target platform variant',    os.environ.get('AJ_TARG',               default_target),     allowed_values = target_options))
 vars.Add(EnumVariable('VARIANT',            'Build variant',              os.environ.get('AJ_VARIANT',            'debug'),            allowed_values = ('debug', 'release')))
-#vars.Add(BoolVariable('TIME_SERVICE',       'Enable Time Service',        False))
 vars.Add('CC',  'C Compiler override')
 vars.Add('CXX', 'C++ Compiler override')
 vars.Add(EnumVariable('NDEBUG', 'Override NDEBUG default for release variant', 'defined', allowed_values=('defined', 'undefined')))
@@ -122,26 +158,23 @@ env.SConscript('SConscript.target.$TARG')
 #######################################################
 # Check dependencies
 #######################################################
-config = Configure(env, custom_tests = { 'CheckCommand' : CheckCommand,
-                                         'CheckAJLib' : CheckAJLib })
+config = Configure(env)
+SetupDistEnvironment(config, 'ajtcl', 'ajtcl/aj_bus.h', 'AJTCL_DIST', '../../core/ajtcl/dist')
+config.AddTests({
+     'CheckCommand' : CheckCommand,
+     'CheckAJFuncWithArgs' : CheckAJFuncWithArgs,
+     'CheckAJLib' : CheckAJLib 
+})
 found_ws = config.CheckCommand('uncrustify')
 dep_libs = [
-    config.CheckAJLib('ajtcl', 'ajtcl/aj_bus.h', 'AJTCL_DIST', '../../core/ajtcl/dist')
+    config.CheckAJLib('ajtcl', 'ajtcl/aj_bus.h', 'AJTCL_DIST'),
 ]
-env['enable_onboarding'] = config.CheckFunc('AJ_EnableSoftAP', 'aj_wifi_ctrl.h', 'c')
+env['enable_onboarding'] = False # config.CheckAJFuncWithArgs('AJ_EnableSoftAP', 'null, 0, null, 0', '#include <ajtcl/aj_wifi_ctrl.h>\n', 'c')
 env = config.Finish()
 
 #######################################################
 # Compilation defines
 #######################################################
-env.Append(CPPDEFINES = [ 'CONFIG_SERVICE',
-                          'NOTIFICATION_SERVICE_PRODUCER',
-                          'NOTIFICATION_SERVICE_CONSUMER'
-                          ])
-#if env['TIME_SERVICE']:
-#    env.Append(CPPDEFINES = [ 'TIME_SERVICE_CLIENT',
-#                              'TIME_SERVICE_SERVER' ])
-
 if env['VARIANT'] == 'release' and env['NDEBUG'] == 'defined':
     env.Append(CPPDEFINES = [ 'NDEBUG' ])
 if env['enable_onboarding']:
@@ -171,19 +204,31 @@ onboarding_hdrs = [
     'inc/OnboardingManager.h',
     'inc/OnboardingService.h'
 ]
+controlpanel_hdrs = [
+    'inc/ControlPanelService.h',
+    'inc/ControlPanelInterfaces.h',
+    'inc/Definitions.h'
+]
 other_hdrs = [
     'inc/PropertyStore.h',
     'inc/ServicesCommon.h',
     'inc/ServicesHandlers.h'
 ]
 common_hdrs = [
-    'inc/Common/AllJoynLogo.h'
+    'inc/Common/AllJoynLogo.h',
+    # for controllee
+    'inc/Common/BaseWidget.h',
+    'inc/Common/ConstraintList.h',
+    'inc/Common/ConstraintRange.h',
+    'inc/Common/ControlMarshalUtil.h',
+    'inc/Common/DateTimeUtil.h',
+    'inc/Common/HttpControl.h'
 ]
-env.Install('#dist/include/ajtcl/services', notification_hdrs + other_hdrs)
+env.Install('#dist/include/ajtcl/services', notification_hdrs + controlpanel_hdrs + other_hdrs)
+env.Install('#dist/include/ajtcl/services/Widgets', env.Glob('inc/Widgets/*.h'))
 if env['enable_onboarding']:
     env.Install('#dist/include/ajtcl/services', onboarding_hdrs)
 env.Install('#dist/include/ajtcl/services/Common', common_hdrs)
-#env.Install('#dist/include/ajtcl/services/Widgets', env.Glob('inc/Widgets/*.h'))
 # Need to force a dpendency here because SCons can't follow nested
 # #include dependencies otherwise
 env.Depends('#build/$VARIANT', '#dist/include')
@@ -194,6 +239,7 @@ env.Depends('#build/$VARIANT', '#dist/include')
 if env['build'] and all(dep_libs):
     env.SConscript('src/SConscript',     variant_dir='#build/$VARIANT/src',     duplicate = 0)
     env.SConscript('samples/SConscript', variant_dir='#build/$VARIANT/samples', duplicate = 0)
+    # disable tests for now - core seems to have broken it again
     #env.SConscript('test/SConscript',    variant_dir='#build/$VARIANT/test',    duplicate = 0)
 
 
