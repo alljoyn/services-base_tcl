@@ -2,28 +2,36 @@ import os
 
 Import('env')
 
-test_env = env.Clone()
+tests_env = env.Clone()
 
-progs = []
+tests_env.Append(CPPDEFINES = ['AJ_MAIN'])
+tests_env.Append(CPPPATH = ['./inc'])
 
-test_env.Append(CPPDEFINES = 'AJ_MAIN')
-test_env.Append(CPPPATH = './inc')
-
-test_env.Append(LIBPATH = '#dist/lib')
-test_env.Prepend(LIBS = 'ajtcl_services')
+tests_env.Append(LIBPATH = ['#dist/lib'])
+tests_env.Prepend(LIBS = ['ajtcl_services'])
 
 common_srcs = [ s for s in Glob('common/*.c')
-                if test_env['enable_onboarding'] or not s.name == 'OnboardingSample.c' ]
-
-common_objs = test_env.Object(common_srcs)
+                if tests_env['enable_onboarding'] or not s.name == 'OnboardingSample.c' ]
 
 build_tests = [
-    'ACServer',
-    'AllInOneServer'
+#TODO remove config
+    { 'name' : 'ACServer', 'defines' : [ 'CONFIG_SERVICE' ] },
+    { 'name' : 'AllInOneServer', 'defines' : [ 'CONFIG_SERVICE', 'NOTIFICATION_SERVICE_PRODUCER', 'NOTIFICATION_SERVICE_CONSUMER' ] }
 ]
 
-for test in build_tests:
-    objs = test_env.Object(Glob(test + '/*.c'))
-    progs.append(test_env.Program(test + 'Test', common_objs + objs))
+def common_object_generator(sample_name):
+    for src in common_srcs:
+        src_name = os.path.splitext(src.name)[0]
+        output = "%s/%s" % (sample_name, src_name)
+        yield test_env.Object(output, src)
 
-test_env.Install('#dist/bin', progs)
+for test in build_tests:
+    sample_name = test['name']
+    test_env = tests_env.Clone()
+    test_env.MergeFlags({ 'CPPDEFINES' : test['defines'] })
+    project_objs = test_env.Object(test_env.Glob(sample_name + '/*.c'))
+    common_objs = [ object for object in common_object_generator(sample_name) ]
+    objs = project_objs + common_objs
+    prog = test_env.Program(sample_name + 'Test',  objs)
+    test_env.Install('#dist/bin', prog)
+
