@@ -27,6 +27,7 @@
 #include <ajtcl/aj_creds.h>
 #include <ajtcl/aj_nvram.h>
 #include <ajtcl/aj_link_timeout.h>
+#include <ajtcl/services/Common/AllJoynLogo.h>
 #include <ajtcl/services/ServicesCommon.h>
 #include <ajtcl/services/NotificationCommon.h>
 #include <ajtcl/services/NotificationConsumer.h>
@@ -130,18 +131,81 @@ static AJ_Status AJApp_DisconnectHandler(AJ_BusAttachment* busAttachment, uint8_
  * Services Provisioning
  */
 
+const char* deviceManufactureName = "COMPANY";
+const char* deviceProductName = "GENERIC BOARD";
+
 /**
- * PropertyStore stub implementation for About feature
+ * About supported PropertyStore provisioning
  */
-AJ_Status AJSVC_PropertyStore_ReadAll(AJ_Message* reply, AJSVC_PropertyStoreCategoryFilter filter, int8_t langIndex) {
-    return AJ_OK;
-}
-int8_t AJSVC_PropertyStore_GetLanguageIndex(const char* const language) {
-    return AJSVC_PROPERTY_STORE_ERROR_LANGUAGE_INDEX;
-}
-int8_t AJSVC_PropertyStore_GetCurrentDefaultLanguageIndex() {
-    return AJSVC_PROPERTY_STORE_ERROR_LANGUAGE_INDEX;
-}
+static const char DEFAULT_LANGUAGE[] = "en";
+static const char* DEFAULT_LANGUAGES[] = { DEFAULT_LANGUAGE };
+static const char SUPPORTED_LANG2[] = "de-AT";
+static const char* SUPPORTED_LANGUAGES[] = { DEFAULT_LANGUAGE, SUPPORTED_LANG2, NULL };
+const char* const* propertyStoreDefaultLanguages = SUPPORTED_LANGUAGES;
+
+/**
+ * property array of structure with defaults
+ */
+static const char DEFAULT_DEVICE_NAME_LANG1[] = { "" }; // Leave empty to be generated at run-time
+static const char DEFAULT_DEVICE_NAME_LANG2[] = { "" }; // Leave empty to be generated at run-time
+static const char* DEFAULT_DEVICE_NAMES[] = { DEFAULT_DEVICE_NAME_LANG1, DEFAULT_DEVICE_NAME_LANG2 };
+static const char* DEFAULT_PRODUCER_APP_NAME[] = { "Notifier" };
+static const char DEFAULT_DESCRIPTION_LANG1[] = "My first IOE device";
+static const char DEFAULT_DESCRIPTION_LANG2[] = "Mein erstes IOE Geraet";
+static const char* DEFAULT_DESCRIPTIONS[] = { DEFAULT_DESCRIPTION_LANG1, DEFAULT_DESCRIPTION_LANG2 };
+static const char DEFAULT_MANUFACTURER_LANG1[] = "Company A(EN)";
+static const char DEFAULT_MANUFACTURER_LANG2[] = "Firma A(DE-AT)";
+static const char* DEFAULT_MANUFACTURERS[] = { DEFAULT_MANUFACTURER_LANG1, DEFAULT_MANUFACTURER_LANG2 };
+static const char* DEFAULT_DEVICE_MODELS[] = { "0.0.1" };
+static const char* DEFAULT_DATE_OF_MANUFACTURES[] = { "2014-05-01" };
+static const char* DEFAULT_SOFTWARE_VERSIONS[] = { "0.0.1" };
+static const char* DEFAULT_HARDWARE_VERSIONS[] = { "0.0.1" };
+
+const char** propertyStoreDefaultValues[AJSVC_PROPERTY_STORE_NUMBER_OF_KEYS] =
+{
+// "Default Values per language",                    "Key Name"
+    NULL,                                           /*DeviceId*/
+    NULL,                                           /*AppId*/
+    DEFAULT_DEVICE_NAMES,                           /*DeviceName*/
+    DEFAULT_LANGUAGES,                              /*DefaultLanguage*/
+// Add other runtime keys above this line
+    DEFAULT_PRODUCER_APP_NAME,                      /*AppName*/
+    DEFAULT_DESCRIPTIONS,                           /*Description*/
+    DEFAULT_MANUFACTURERS,                          /*Manufacturer*/
+    DEFAULT_DEVICE_MODELS,                          /*ModelNumber*/
+    DEFAULT_DATE_OF_MANUFACTURES,                   /*DateOfManufacture*/
+    DEFAULT_SOFTWARE_VERSIONS,                      /*SoftwareVersion*/
+    NULL,                                           /*AJSoftwareVersion*/
+// Add other mandatory about keys above this line
+    DEFAULT_HARDWARE_VERSIONS,                      /*HardwareVersion*/
+    NULL,                                           /*SupportUrl*/
+// Add other optional about keys above this line
+};
+
+/**
+ * properties array of runtime values' buffers
+ */
+static char machineIdVar[MACHINE_ID_LENGTH + 1] = { 0 };
+static char* machineIdVars[] = { machineIdVar };
+static char deviceNameVar[DEVICE_NAME_VALUE_LENGTH + 1] = { 0 };
+static char* deviceNameVars[] = { deviceNameVar, deviceNameVar };
+
+PropertyStoreConfigEntry propertyStoreRuntimeValues[AJSVC_PROPERTY_STORE_NUMBER_OF_RUNTIME_KEYS] =
+{
+//  {"Buffers for Values per language", "Buffer Size"},                  "Key Name"
+    { machineIdVars,             MACHINE_ID_LENGTH + 1 },               /*DeviceId*/
+    { machineIdVars,             MACHINE_ID_LENGTH + 1 },               /*AppId*/
+    { deviceNameVars,            DEVICE_NAME_VALUE_LENGTH + 1 },        /*DeviceName*/
+// Add other persisted keys above this line
+};
+
+/**
+ * AboutIcon Provisioning
+ */
+const char* aboutIconMimetype = AJ_LogoMimeType;
+const uint8_t* aboutIconContent = AJ_LogoData;
+const size_t aboutIconContentSize = AJ_LogoSize;
+const char* aboutIconUrl = AJ_LogoURL;
 
 /**
  * Notification Consumer Provisioning

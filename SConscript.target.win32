@@ -4,7 +4,7 @@ Import('env')
 
 # Target specific SCons command line variables
 default_msvc_version = os.environ.get('AJ_MSVC_VERSION', '12.0')
-supported_msvc_versions = [ '8.0', '9.0', '10.0', '11.0', '11.0Exp', '12.0', '12.0Exp' ]
+supported_msvc_versions = [ '8.0', '9.0', '10.0', '11.0', '11.0Exp', '12.0', '12.0Exp', '14.0', '14.0Exp' ]
 vars = Variables()
 vars.Add(EnumVariable('MSVC_VERSION', 'MSVC compiler version - Windows', default_msvc_version, allowed_values = supported_msvc_versions))
 vars.Add(BoolVariable('FORCE32',      'Force building 32 bit on 64 bit architecture',           os.environ.get('AJ_FORCE32', False)))
@@ -24,7 +24,7 @@ if env['FORCE32']:
 if env['VARIANT'] == 'debug':
     env.Append(CPPDEFINES = [ '_DEBUG',
                               ('_ITERATOR_DEBUG_LEVEL', 2) ])
-    env.Append(CFLAGS = [ '/Zi', '/Od' ])
+    env.Append(CFLAGS = [ '/Zi', '/Od', '/MDd' ])
     env.Append(LINKFLAGS = [ '/debug' ])
 else:
     env.Append(CPPDEFINES = [( '_ITERATOR_DEBUG_LEVEL', 0 )])
