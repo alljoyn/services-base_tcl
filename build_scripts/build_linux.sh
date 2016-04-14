@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -eux
 # Copyright AllSeen Alliance. All rights reserved.
 #
 #    Permission to use, copy, modify, and/or distribute this software for any
@@ -13,9 +13,13 @@
 #    ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 #    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #
-set -e # fail fast
+function finish {
+   popd
+}
+trap finish EXIT
+
 SCRIPT_DIR=$( dirname "${BASH_SOURCE[0]}" )
-echo "Directory: $SCRIPT_DIR"
+pushd "${SCRIPT_DIR}"
 
 while getopts 'V:W:S:' opts; do
    case ${opts} in
@@ -26,23 +30,30 @@ while getopts 'V:W:S:' opts; do
    esac
 done
 
-set -x # echo commands
+if [[ -z "${AJ_ROOT+notempty}" ]]; then
+   AJ_ROOT="$(pwd)/../../.."
+fi
+
+if [[ -z "${VARIANT+notempty}" ]]; then
+    VARIANT="debug"
+fi
+
+if [[ -z "${WS+notempty}" ]]; then
+    WS="off"
+fi
 
 # build core
-pushd core/ajtcl
-scons -c VARIANT=$VARIANT WS=$WS
-scons VARIANT=$VARIANT WS=$WS
+pushd "${AJ_ROOT}/core/ajtcl"
+scons -c VARIANT="$VARIANT" WS="$WS"
+scons VARIANT="$VARIANT" WS="$WS"
 popd
 
 # build service
-pushd services/base_tcl
+pushd "${AJ_ROOT}/services/base_tcl"
 #pushd services/base_tcl/$SERVICE # TODO explict service build
-scons -c VARIANT=$VARIANT WS=$WS docs=html
-scons VARIANT=$VARIANT WS=$WS docs=html
+scons -c VARIANT="$VARIANT" WS="$WS" docs=html
+scons VARIANT="$VARIANT" WS="$WS" docs=html
 popd
 
 # packaging
-$SCRIPT_DIR/build_linux_package.sh
-
-
-
+./build_linux_package.sh

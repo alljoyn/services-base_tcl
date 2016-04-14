@@ -58,44 +58,44 @@ def CheckAJLib(context, ajlib, ajheader, sconsvarname):
     context.Result(r)
     return r
 
-def CheckAJFuncWithArgs(context, function_name, function_args, header = None, language = None): 
+def CheckAJFuncWithArgs(context, function_name, function_args, header = None, language = None):
     # Lifted from official scons code - see: http://www.scons.org/doc/2.4.0/HTML/scons-api/
-    if context.headerfilename: 
-        includetext = '#include "%s"' % context.headerfilename 
-    else: 
-        includetext = '' 
-    if not header: 
-        header = """ 
-  #ifdef __cplusplus 
-  extern "C" 
-  #endif 
-  char %s();""" % function_name 
-   
+    if context.headerfilename:
+        includetext = '#include "%s"' % context.headerfilename
+    else:
+        includetext = ''
+    if not header:
+        header = """
+#ifdef __cplusplus
+extern "C"
+#endif
+char %s();""" % function_name
+
     lang = "C"
     suffix = ".c"
-    text = """ 
-  %(include)s 
-  #include <assert.h> 
-  %(hdr)s 
-   
-  int main() { 
-  #if defined (__stub_%(name)s) || defined (__stub___%(name)s) 
-    fail fail fail 
-  #else 
-    %(name)s(%(args)s); 
-  #endif 
-   
-    return 0; 
-  } 
-  """ % { 'name': function_name, 
-          'args': function_args,
-          'include': includetext, 
-          'hdr': header } 
-   
-    context.Display("Checking for %s function %s()... " % (lang, function_name)) 
-    ret = context.BuildProg(text, suffix) 
+    text = """
+%(include)s
+#include <assert.h>
+%(hdr)s
+
+int main() {
+#if defined (__stub_%(name)s) || defined (__stub___%(name)s)
+fail fail fail
+#else
+%(name)s(%(args)s);
+#endif
+
+return 0;
+}
+""" % { 'name': function_name,
+        'args': function_args if function_args is not None else '',
+        'include': includetext,
+        'hdr': header }
+
+    context.Display("Checking for %s function %s()... " % (lang, function_name))
+    ret = not context.BuildProg(text, suffix)
     context.Result(ret)
-    return ret 
+    return ret
 
 #######################################################
 # Initialize our build environment
@@ -156,30 +156,10 @@ env['build_unit_tests'] = True
 env.SConscript('SConscript.target.$TARG')
 
 #######################################################
-# Check dependencies
-#######################################################
-config = Configure(env)
-SetupDistEnvironment(config, 'ajtcl', 'ajtcl/aj_bus.h', 'AJTCL_DIST', '../../core/ajtcl/dist')
-config.AddTests({
-     'CheckCommand' : CheckCommand,
-     'CheckAJFuncWithArgs' : CheckAJFuncWithArgs,
-     'CheckAJLib' : CheckAJLib 
-})
-found_ws = config.CheckCommand('uncrustify')
-dep_libs = [
-    config.CheckAJLib('ajtcl', 'ajtcl/aj_bus.h', 'AJTCL_DIST'),
-]
-env['enable_onboarding'] = False # config.CheckAJFuncWithArgs('AJ_EnableSoftAP', 'null, 0, null, 0', '#include <ajtcl/aj_wifi_ctrl.h>\n', 'c')
-env = config.Finish()
-
-#######################################################
 # Compilation defines
 #######################################################
 if env['VARIANT'] == 'release' and env['NDEBUG'] == 'defined':
     env.Append(CPPDEFINES = [ 'NDEBUG' ])
-if env['enable_onboarding']:
-    env.Append(CPPDEFINES = 'ONBOARDING_SERVICE')
-
 
 #######################################################
 # Include path
@@ -190,6 +170,33 @@ env.Append(CPPPATH = [ '#dist/include' ])
 # Process commandline defines
 #######################################################
 env.Append(CPPDEFINES = [ v for k, v in ARGLIST if k.lower() == 'define' ])
+
+#######################################################
+# Check dependencies
+#######################################################
+found_ws = False
+dep_libs = []
+enable_onboarding = True
+
+if not env.GetOption('clean'):
+    config = Configure(env)
+    SetupDistEnvironment(config, 'ajtcl', 'ajtcl/aj_bus.h', 'AJTCL_DIST', '../../core/ajtcl/dist')
+    config.AddTests({
+         'CheckCommand' : CheckCommand,
+         'CheckAJFuncWithArgs' : CheckAJFuncWithArgs,
+         'CheckAJLib' : CheckAJLib
+    })
+    found_ws = config.CheckCommand('uncrustify')
+    dep_libs = [
+        config.CheckAJLib('ajtcl', 'ajtcl/aj_bus.h', 'AJTCL_DIST'),
+    ]
+    enable_onboarding = config.CheckAJFuncWithArgs('AJ_EnableSoftAP', 'NULL, 0, NULL, 0', '#include <ajtcl/aj_wifi_ctrl.h>\n', 'c')
+    env = config.Finish()
+
+env['enable_onboarding'] = enable_onboarding
+
+if env['enable_onboarding']:
+    env.Append(CPPDEFINES = 'ONBOARDING_SERVICE')
 
 #######################################################
 # Install header files
