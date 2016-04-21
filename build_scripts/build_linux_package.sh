@@ -1,4 +1,5 @@
-#!/bin/bash -eux
+#!/usr/bin/env bash
+
 # Copyright AllSeen Alliance. All rights reserved.
 #
 #    Permission to use, copy, modify, and/or distribute this software for any
@@ -14,6 +15,9 @@
 #    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #
 # This script collects all the pieces to make the SDK for the cpp builds
+
+set -eux
+
 env | sort
 
 if [[ -z "${AJ_ROOT+notempty}" ]]; then

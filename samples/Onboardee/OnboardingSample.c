@@ -14,6 +14,8 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
+#include <assert.h>
+
 /**
  * Per-module definition of the current module for debug logging.  Must be defined
  * prior to first inclusion of aj_debug.h.
@@ -26,6 +28,9 @@
 #include <ajtcl/aj_creds.h>
 #include <ajtcl/aj_config.h>
 #include <ajtcl/aj_link_timeout.h>
+#include <ajtcl/aj_security.h>
+#include <ajtcl/aj_authorisation.h>
+#include <ajtcl/aj_bus.h>
 #include <ajtcl/services/ConfigService.h>
 #include <ajtcl/services/OnboardingService.h>
 #include <ajtcl/services/OnboardingManager.h>
@@ -64,32 +69,7 @@ AJ_EXPORT uint8_t dbgAJSVCAPP = ER_DEBUG_AJSVCAPP;
 static uint8_t isBusConnected = FALSE;
 static AJ_BusAttachment busAttachment;
 #define AJ_ABOUT_SERVICE_PORT 900
-
-/**
- * Application wide callbacks
- */
-
-static uint32_t PasswordCallback(uint8_t* buffer, uint32_t bufLen)
-{
-    AJ_Status status = AJ_OK;
-    const char* hexPassword = AJSVC_PropertyStore_GetValue(AJSVC_PROPERTY_STORE_PASSCODE);
-    size_t hexPasswordLen;
-    uint32_t len = 0;
-
-    if (hexPassword == NULL) {
-        AJ_ErrPrintf(("Password is NULL!\n"));
-        return len;
-    }
-    AJ_InfoPrintf(("Configured password=%s\n", hexPassword));
-    hexPasswordLen = strlen(hexPassword);
-    len = hexPasswordLen / 2;
-    status = AJ_HexToRaw(hexPassword, hexPasswordLen, buffer, bufLen);
-    if (status == AJ_ERR_RESOURCES) {
-        len = 0;
-    }
-
-    return len;
-}
+#define AJ_PERMISSION_MGMT_PORT 101
 
 /**
  * Application handlers
@@ -171,6 +151,7 @@ static AJSVC_ServiceStatus AJApp_MessageProcessor(AJ_BusAttachment* busAttachmen
             return serviceStatus;
         }
         session_accepted |= (port == AJ_ABOUT_SERVICE_PORT);
+        session_accepted |= (port == AJ_PERMISSION_MGMT_PORT);
         session_accepted |= AJSVC_CheckSessionAccepted(port, sessionId, joiner);
         *status = AJ_BusReplyAcceptSession(msg, session_accepted);
         AJ_AlwaysPrintf(("%s session session_id=%u joiner=%s for port %u\n", (session_accepted ? "Accepted" : "Rejected"), sessionId, joiner, port));
@@ -221,7 +202,6 @@ const char* const* propertyStoreDefaultLanguages = SUPPORTED_LANGUAGES;
  * property array of structure with defaults
  */
 static const char* DEFAULT_DEVICE_NAMES[] = { "" }; // Leave empty to be generated at run-time
-static const char* DEFAULT_PASSCODES[] = { "303030303030" }; // HEX encoded { '0', '0', '0', '0', '0', '0' }
 static const char* DEFAULT_APP_NAMES[] = { "Onboardee" };
 static const char* DEFAULT_DESCRIPTIONS[] = { "My First IOE device" };
 static const char* DEFAULT_MANUFACTURERS[] = { "Company A" };
@@ -238,7 +218,7 @@ const char** propertyStoreDefaultValues[AJSVC_PROPERTY_STORE_NUMBER_OF_KEYS] =
     NULL,                                           /*AppId*/
     DEFAULT_DEVICE_NAMES,                           /*DeviceName*/
     DEFAULT_LANGUAGES,                              /*DefaultLanguage*/
-    DEFAULT_PASSCODES,                              /*Passcode*/
+    NULL,                                           /*Passcode*/
     NULL,                                           /*RealmName*/
 // Add other runtime keys above this line
     DEFAULT_APP_NAMES,                              /*AppName*/
@@ -282,10 +262,142 @@ PropertyStoreConfigEntry propertyStoreRuntimeValues[AJSVC_PROPERTY_STORE_NUMBER_
 };
 
 /**
+ * Security
+ */
+
+// Copied from ajtcl/samples/secure/SecureServiceECDHE.c
+static const char pem_prv[] = {
+    "-----BEGIN EC PRIVATE KEY-----"
+    "MDECAQEEICCRJMbxSiWUqj4Zs7jFQRXDJdBRPWX6fIVqE1BaXd08oAoGCCqGSM49"
+    "AwEH"
+    "-----END EC PRIVATE KEY-----"
+};
+
+static const char pem_x509[] = {
+    "-----BEGIN CERTIFICATE-----"
+    "MIIBuDCCAV2gAwIBAgIHMTAxMDEwMTAKBggqhkjOPQQDAjBCMRUwEwYDVQQLDAxv"
+    "cmdhbml6YXRpb24xKTAnBgNVBAMMIDgxM2FkZDFmMWNiOTljZTk2ZmY5MTVmNTVk"
+    "MzQ4MjA2MB4XDTE1MDcyMjIxMDYxNFoXDTE2MDcyMTIxMDYxNFowQjEVMBMGA1UE"
+    "CwwMb3JnYW5pemF0aW9uMSkwJwYDVQQDDCAzOWIxZGNmMjBmZDJlNTNiZGYzMDU3"
+    "NzMzMjBlY2RjMzBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABGJ/9F4xHn3Klw7z"
+    "6LREmHJgzu8yJ4i09b4EWX6a5MgUpQoGKJcjWgYGWb86bzbciMCFpmKzfZ42Hg+k"
+    "BJs2ZWajPjA8MAwGA1UdEwQFMAMBAf8wFQYDVR0lBA4wDAYKKwYBBAGC3nwBATAV"
+    "BgNVHSMEDjAMoAoECELxjRK/fVhaMAoGCCqGSM49BAMCA0kAMEYCIQDixoulcO7S"
+    "df6Iz6lvt2CDy0sjt/bfuYVW3GeMLNK1LAIhALNklms9SP8ZmTkhCKdpC+/fuwn0"
+    "+7RX8CMop11eWCih"
+    "-----END CERTIFICATE-----"
+};
+
+static const uint32_t keyexpiration = 0xFFFFFFFF;
+static const char ecspeke_password[] = "1234";
+static X509CertificateChain* chain = NULL;
+
+static AJ_Status AuthListenerCallback(uint32_t authmechanism, uint32_t command, AJ_Credential*cred)
+{
+    AJ_Status status = AJ_ERR_INVALID;
+    X509CertificateChain* node;
+
+    AJ_AlwaysPrintf(("AuthListenerCallback authmechanism %08X command %d\n", authmechanism, command));
+
+    switch (authmechanism) {
+        case AUTH_SUITE_ECDHE_NULL:
+            cred->expiration = keyexpiration;
+            status = AJ_OK;
+            break;
+
+        case AUTH_SUITE_ECDHE_SPEKE:
+            switch (command) {
+                case AJ_CRED_PASSWORD:
+                    cred->data = (uint8_t*)ecspeke_password;
+                    cred->len = strlen(ecspeke_password);
+                    cred->expiration = keyexpiration;
+                    status = AJ_OK;
+                    break;
+            }
+            break;
+
+        case AUTH_SUITE_ECDHE_ECDSA:
+            switch (command) {
+                case AJ_CRED_PRV_KEY:
+                    AJ_ASSERT(sizeof (AJ_ECCPrivateKey) == cred->len);
+                    status = AJ_DecodePrivateKeyPEM((AJ_ECCPrivateKey*) cred->data, pem_prv);
+                    cred->expiration = keyexpiration;
+                    break;
+
+                case AJ_CRED_CERT_CHAIN:
+                    switch (cred->direction) {
+                        case AJ_CRED_REQUEST:
+                            // Free previous certificate chain
+                            AJ_X509FreeDecodedCertificateChain(chain);
+                            chain = AJ_X509DecodeCertificateChainPEM(pem_x509);
+                            if (NULL == chain) {
+                                return AJ_ERR_INVALID;
+                            }
+                            cred->data = (uint8_t*) chain;
+                            cred->expiration = keyexpiration;
+                            status = AJ_OK;
+                            break;
+
+                        case AJ_CRED_RESPONSE:
+                            node = (X509CertificateChain*) cred->data;
+                            status = AJ_X509VerifyChain(node, NULL, AJ_CERTIFICATE_IDN_X509);
+                            while (node) {
+                                AJ_DumpBytes("CERTIFICATE", node->certificate.der.data, node->certificate.der.size);
+                                node = node->next;
+                            }
+                            break;
+                    }
+                    break;
+            }
+            break;
+
+        default:
+            break;
+    }
+    return status;
+}
+
+static const uint32_t suites[3] = { AUTH_SUITE_ECDHE_NULL, AUTH_SUITE_ECDHE_SPEKE, AUTH_SUITE_ECDHE_ECDSA };
+static const size_t numsuites = 3;
+
+static const char InterfaceName[] = "org.alljoyn.Onboarding";
+static const char ServicePath[] = "/Onboarding";
+
+static AJ_PermissionMember members[] = { { "*", AJ_MEMBER_TYPE_ANY, AJ_ACTION_PROVIDE | AJ_ACTION_OBSERVE, NULL } };
+static AJ_PermissionRule rules[] = { { ServicePath, InterfaceName, members, NULL } };
+
+AJ_Status Security_Init(AJ_BusAttachment* bus) {
+    assert(bus != NULL && "bus cannot be null");
+    AJ_Status status = AJ_OK;
+
+    uint16_t state;
+    uint16_t capabilities;
+    uint16_t info;
+
+    status = AJ_BusEnableSecurity(bus, suites, numsuites);
+    if (AJ_OK != status) {
+        AJ_ErrPrintf(("AJ_BusEnableSecurity returned an error: %s\n", (AJ_StatusText(status))));
+        return status;
+    }
+    AJ_BusSetAuthListenerCallback(bus, AuthListenerCallback);
+    AJ_ManifestTemplateSet(rules);
+
+    AJ_SecurityGetClaimConfig(&state, &capabilities, &info);
+    /* Set app claimable if not already claimed */
+    if (APP_STATE_CLAIMED != state) {
+        AJ_SecuritySetClaimConfig(bus, APP_STATE_CLAIMABLE, CLAIM_CAPABILITY_ECDHE_SPEKE, 0);
+    } else {
+        AJ_WarnPrintf(("Already claimed\n"));
+    }
+
+    return status;
+}
+
+/**
  * AboutIcon Provisioning
  */
 
-#include "AllJoynLogo.h"
+#include <ajtcl/services/Common/AllJoynLogo.h>
 
 const char* aboutIconMimetype = AJ_LogoMimeType;
 const uint8_t* aboutIconContent = AJ_LogoData;
@@ -378,34 +490,6 @@ static AJ_Status Restart()
     return AJ_ERR_RESTART_APP; // Force disconnect of AJ and services and reconnection of WiFi on restart of app
 }
 
-static AJ_Status SetPasscode(const char* daemonRealm, const uint8_t* newPasscode, uint8_t newPasscodeLen)
-{
-    AJ_Status status = AJ_OK;
-    char newStringPasscode[PASSWORD_VALUE_LENGTH + 1];
-
-    status = AJ_RawToHex(newPasscode, newPasscodeLen, newStringPasscode, sizeof(newStringPasscode), FALSE);
-    if (status != AJ_OK) {
-        return status;
-    }
-    if (AJSVC_PropertyStore_SetValue(AJSVC_PROPERTY_STORE_REALM_NAME, daemonRealm) && AJSVC_PropertyStore_SetValue(AJSVC_PROPERTY_STORE_PASSCODE, newStringPasscode)) {
-
-        status = AJSVC_PropertyStore_SaveAll();
-        if (status != AJ_OK) {
-            return status;
-        }
-        AJ_ClearCredentials(AJ_CRED_TYPE_GENERIC);
-        status = AJ_ERR_READ;     //Force disconnect of AJ and services to refresh current sessions
-    } else {
-
-        status = AJSVC_PropertyStore_LoadAll();
-        if (status != AJ_OK) {
-            return status;
-        }
-    }
-
-    return status;
-}
-
 static uint8_t IsValueValid(const char* key, const char* value)
 {
     return TRUE;
@@ -413,7 +497,7 @@ static uint8_t IsValueValid(const char* key, const char* value)
 
 static AJ_Status Config_Init()
 {
-    AJ_Status status = AJCFG_Start(&FactoryReset, &Restart, &SetPasscode, &IsValueValid);
+    AJ_Status status = AJCFG_Start(&FactoryReset, &Restart, NULL, &IsValueValid);
     return status;
 }
 
@@ -436,19 +520,23 @@ int AJ_Main(void)
 
     status = PropertyStore_Init();
     if (status != AJ_OK) {
+        AJ_ErrPrintf(("PropertyStore_Init returned an error: %s\n", (AJ_StatusText(status))));
         goto Exit;
     }
 
     status = Config_Init();
     if (status != AJ_OK) {
+        AJ_ErrPrintf(("Config_Init returned an error: %s\n", (AJ_StatusText(status))));
         goto Exit;
     }
 
     status = Onboarding_Init();
     if (status != AJ_OK) {
+        AJ_ErrPrintf(("Onboarding_Init returned an error: %s\n", (AJ_StatusText(status))));
         goto Exit;
     }
 
+    AJ_AlwaysPrintf(("Begin main loop\n"));
     while (TRUE) {
         status = AJ_OK;
         serviceStatus = AJSVC_SERVICE_STATUS_NOT_HANDLED;
@@ -458,8 +546,12 @@ int AJ_Main(void)
             if (!isBusConnected) { // Failed to connect to Routing Node?
                 continue; // Retry establishing connection to Routing Node.
             }
-            /* Setup password based authentication listener for secured peer to peer connections */
-            AJ_BusSetPasswordCallback(&busAttachment, PasswordCallback);
+
+            status = Security_Init(&busAttachment);
+            if (status != AJ_OK) {
+                AJ_ErrPrintf(("Security_Init returned an error: %s\n", (AJ_StatusText(status))));
+                goto Exit;
+            }
         }
 
         status = AJApp_ConnectedHandler(&busAttachment);
@@ -505,7 +597,8 @@ int AJ_Main(void)
     return 0;
 
 Exit:
-
+    AJ_X509FreeDecodedCertificateChain(chain);
+    AJ_InfoPrintf(("Exit status: %s\n", (AJ_StatusText(status))));
     return (1);
 }
 

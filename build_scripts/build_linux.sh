@@ -1,4 +1,5 @@
-#!/bin/bash -eux
+#!/usr/bin/env bash
+
 # Copyright AllSeen Alliance. All rights reserved.
 #
 #    Permission to use, copy, modify, and/or distribute this software for any
@@ -13,6 +14,9 @@
 #    ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 #    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #
+
+set -eux
+
 function finish {
    popd
 }
@@ -45,14 +49,14 @@ fi
 # build core
 pushd "${AJ_ROOT}/core/ajtcl"
 scons -c VARIANT="$VARIANT" WS="$WS"
-scons VARIANT="$VARIANT" WS="$WS"
+scons VARIANT="$VARIANT" WS="$WS" --config=force
 popd
 
 # build service
 pushd "${AJ_ROOT}/services/base_tcl"
 #pushd services/base_tcl/$SERVICE # TODO explict service build
 scons -c VARIANT="$VARIANT" WS="$WS" docs=html
-scons VARIANT="$VARIANT" WS="$WS" docs=html
+scons VARIANT="$VARIANT" WS="$WS" docs=html --config=force
 popd
 
 # packaging

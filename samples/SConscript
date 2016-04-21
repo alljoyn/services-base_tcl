@@ -22,9 +22,13 @@ build_samples = [
     {'name':'Controllee', 'defines':['CONFIG_SERVICE']},
     {'name':'NotificationConsumer', 'defines':['NOTIFICATION_SERVICE_CONSUMER', 'CONFIG_SERVICE']},
     {'name':'NotificationProducer', 'defines':['NOTIFICATION_SERVICE_PRODUCER', 'CONFIG_SERVICE']},
-    {'name':'NotifConfig', 'defines':['CONFIG_SERVICE', 'NOTIFICATION_SERVICE_PRODUCER', 'NOTIFICATION_SERVICE_CONSUMER']}
-    # todo onboarding
+    {'name':'NotifConfig', 'defines':['CONFIG_SERVICE', 'NOTIFICATION_SERVICE_PRODUCER', 'NOTIFICATION_SERVICE_CONSUMER']},
 ]
+
+if env['enable_onboarding']:
+    build_samples += [
+        {'name':'Onboardee', 'defines':['CONFIG_SERVICE', 'ONBOARDING_SERVICE']},
+    ]
 
 for sample in build_samples:
     name = sample['name']
