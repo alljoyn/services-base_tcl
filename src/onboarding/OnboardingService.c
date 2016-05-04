@@ -51,10 +51,10 @@ static const char* const OnboardingInterface[] = {
     "@Version>q",
     "@State>n",
     "@LastError>(ns)",
-    "?ConfigureWiFi <ssn >n",
+    "?ConfigureWiFi SSID<s passphrase<s authType<n status>n",
     "?Connect",
     "?Offboard",
-    "?GetScanInfo >q >a(sn)",
+    "?GetScanInfo age>q scanList>a(sn)",
     "!ConnectionResult >(ns)",
     NULL
 };
