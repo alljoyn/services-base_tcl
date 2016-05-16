@@ -478,6 +478,8 @@ static AJ_Status AJNS_Producer_SendNotifySignal(AJ_BusAttachment* busAttachment,
     uint32_t serialNum;
 
     AJ_InfoPrintf(("In SendNotifySignal\n"));
+    // the AJ_DeliverMsg function expects the TTL to be in milliseconds. Applications should specify the unit in seconds to be consistent with the non-thin implementation.
+    ttl *= 1000;
     status = AJNS_Producer_MarshalNotificationMsg(busAttachment, &msg, notification, ttl);
     if (status != AJ_OK) {
         AJ_InfoPrintf(("Could not Marshal Message\n"));
