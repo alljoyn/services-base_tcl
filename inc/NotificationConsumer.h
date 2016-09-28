@@ -62,21 +62,19 @@ typedef AJ_Status (*AJNS_Consumer_OnDismiss)(int32_t notificationId, const char*
 
 /**
  * Start Notification service framework Consumer passing mode and callbacks
- * @param appSuperAgentMode
  * @param appOnNotify
  * @param appOnDismiss
  * @return status
  */
-AJ_Status AJNS_Consumer_Start(uint8_t appSuperAgentMode, AJNS_Consumer_OnNotify appOnNotify, const AJNS_Consumer_OnDismiss appOnDismiss);
+AJ_Status AJNS_Consumer_Start(AJNS_Consumer_OnNotify appOnNotify, const AJNS_Consumer_OnDismiss appOnDismiss);
 
 /**
  * Consumer_SetSignalRules, to add the correct filter for the required interface
  * @param busAttachment
- * @param superAgentMode
  * @param senderBusName
  * @return status
  */
-AJ_Status AJNS_Consumer_SetSignalRules(AJ_BusAttachment* busAttachment, uint8_t superAgentMode, const char* senderBusName);
+AJ_Status AJNS_Consumer_SetSignalRules(AJ_BusAttachment* busAttachment, const char* senderBusName);
 
 /**
  * Consumer_IsSuperAgentLost, checks whether the lost device/app is the SuperAgent

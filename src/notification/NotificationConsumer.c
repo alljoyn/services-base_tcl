@@ -38,9 +38,6 @@
 #define NOTIFICATION_SIGNAL_RECEIVED                          AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_PROXYOBJECT_INDEX, 1, 0)
 #define GET_NOTIFICATION_VERSION_PROPERTY_PROXY               AJ_ENCODE_PROPERTY_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_PROXYOBJECT_INDEX, 1, 1)
 
-#define SUPERAGENT_SIGNAL_RECEIVED                            AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_PROXYOBJECT_INDEX, 2, 0)
-#define GET_SUPERAGENT_VERSION_PROPERTY_PROXY                 AJ_ENCODE_PROPERTY_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_PROXYOBJECT_INDEX, 2, 1)
-
 /* Producer ProxyObject bus registration */
 #define NOTIFICATION_PRODUCER_PROXYOBJECT_INDEX               NOTIFICATION_PROXYOBJECT_INDEX + 1
 #define NOTIFICATION_PRODUCER_GET_PROPERTY_PROXY              AJ_ENCODE_MESSAGE_ID(AJNS_OBJECT_LIST_INDEX, NOTIFICATION_PRODUCER_PROXYOBJECT_INDEX, 0, AJ_PROP_GET)
@@ -60,42 +57,11 @@
 /**
  * Static constants.
  */
-static const char SuperagentInterfaceName[]  = "org.alljoyn.Notification.Superagent";
 static const char notificationMatch[] = "interface='org.alljoyn.Notification',sessionless='t'";
-static const char superAgentMatch[] = "interface='org.alljoyn.Notification.Superagent',sessionless='t'";
-static const char superAgentFilterMatch[] = "interface='org.alljoyn.Notification.Superagent',sessionless='t',sender='";
 static const char dismisserMatch[] = "interface='org.alljoyn.Notification.Dismisser',sessionless='t'";
 
-static const char* SuperagentInterface[] = {
-    SuperagentInterfaceName,
-    AJNS_NotificationSignalName,
-    AJNS_NotificationPropertyVersion,
-    NULL
-};
-
-/**
- * A NULL terminated collection of all interfaces.
- */
-static const AJ_InterfaceDescription SuperagentInterfaces[] = {
-    AJ_PropertiesIface,
-    SuperagentInterface,
-    NULL
-};
-
-static const AJ_InterfaceDescription AllInterfaces[] = {
-    AJ_PropertiesIface,
-    AJNS_NotificationInterface,
-    SuperagentInterface,
-    NULL
-};
-
-static AJ_Object AllProxyObject          = { "!",   AllInterfaces };
-static AJ_Object SuperAgentProxyObject   = { "!",   SuperagentInterfaces };
 static AJ_Object NotificationProxyObject = { "!",   AJNS_NotificationInterfaces };
 
-static uint8_t appSuperAgentMode = TRUE;
-
-static char currentSuperAgentBusName[16] = { '\0' };
 static uint32_t producerSessionId = 0;
 static uint32_t lastSessionRequestSerialNum = 0;
 
@@ -111,12 +77,6 @@ static AJ_Status RegisterObjectList()
 {
     AJNS_Common_RegisterObjects();
 
-    AllProxyObject.flags &= ~(AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED);
-    AllProxyObject.flags |= AJ_OBJ_FLAG_IS_PROXY;
-
-    SuperAgentProxyObject.flags &= ~(AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED);
-    SuperAgentProxyObject.flags |= AJ_OBJ_FLAG_IS_PROXY;
-
     NotificationProxyObject.flags &= ~(AJ_OBJ_FLAG_HIDDEN | AJ_OBJ_FLAG_DISABLED);
     NotificationProxyObject.flags |= AJ_OBJ_FLAG_IS_PROXY;
 
@@ -129,22 +89,21 @@ static AJ_Status RegisterObjectList()
     return AJ_RegisterObjectList(AJNS_ObjectList, AJNS_OBJECT_LIST_INDEX);
 }
 
-AJ_Status AJNS_Consumer_Start(uint8_t superAgentMode, AJNS_Consumer_OnNotify onNotify, AJNS_Consumer_OnDismiss onDismiss)
+AJ_Status AJNS_Consumer_Start(AJNS_Consumer_OnNotify onNotify, AJNS_Consumer_OnDismiss onDismiss)
 {
     AJ_Status status = AJ_OK;
 
-    appSuperAgentMode = superAgentMode;
     appOnNotify = onNotify;
     appOnDismiss = onDismiss;
 
-    AJNS_ObjectList[NOTIFICATION_PROXYOBJECT_INDEX] = appSuperAgentMode ? AllProxyObject : NotificationProxyObject;
+    AJNS_ObjectList[NOTIFICATION_PROXYOBJECT_INDEX] = NotificationProxyObject;
 
     status = RegisterObjectList();
 
     return status;
 }
 
-AJ_Status AJNS_Consumer_SetSignalRules(AJ_BusAttachment* busAttachment, uint8_t superAgentMode, const char* senderBusName)
+AJ_Status AJNS_Consumer_SetSignalRules(AJ_BusAttachment* busAttachment, const char* senderBusName)
 {
     AJ_Status status = AJ_OK;
     char senderMatch[76];
@@ -166,38 +125,6 @@ AJ_Status AJNS_Consumer_SetSignalRules(AJ_BusAttachment* busAttachment, uint8_t 
             AJ_ErrPrintf(("Could not set Notification Interface AddMatch\n"));
             return status;
         }
-
-        if (currentSuperAgentBusName[0]) {
-            AJ_InfoPrintf(("Removing Superagent interface matched for specific sender bus name %s.\n", currentSuperAgentBusName));
-
-            availableLen = sizeof(senderMatch);
-            availableLen -= strlen(strncpy(senderMatch, superAgentFilterMatch, availableLen));
-            availableLen -= strlen(strncat(senderMatch, currentSuperAgentBusName, availableLen));
-            availableLen -= strlen(strncat(senderMatch, "'", availableLen));
-
-            status = AJ_BusSetSignalRuleFlags(busAttachment, senderMatch, AJ_BUS_SIGNAL_DENY, AJ_FLAG_NO_REPLY_EXPECTED);
-            if (status != AJ_OK) {
-                AJ_ErrPrintf(("Could not remove SuperAgent specific match\n"));
-                return status;
-            }
-
-            status = AJ_BusFindAdvertisedName(busAttachment, currentSuperAgentBusName, AJ_BUS_STOP_FINDING);
-            if (status != AJ_OK) {
-                AJ_ErrPrintf(("Could not unregister to find advertised name of lost SuperAgent\n"));
-                return status;
-            }
-
-            currentSuperAgentBusName[0] = '\0'; // Clear current SuperAgent BusUniqueName
-        }
-
-        if (superAgentMode) {
-            AJ_InfoPrintf(("Adding Superagent interface match.\n"));
-            status = AJ_BusSetSignalRuleFlags(busAttachment, superAgentMatch, AJ_BUS_SIGNAL_ALLOW, AJ_FLAG_NO_REPLY_EXPECTED);
-            if (status != AJ_OK) {
-                AJ_ErrPrintf(("Could not set Notification Interface AddMatch\n"));
-                return status;
-            }
-        }
     } else {
         AJ_InfoPrintf(("Running SetSignalRules with sender bus name.\n"));
 
@@ -207,51 +134,9 @@ AJ_Status AJNS_Consumer_SetSignalRules(AJ_BusAttachment* busAttachment, uint8_t 
             AJ_ErrPrintf(("Could not remove Notification Interface match\n"));
             return status;
         }
-
-        availableLen = sizeof(senderMatch);
-        availableLen -= strlen(strncpy(senderMatch, superAgentFilterMatch, availableLen));
-        availableLen -= strlen(strncat(senderMatch, senderBusName, availableLen));
-        availableLen -= strlen(strncat(senderMatch, "'", availableLen));
-
-        AJ_InfoPrintf(("Adding Superagent interface matched for specific sender bus name %s.\n", senderBusName));
-
-        status = AJ_BusSetSignalRuleFlags(busAttachment, senderMatch, AJ_BUS_SIGNAL_ALLOW, AJ_FLAG_NO_REPLY_EXPECTED);
-        if (status != AJ_OK) {
-            AJ_ErrPrintf(("Could not add SuperAgent specific match\n"));
-            return status;
-        }
-
-        status = AJ_BusFindAdvertisedName(busAttachment, senderBusName, AJ_BUS_START_FINDING);
-        if (status != AJ_OK) {
-            AJ_ErrPrintf(("Could not register to find advertised name of SuperAgent\n"));
-            return status;
-        }
-
-        strncpy(currentSuperAgentBusName, senderBusName, 16); // Save current SuperAgent BusUniqueName
-
-        AJ_InfoPrintf(("Removing Superagent interface match.\n"));
-        status = AJ_BusSetSignalRuleFlags(busAttachment, superAgentMatch, AJ_BUS_SIGNAL_DENY, AJ_FLAG_NO_REPLY_EXPECTED);
-        if (status != AJ_OK) {
-            AJ_ErrPrintf(("Could not remove SuperAgent Interface match\n"));
-            return status;
-        }
     }
 
     return status;
-}
-
-uint8_t AJNS_Consumer_IsSuperAgentLost(AJ_Message* msg)
-{
-    if (msg->msgId == AJ_SIGNAL_LOST_ADV_NAME) {
-        AJ_Arg arg;
-        AJ_UnmarshalArg(msg, &arg); // <arg name="name" type="s" direction="out"/>
-        AJ_SkipArg(msg);            // <arg name="transport" type="q" direction="out"/>
-        AJ_SkipArg(msg);            // <arg name="prefix" type="s" direction="out"/>
-        AJ_ResetArgs(msg);          // Reset to allow others to re-unmarshal message
-        AJ_InfoPrintf(("LostAdvertisedName(%s)\n", arg.val.v_string));
-        return (strcmp(arg.val.v_string, currentSuperAgentBusName) == 0);
-    }
-    return FALSE;
 }
 
 AJ_Status AJNS_Consumer_NotifySignalHandler(AJ_Message* msg)
@@ -631,7 +516,7 @@ AJ_Status AJNS_Consumer_SendDismissRequest(AJ_BusAttachment* busAttachment, uint
 
 AJ_Status AJNS_Consumer_ConnectedHandler(AJ_BusAttachment* busAttachment)
 {
-    return AJNS_Consumer_SetSignalRules(busAttachment, appSuperAgentMode, 0);
+    return AJNS_Consumer_SetSignalRules(busAttachment, 0);
 }
 
 AJSVC_ServiceStatus AJNS_Consumer_SessionJoinedHandler(AJ_BusAttachment* busAttachment, uint32_t sessionId, uint32_t replySerialNum)
@@ -737,29 +622,13 @@ AJSVC_ServiceStatus AJNS_Consumer_MessageProcessor(AJ_BusAttachment* busAttachme
         *msgStatus = AJNS_Consumer_NotifySignalHandler(msg);
         break;
 
-    case SUPERAGENT_SIGNAL_RECEIVED:
-        AJ_InfoPrintf(("Received Superagent signal.\n"));
-        *msgStatus = AJNS_Consumer_SetSignalRules(busAttachment, appSuperAgentMode, msg->sender);
-        if (AJ_OK == *msgStatus && AJNS_ObjectList != NULL) {
-            AJNS_ObjectList[NOTIFICATION_PROXYOBJECT_INDEX] = SuperAgentProxyObject;
-        }
-        *msgStatus = AJNS_Consumer_NotifySignalHandler(msg);
-        break;
-
     case NOTIFICATION_DISMISSER_DISMISS_RECEIVED:
         AJ_InfoPrintf(("Received Dismisser Dismiss signal.\n"));
         *msgStatus = AJNS_Consumer_DismissSignalHandler(msg);
         break;
 
     case AJ_SIGNAL_LOST_ADV_NAME:
-        if (appSuperAgentMode && AJNS_Consumer_IsSuperAgentLost(msg)) {
-            *msgStatus = AJNS_Consumer_SetSignalRules(busAttachment, appSuperAgentMode, NULL);
-            if (AJ_OK == *msgStatus && AJNS_ObjectList != NULL) {
-                AJNS_ObjectList[NOTIFICATION_PROXYOBJECT_INDEX] = AllProxyObject;
-            }
-        } else {
-            return AJSVC_SERVICE_STATUS_NOT_HANDLED;
-        }
+        return AJSVC_SERVICE_STATUS_NOT_HANDLED;
         break;
 
     case AJ_REPLY_ID(NOTIFICATION_PRODUCER_DISMISS_PROXY):

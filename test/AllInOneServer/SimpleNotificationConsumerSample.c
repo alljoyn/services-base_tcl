@@ -29,7 +29,6 @@
 #if (defined(__linux) || defined(_WIN32) || defined(__MACH__))
 #include "NotificationConsumerSampleUtil.h"
 #else
-#define Consumer_SetupEnv(x, y) do { } while (0)
 #define Consumer_GetActionFromUser(x) do { } while (0)
 #endif
 
@@ -38,7 +37,6 @@ extern AJ_EXPORT uint8_t dbgAJSVCAPP;
 #endif
 
 static uint8_t inputMode = FALSE;
-static uint8_t superAgentMode = TRUE;
 static uint8_t nextAction = CONSUMER_ACTION_NOTHING;
 static uint8_t processingAction = FALSE;
 #define DISMISS_DELAY_PERIOD 30000
@@ -136,9 +134,7 @@ AJ_Status NotificationConsumer_Init()
 {
     AJ_Status status = AJ_OK;
 
-    Consumer_SetupEnv(&inputMode, &superAgentMode);
-    AJ_AlwaysPrintf(("Init(): Set Consumer to detect SuperAgent option is turned %s\n", superAgentMode ? "ON" : "off"));
-    status = AJNS_Consumer_Start(superAgentMode, &ApplicationHandleNotify, &ApplicationHandleDismiss);
+    status = AJNS_Consumer_Start(&ApplicationHandleNotify, &ApplicationHandleDismiss);
     memset(&savedNotification, 0, sizeof(AJNS_Consumer_NotificationReference));
 
     AJ_AlwaysPrintf(("\n---------------------\nNotification Consumer started!\n"));

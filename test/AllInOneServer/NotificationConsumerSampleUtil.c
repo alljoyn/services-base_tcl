@@ -33,31 +33,6 @@ static uint8_t GetCmdLine(char* buf, size_t num)
     return (strlen(buf) > 0);
 }
 
-/**
- * A function that allows us to enter QA InputMode
- */
-void Consumer_SetupEnv(uint8_t* inputMode, uint8_t* superAgentMode)
-{
-    char* value = getenv("INPUT_MODE");
-    char buf[BUF_SIZE];
-    uint8_t defaultSuperAgentMode = *superAgentMode;
-
-    if (value) {
-        *inputMode = (uint8_t)atoi(value);
-    }
-    if (*inputMode) {
-        AJ_StartReadFromStdIn();
-        AJ_Printf("Please enter 0=OFF or 1=ON to disable/enable SuperAgentMode. Default is %u\n", defaultSuperAgentMode);
-        if (GetCmdLine(buf, BUF_SIZE)) {
-            *superAgentMode = (uint8_t)atoi(buf);
-            if (1 < *superAgentMode) {
-                *superAgentMode = defaultSuperAgentMode;
-            }
-        }
-        AJ_StopReadFromStdIn();
-    }
-}
-
 void Consumer_GetActionFromUser(uint8_t* action)
 {
     char buf[BUF_SIZE];

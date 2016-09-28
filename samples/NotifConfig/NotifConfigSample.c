@@ -578,7 +578,7 @@ static AJ_Status ApplicationHandleDismiss(int32_t notificationId, const char* ap
 
 static AJ_Status Consumer_Init()
 {
-    AJ_Status status = AJNS_Consumer_Start(1, &ApplicationHandleNotify, &ApplicationHandleDismiss);
+    AJ_Status status = AJNS_Consumer_Start(&ApplicationHandleNotify, &ApplicationHandleDismiss);
     return status;
 }
 
